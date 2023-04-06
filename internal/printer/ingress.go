@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -233,7 +232,7 @@ func formatIngressHosts(rules []networkingv1.IngressRule) string {
 
 // loadBalancerStatusStringer behaves mostly like a string interface and converts the given
 // status to a string.
-func loadBalancerStatusStringer(s corev1.LoadBalancerStatus) string {
+func loadBalancerStatusStringer(s networkingv1.IngressLoadBalancerStatus) string {
 	ingress := s.Ingress
 	result := sets.NewString()
 	for i := range ingress {

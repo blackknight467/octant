@@ -23,7 +23,7 @@ func TestObjectReferencePath(t *testing.T) {
 		{
 			name: "cron job (namespace)",
 			objectReference: corev1.ObjectReference{
-				APIVersion: "batch/v1beta1",
+				APIVersion: "batch/v1",
 				Kind:       "CronJob",
 				Name:       "cj1",
 				Namespace:  "default",
@@ -33,7 +33,7 @@ func TestObjectReferencePath(t *testing.T) {
 		{
 			name: "cron job",
 			objectReference: corev1.ObjectReference{
-				APIVersion: "batch/v1beta1",
+				APIVersion: "batch/v1",
 				Kind:       "CronJob",
 				Name:       "cj1",
 			},

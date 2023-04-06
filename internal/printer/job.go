@@ -167,7 +167,7 @@ func createJobListView(ctx context.Context, object runtime.Object, options Optio
 
 	key := store.Key{
 		Namespace:  namespace,
-		APIVersion: "batch/v1beta1",
+		APIVersion: "batch/v1",
 		Kind:       "Job",
 	}
 

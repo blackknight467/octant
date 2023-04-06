@@ -5,10 +5,12 @@
 package fake
 
 import (
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/openapi"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	openapi_v2 "github.com/googleapis/gnostic/openapiv2"
+	openapi_v2 "github.com/google/gnostic/openapiv2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	version "k8s.io/apimachinery/pkg/version"
 	rest "k8s.io/client-go/rest"
@@ -18,6 +20,16 @@ import (
 type MockDiscoveryInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockDiscoveryInterfaceMockRecorder
+}
+
+func (m *MockDiscoveryInterface) OpenAPIV3() openapi.Client {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockDiscoveryInterface) WithLegacy() discovery.DiscoveryInterface {
+	//TODO implement me
+	panic("implement me")
 }
 
 // MockDiscoveryInterfaceMockRecorder is the mock recorder for MockDiscoveryInterface.

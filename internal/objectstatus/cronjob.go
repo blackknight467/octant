@@ -7,11 +7,11 @@ package objectstatus
 
 import (
 	"context"
+	batchv1 "k8s.io/api/batch/v1"
 
 	"strconv"
 
 	"github.com/pkg/errors"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -26,10 +26,10 @@ func cronJob(_ context.Context, object runtime.Object, _ store.Store, _ link.Int
 		return ObjectStatus{}, errors.Errorf("cronjob is nil")
 	}
 
-	cronjob := &batchv1beta1.CronJob{}
+	cronjob := &batchv1.CronJob{}
 
 	if err := scheme.Scheme.Convert(object, cronjob, 0); err != nil {
-		return ObjectStatus{}, errors.Wrap(err, "convert object to batch/v1beta1 cronjob")
+		return ObjectStatus{}, errors.Wrap(err, "convert object to batch/v1 cronjob")
 	}
 
 	properties := []component.Property{{Label: "Schedule", Value: component.NewText(cronjob.Spec.Schedule)}}
@@ -44,7 +44,7 @@ func cronJob(_ context.Context, object runtime.Object, _ store.Store, _ link.Int
 	}
 	return ObjectStatus{
 		NodeStatus: component.NodeStatusOK,
-		Details:    []component.Component{component.NewText("batch/v1beta1 CronJob is OK")},
+		Details:    []component.Component{component.NewText("batch/v1 CronJob is OK")},
 		Properties: properties,
 	}, nil
 }

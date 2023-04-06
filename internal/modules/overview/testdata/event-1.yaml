@@ -3,7 +3,7 @@ count: 24973
 eventTime: null
 firstTimestamp: 2018-09-18T12:40:18Z
 involvedObject:
-  apiVersion: batch/v1beta1
+  apiVersion: batch/v1
   kind: CronJob
   name: hello
   namespace: default

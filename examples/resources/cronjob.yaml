@@ -1,7 +1,7 @@
 # Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: hello

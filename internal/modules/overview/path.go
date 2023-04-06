@@ -70,9 +70,9 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/workloads/deployments"
 	case apiVersion == "apps/v1" && kind == "Deployment":
 		p = "/workloads/deployments"
-	case apiVersion == "batch/v1beta1" && kind == "CronJob":
+	case apiVersion == "batch/v1" && kind == "CronJob":
 		p = "/workloads/cron-jobs"
-	case (apiVersion == "batch/v1beta1" || apiVersion == "batch/v1") && kind == "Job":
+	case (apiVersion == "batch/v1") && kind == "Job":
 		p = "/workloads/jobs"
 	case apiVersion == "v1" && kind == "ReplicationController":
 		p = "/workloads/replication-controllers"

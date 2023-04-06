@@ -14,7 +14,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -116,8 +115,8 @@ func CreateCustomResource(name string, options ...CustomResourceOption) *unstruc
 	return u
 }
 
-func CreateCronJob(name string) *batchv1beta1.CronJob {
-	return &batchv1beta1.CronJob{
+func CreateCronJob(name string) *batchv1.CronJob {
+	return &batchv1.CronJob{
 		TypeMeta:   genTypeMeta(gvk.CronJob),
 		ObjectMeta: genObjectMeta(name, true),
 	}

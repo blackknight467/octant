@@ -21,7 +21,6 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -39,9 +38,9 @@ func Test_CronJobListHandler(t *testing.T) {
 
 	now := testutil.Time()
 
-	cronJob := &batchv1beta1.CronJob{
+	cronJob := &batchv1.CronJob{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "batch/v1beta1",
+			APIVersion: "batch/v1",
 			Kind:       "CronJob",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -52,16 +51,16 @@ func Test_CronJobListHandler(t *testing.T) {
 			},
 			Labels: labels,
 		},
-		Spec: batchv1beta1.CronJobSpec{
+		Spec: batchv1.CronJobSpec{
 			Schedule:    "*/1 * * * *",
-			JobTemplate: batchv1beta1.JobTemplateSpec{},
+			JobTemplate: batchv1.JobTemplateSpec{},
 		},
 	}
 
 	tpo.PathForObject(cronJob, cronJob.Name, "/cron")
 
-	object := &batchv1beta1.CronJobList{
-		Items: []batchv1beta1.CronJob{*cronJob},
+	object := &batchv1.CronJobList{
+		Items: []batchv1.CronJob{*cronJob},
 	}
 
 	ctx := context.Background()
@@ -82,7 +81,7 @@ func Test_CronJobListHandler(t *testing.T) {
 		"Name": component.NewLink("", "cron", "/cron", func(l *component.Link) {
 			l.SetStatus(component.TextStatusOK,
 				component.NewList(nil, []component.Component{
-					component.NewText("batch/v1beta1 CronJob is OK"),
+					component.NewText("batch/v1 CronJob is OK"),
 				},
 				))
 		}),
@@ -117,22 +116,22 @@ func Test_CronJobConfiguration(t *testing.T) {
 	lastScheduled := time.Unix(1550075184, 0)
 	suspend := false
 
-	cj := &batchv1beta1.CronJob{
+	cj := &batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cron-test",
 			CreationTimestamp: metav1.Time{
 				Time: now,
 			},
 		},
-		Spec: batchv1beta1.CronJobSpec{
+		Spec: batchv1.CronJobSpec{
 			Schedule:                   "*/1 * * * *",
 			StartingDeadlineSeconds:    conversion.PtrInt64(200),
-			ConcurrencyPolicy:          batchv1beta1.ForbidConcurrent,
+			ConcurrencyPolicy:          batchv1.ForbidConcurrent,
 			Suspend:                    &suspend,
 			SuccessfulJobsHistoryLimit: conversion.PtrInt32(3),
 			FailedJobsHistoryLimit:     conversion.PtrInt32(1),
 		},
-		Status: batchv1beta1.CronJobStatus{
+		Status: batchv1.CronJobStatus{
 			LastScheduleTime: &metav1.Time{
 				Time: lastScheduled,
 			},
@@ -141,7 +140,7 @@ func Test_CronJobConfiguration(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		cronjob  *batchv1beta1.CronJob
+		cronjob  *batchv1.CronJob
 		isErr    bool
 		expected *component.Summary
 	}{
@@ -238,7 +237,7 @@ func Test_createJobListView(t *testing.T) {
 	}
 	key := store.Key{
 		Namespace:  job.Namespace,
-		APIVersion: "batch/v1beta1",
+		APIVersion: "batch/v1",
 		Kind:       "Job",
 	}
 

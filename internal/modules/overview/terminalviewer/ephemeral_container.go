@@ -46,11 +46,6 @@ func (e *EphemeralContainerGenerator) UpdateObject(ctx context.Context, object r
 	pods := client.CoreV1().Pods(pod.Namespace)
 
 	if len(pod.Spec.EphemeralContainers) == 0 {
-		ec, err := pods.GetEphemeralContainers(ctx, pod.Name, metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
 		container := pod.Spec.Containers[0].Name
 
 		debugContainer := corev1.EphemeralContainer{
@@ -65,10 +60,10 @@ func (e *EphemeralContainerGenerator) UpdateObject(ctx context.Context, object r
 			},
 		}
 
-		ec.EphemeralContainers = append(ec.EphemeralContainers, debugContainer)
+		pod.Spec.EphemeralContainers = append(pod.Spec.EphemeralContainers, debugContainer)
 
 		e.logger.Debugf("Creating ephemeral container for: %s", container)
-		_, err = pods.UpdateEphemeralContainers(ctx, pod.Name, ec, metav1.UpdateOptions{})
+		_, err = pods.UpdateEphemeralContainers(ctx, pod.Name, pod, metav1.UpdateOptions{})
 		if err != nil {
 			e.logger.Debugf("pod update for ephemeral container: %+v", err)
 		}

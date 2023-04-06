@@ -8,6 +8,7 @@ package printer
 import (
 	"context"
 	"fmt"
+	batchv1 "k8s.io/api/batch/v1"
 	"strconv"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
@@ -17,12 +18,11 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // CronJobListHandler is a printFunc that lists cronjobs
-func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opts Options) (component.Component, error) {
+func CronJobListHandler(ctx context.Context, list *batchv1.CronJobList, opts Options) (component.Component, error) {
 	if list == nil {
 		return nil, errors.New("nil list")
 	}
@@ -59,7 +59,7 @@ func CronJobListHandler(ctx context.Context, list *batchv1beta1.CronJobList, opt
 	return ot.ToComponent()
 }
 
-func addCronJobActions(c batchv1beta1.CronJob, row component.TableRow) error {
+func addCronJobActions(c batchv1.CronJob, row component.TableRow) error {
 	payload := action.Payload{
 		"namespace":  c.Namespace,
 		"apiVersion": c.APIVersion,
@@ -105,7 +105,7 @@ func addCronJobActions(c batchv1beta1.CronJob, row component.TableRow) error {
 }
 
 // CronJobHandler is a printFunc that prints a CronJob
-func CronJobHandler(ctx context.Context, cronJob *batchv1beta1.CronJob, options Options) (component.Component, error) {
+func CronJobHandler(ctx context.Context, cronJob *batchv1.CronJob, options Options) (component.Component, error) {
 	o := NewObject(cronJob)
 	o.EnableEvents()
 
@@ -127,11 +127,11 @@ func CronJobHandler(ctx context.Context, cronJob *batchv1beta1.CronJob, options 
 
 // CronJobConfiguration generates cronjob configuration
 type CronJobConfiguration struct {
-	cronjob *batchv1beta1.CronJob
+	cronjob *batchv1.CronJob
 }
 
 // NewCronJobConfiguration creates an instance of CronJobConfiguration
-func NewCronJobConfiguration(c *batchv1beta1.CronJob) *CronJobConfiguration {
+func NewCronJobConfiguration(c *batchv1.CronJob) *CronJobConfiguration {
 	return &CronJobConfiguration{
 		cronjob: c,
 	}
@@ -190,15 +190,15 @@ type cronJobObject interface {
 }
 
 type cronJobHandler struct {
-	cronJob    *batchv1beta1.CronJob
-	configFunc func(*batchv1beta1.CronJob, Options) (*component.Summary, error)
+	cronJob    *batchv1.CronJob
+	configFunc func(*batchv1.CronJob, Options) (*component.Summary, error)
 	jobFunc    func(context.Context, runtime.Object, Options) (component.Component, error)
 	object     *Object
 }
 
 var _ cronJobObject = (*cronJobHandler)(nil)
 
-func newCronJobHandler(cronJob *batchv1beta1.CronJob, object *Object) (*cronJobHandler, error) {
+func newCronJobHandler(cronJob *batchv1.CronJob, object *Object) (*cronJobHandler, error) {
 	if cronJob == nil {
 		return nil, errors.New("can't print a nil cronjob")
 	}
@@ -225,7 +225,7 @@ func (c *cronJobHandler) Config(options Options) error {
 	return nil
 }
 
-func defaultCronJobConfig(cronJob *batchv1beta1.CronJob, options Options) (*component.Summary, error) {
+func defaultCronJobConfig(cronJob *batchv1.CronJob, options Options) (*component.Summary, error) {
 	return NewCronJobConfiguration(cronJob).Create()
 }
 

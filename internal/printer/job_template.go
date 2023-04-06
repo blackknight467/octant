@@ -7,9 +7,9 @@ package printer
 
 import (
 	"context"
+	batchv1 "k8s.io/api/batch/v1"
 
 	"github.com/pkg/errors"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -19,10 +19,10 @@ import (
 type JobTemplate struct {
 	parent          runtime.Object
 	context         context.Context
-	jobTemplateSpec batchv1beta1.JobTemplateSpec
+	jobTemplateSpec batchv1.JobTemplateSpec
 }
 
-func NewJobTemplate(ctx context.Context, parent runtime.Object, jobTemplateSpec batchv1beta1.JobTemplateSpec) *JobTemplate {
+func NewJobTemplate(ctx context.Context, parent runtime.Object, jobTemplateSpec batchv1.JobTemplateSpec) *JobTemplate {
 	return &JobTemplate{
 		parent:          parent,
 		context:         ctx,

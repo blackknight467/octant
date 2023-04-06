@@ -8,9 +8,9 @@ package printer
 import (
 	"context"
 	"fmt"
+	batchv1 "k8s.io/api/batch/v1"
 	"strings"
 
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -28,7 +28,7 @@ type ObjectInterface interface {
 	// EnableEvents enables showing events.
 	EnableEvents()
 	// EnableJobTemplate adds a job template.
-	EnableJobTemplate(templateSpec batchv1beta1.JobTemplateSpec)
+	EnableJobTemplate(templateSpec batchv1.JobTemplateSpec)
 	// EnablePodTemplate adds a pod template.
 	EnablePodTemplate(templateSpec corev1.PodTemplateSpec)
 	// RegisterConfig registers a config summary component.
@@ -48,7 +48,7 @@ func defaultPodTemplateGen(ctx context.Context, object runtime.Object, template 
 	return nil
 }
 
-func defaultJobTemplateGen(ctx context.Context, object runtime.Object, template batchv1beta1.JobTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
+func defaultJobTemplateGen(ctx context.Context, object runtime.Object, template batchv1.JobTemplateSpec, fl *flexlayout.FlexLayout, options Options) error {
 	podTemplate := NewJobTemplate(ctx, object, template)
 	if err := podTemplate.AddToFlexLayout(fl, options); err != nil {
 		return fmt.Errorf("add job template to layout: %w", err)
@@ -97,7 +97,7 @@ type podTemplateOptions struct {
 }
 
 type jobTemplateOptions struct {
-	template batchv1beta1.JobTemplateSpec
+	template batchv1.JobTemplateSpec
 }
 
 // ObjectOpts are options for configuration Object.
@@ -123,7 +123,7 @@ type Object struct {
 	flexLayout *flexlayout.FlexLayout
 
 	PodTemplateGen func(context.Context, runtime.Object, corev1.PodTemplateSpec, *flexlayout.FlexLayout, Options) error
-	JobTemplateGen func(context.Context, runtime.Object, batchv1beta1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
+	JobTemplateGen func(context.Context, runtime.Object, batchv1.JobTemplateSpec, *flexlayout.FlexLayout, Options) error
 	EventsGen      func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout, options Options) error
 	ConditionsGen  func(ctx context.Context, object runtime.Object, fl *flexlayout.FlexLayout) error
 }
@@ -168,7 +168,7 @@ func (o *Object) EnablePodTemplate(templateSpec corev1.PodTemplateSpec) {
 }
 
 // EnableJobTemplate enables the job template view for the object.
-func (o *Object) EnableJobTemplate(templateSpec batchv1beta1.JobTemplateSpec) {
+func (o *Object) EnableJobTemplate(templateSpec batchv1.JobTemplateSpec) {
 	o.isJobTemplateEnabled = true
 	o.jobTemplateOptions.template = templateSpec
 }

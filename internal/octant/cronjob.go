@@ -11,7 +11,6 @@ import (
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
-	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -67,7 +66,7 @@ func (c *CronJobTrigger) Handle(ctx context.Context, alerter action.Alerter, pay
 		return errors.New("object store cannot get cronjob")
 	}
 
-	cronjob := &batchv1beta1.CronJob{}
+	cronjob := &batchv1.CronJob{}
 	if err := kubernetes.FromUnstructured(object, cronjob); err != nil {
 		return err
 	}
@@ -88,7 +87,7 @@ func (c *CronJobTrigger) Handle(ctx context.Context, alerter action.Alerter, pay
 }
 
 // Trigger manually creates a new job
-func (c *CronJobTrigger) Trigger(name string, cronJob *batchv1beta1.CronJob) error {
+func (c *CronJobTrigger) Trigger(name string, cronJob *batchv1.CronJob) error {
 	if cronJob == nil {
 		return errors.New("nil cronjob")
 	}
@@ -174,7 +173,7 @@ func (c *CronJobSuspend) Handle(ctx context.Context, alerter action.Alerter, pay
 		return errors.New("object store cannot get cronjob")
 	}
 
-	cronjob := &batchv1beta1.CronJob{}
+	cronjob := &batchv1.CronJob{}
 	if err := kubernetes.FromUnstructured(object, cronjob); err != nil {
 		return err
 	}
@@ -269,7 +268,7 @@ func (c *CronJobResume) Handle(ctx context.Context, alerter action.Alerter, payl
 		return errors.New("object store cannot get cronjob")
 	}
 
-	cronjob := &batchv1beta1.CronJob{}
+	cronjob := &batchv1.CronJob{}
 	if err := kubernetes.FromUnstructured(object, cronjob); err != nil {
 		return err
 	}

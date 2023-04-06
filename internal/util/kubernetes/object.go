@@ -124,7 +124,7 @@ func copyObjectMeta(to interface{}, from *unstructured.Unstructured) error {
 	object.SetLabels(from.GetLabels())
 	object.SetAnnotations(from.GetAnnotations())
 	object.SetOwnerReferences(from.GetOwnerReferences())
-	object.SetClusterName(from.GetClusterName())
+	//object.SetZZZ_DeprecatedClusterName(from.GetZZZ_DeprecatedClusterName())
 	object.SetFinalizers(from.GetFinalizers())
 
 	return nil

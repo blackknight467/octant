@@ -20,7 +20,7 @@ type objectReferenceKey struct {
 
 var (
 	objectReferenceLookup = map[objectReferenceKey]string{
-		objectReferenceKey{apiVersion: "batch/v1beta1", kind: "CronJob"}:        "workloads/cron-jobs",
+		objectReferenceKey{apiVersion: "batch/v1", kind: "CronJob"}:             "workloads/cron-jobs",
 		objectReferenceKey{apiVersion: "apps/v1", kind: "DaemonSet"}:            "workloads/daemon-sets",
 		objectReferenceKey{apiVersion: "apps/v1", kind: "Deployment"}:           "workloads/deployments",
 		objectReferenceKey{apiVersion: "batch/v1", kind: "Job"}:                 "workloads/jobs",
