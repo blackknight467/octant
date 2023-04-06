@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1beta1 "k8s.io/api/batch/v1beta1"
+	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 
 	printer "github.com/vmware-tanzu/octant/internal/printer"
@@ -69,7 +69,7 @@ func (mr *MockObjectInterfaceMockRecorder) EnableEvents() *gomock.Call {
 }
 
 // EnableJobTemplate mocks base method.
-func (m *MockObjectInterface) EnableJobTemplate(arg0 v1beta1.JobTemplateSpec) {
+func (m *MockObjectInterface) EnableJobTemplate(arg0 batchv1.JobTemplateSpec) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "EnableJobTemplate", arg0)
 }
