@@ -1,5 +1,3 @@
-// +build ignore
-
 /*
 Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
@@ -25,12 +23,12 @@ import (
 )
 
 var (
-	VERSION    = "v0.25.1"
-	GOPATH     = os.Getenv("GOPATH")
-	GIT_COMMIT = gitCommit()
-	BUILD_TIME = time.Now().UTC().Format(time.RFC3339)
-	LD_FLAGS   = fmt.Sprintf("-X \"main.buildTime=%s\" -X main.gitCommit=%s", BUILD_TIME, GIT_COMMIT)
-	GO_FLAGS   = fmt.Sprintf("-ldflags=%s", LD_FLAGS)
+	VERSION     = "v0.25.1"
+	GOPATH      = os.Getenv("GOPATH")
+	GIT_COMMIT  = gitCommit()
+	BUILD_TIME  = time.Now().UTC().Format(time.RFC3339)
+	LD_FLAGS    = fmt.Sprintf("-X \"main.buildTime=%s\" -X main.gitCommit=%s", BUILD_TIME, GIT_COMMIT)
+	GO_FLAGS    = fmt.Sprintf("-ldflags=%s", LD_FLAGS)
 	IMAGE_FLAGS = "exclude_graphdriver_devicemapper exclude_graphdriver_btrfs containers_image_openpgp"
 )
 
@@ -275,7 +273,7 @@ func build() {
 	if runtime.GOOS == "windows" {
 		artifact = "octant.exe"
 	}
-	runCmd("go", nil, "build", "-tags", "embedded " + IMAGE_FLAGS, "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
+	runCmd("go", nil, "build", "-tags", "embedded "+IMAGE_FLAGS, "-mod=vendor", "-o", "build/"+artifact, GO_FLAGS, "-v", "./cmd/octant")
 }
 
 // buildElectron builds an Octant binary without web assets
