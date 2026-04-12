@@ -1,3 +1,27 @@
+<div class="rv-filter-bar">
+  <span class="rv-filter-label">Show:</span>
+  <clr-checkbox-wrapper *ngFor="let kind of filterableKinds" class="rv-filter-check">
+    <input type="checkbox" clrCheckbox [checked]="isKindVisible(kind)" (change)="toggleKind(kind)" [id]="'rv-filter-' + kind" />
+    <label [for]="'rv-filter-' + kind">{{ kind }}</label>
+  </clr-checkbox-wrapper>
+
+  <span class="rv-filter-sep"></span>
+
+  <span class="rv-filter-label">Depth:</span>
+  <div class="rv-depth-control">
+    <button class="btn btn-sm btn-icon" (click)="decrementDepth()" title="Decrease depth">
+      <clr-icon shape="minus"></clr-icon>
+    </button>
+    <span class="rv-depth-value">{{ maxDepth !== null ? maxDepth : '∞' }}</span>
+    <button class="btn btn-sm btn-icon" (click)="incrementDepth()" title="Increase depth" [disabled]="maxDepth !== null && maxDepth >= maxDepthLimit">
+      <clr-icon shape="plus"></clr-icon>
+    </button>
+    <button *ngIf="maxDepth !== null" class="btn btn-sm btn-link rv-depth-clear" (click)="clearDepth()" title="Remove depth limit">
+      <clr-icon shape="times"></clr-icon>
+    </button>
+  </div>
+</div>
+
 <div #resourceViewer class="resourceViewer" mwlResizable [resizeCursors]="resizeCursors()"
      (resizing)="updateSliderPosition($event)" (resizeStart)="resizeStart()" (resizeEnd)="resizeEnd()">
   <div #viewContainer class="view-container">

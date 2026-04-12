@@ -38,6 +38,14 @@ const defaultZoom = {
   max: 4.0,
 };
 
+// Kinds that can be toggled off to declutter the graph.
+// Secrets are off by default because shared secrets can create an unusable graph.
+const FILTERABLE_KINDS = ['Secret', 'ConfigMap', 'ServiceAccount'];
+const DEFAULT_HIDDEN_KINDS = new Set(['Secret']);
+
+const MIN_DEPTH = 1;
+const MAX_DEPTH_LIMIT = 10;
+
 @Component({
   selector: 'app-view-resource-viewer',
   templateUrl: './resource-viewer.component.html',
@@ -52,6 +60,13 @@ export class ResourceViewerComponent
   private subscriptionTheme: Subscription;
   resizeEdges = { left: true, right: true };
   startPosition: number;
+
+  // Filter state
+  filterableKinds = FILTERABLE_KINDS;
+  hiddenKinds = new Set(DEFAULT_HIDDEN_KINDS);
+  maxDepth: number | null = null;
+  readonly minDepth = MIN_DEPTH;
+  readonly maxDepthLimit = MAX_DEPTH_LIMIT;
 
   @ViewChild('resourceViewer')
   resourceViewer: ElementRef;
@@ -106,7 +121,7 @@ export class ResourceViewerComponent
         ? this.v.config.selected
         : Object.keys(nodes)[0];
 
-      this.graphData = this.generateGraphData();
+      this.graphData = this.applyFilters();
       this.selectNode(selection);
 
       if (isDevMode()) {
@@ -118,60 +133,156 @@ export class ResourceViewerComponent
     }
   }
 
-  generateGraphData() {
-    return {
-      nodes: this.nodes(),
-      edges: this.edges(),
-    };
-  }
-
-  nodes() {
-    if (!this.v.config.nodes) {
-      return [];
+  // Recompute filtered graph and trigger re-render
+  applyFilters(): ElementsDefinition {
+    const rawNodes = this.v?.config?.nodes;
+    const rawEdges = this.v?.config?.edges;
+    if (!rawNodes || !rawEdges) {
+      return { nodes: [], edges: [] };
     }
 
-    const nodes = Object.entries(this.v.config.nodes).map(([name, details]) => {
-      const colorCode =
-        statusColorCodes[details.status] || statusColorCodes.error;
+    // Step 1: determine which node IDs to show (filter by kind)
+    const visibleNodeIds = new Set<string>(
+      Object.entries(rawNodes)
+        .filter(([, node]) => !this.hiddenKinds.has((node as any).kind))
+        .map(([id]) => id)
+    );
 
-      return {
-        data: {
-          id: name,
-          label1: this.getLabel(details.name, 20),
-          label2: this.getLabel(`${details.apiVersion} ${details.kind}`, 36),
-          weight: 100,
-          status: details.status,
-          colorCode,
-        },
-      };
-    });
-
-    return Array.prototype.concat(...nodes);
-  }
-
-  edges() {
-    if (!this.v.config.edges) {
-      return [];
+    // Step 2: if maxDepth is set, further restrict to nodes within depth of selected
+    let allowedNodeIds: Set<string>;
+    if (this.maxDepth !== null && this.selectedNodeId) {
+      allowedNodeIds = this.nodesWithinDepth(
+        this.selectedNodeId,
+        rawEdges,
+        visibleNodeIds,
+        this.maxDepth
+      );
+    } else {
+      allowedNodeIds = visibleNodeIds;
     }
 
-    const edges = Object.entries(this.v.config.edges).map(([parent, maps]) => {
-      return maps.map(edge => {
+    // Step 3: build cytoscape elements
+    const nodeElements = Object.entries(rawNodes)
+      .filter(([id]) => allowedNodeIds.has(id))
+      .map(([id, details]: [string, any]) => {
+        const colorCode =
+          statusColorCodes[details.status] || statusColorCodes.error;
         return {
+          data: {
+            id,
+            label1: this.getLabel(details.name, 20),
+            label2: this.getLabel(`${details.apiVersion} ${details.kind}`, 36),
+            weight: 100,
+            status: details.status,
+            colorCode,
+          },
+        };
+      });
+
+    const edgeElements: any[] = [];
+    Object.entries(rawEdges).forEach(([parent, maps]: [string, any[]]) => {
+      if (!allowedNodeIds.has(parent)) return;
+      maps.forEach(edge => {
+        if (!allowedNodeIds.has(edge.node)) return;
+        edgeElements.push({
           data: {
             source: parent,
             target: edge.node,
             colorCode: edgeColorCode,
             strength: 10,
           },
-        };
+        });
       });
     });
 
-    return Array.prototype.concat(...edges);
+    return { nodes: nodeElements, edges: edgeElements };
+  }
+
+  // BFS from rootId through visible nodes, returning all within maxDepth hops
+  private nodesWithinDepth(
+    rootId: string,
+    rawEdges: { [key: string]: any[] },
+    visibleNodeIds: Set<string>,
+    maxDepth: number
+  ): Set<string> {
+    // Build undirected adjacency for traversal
+    const adj = new Map<string, Set<string>>();
+    const addAdj = (a: string, b: string) => {
+      if (!adj.has(a)) adj.set(a, new Set());
+      if (!adj.has(b)) adj.set(b, new Set());
+      adj.get(a).add(b);
+      adj.get(b).add(a);
+    };
+
+    Object.entries(rawEdges).forEach(([parent, maps]: [string, any[]]) => {
+      maps.forEach(edge => addAdj(parent, edge.node));
+    });
+
+    const visited = new Set<string>();
+    const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
+    visited.add(rootId);
+
+    while (queue.length > 0) {
+      const { id, depth } = queue.shift();
+      if (!visibleNodeIds.has(id)) continue;
+      if (depth >= maxDepth) continue;
+
+      (adj.get(id) || new Set()).forEach(neighbor => {
+        if (!visited.has(neighbor) && visibleNodeIds.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push({ id: neighbor, depth: depth + 1 });
+        }
+      });
+    }
+
+    // Keep only nodes that are both visible and within depth
+    const result = new Set<string>();
+    visited.forEach(id => { if (visibleNodeIds.has(id)) result.add(id); });
+    return result;
+  }
+
+  toggleKind(kind: string): void {
+    if (this.hiddenKinds.has(kind)) {
+      this.hiddenKinds.delete(kind);
+    } else {
+      this.hiddenKinds.add(kind);
+    }
+    this.hiddenKinds = new Set(this.hiddenKinds); // trigger change detection
+    this.graphData = this.applyFilters();
+  }
+
+  isKindVisible(kind: string): boolean {
+    return !this.hiddenKinds.has(kind);
+  }
+
+  incrementDepth(): void {
+    if (this.maxDepth === null) {
+      this.maxDepth = 1;
+    } else if (this.maxDepth < MAX_DEPTH_LIMIT) {
+      this.maxDepth++;
+    }
+    this.graphData = this.applyFilters();
+  }
+
+  decrementDepth(): void {
+    if (this.maxDepth !== null && this.maxDepth > MIN_DEPTH) {
+      this.maxDepth--;
+    } else {
+      this.maxDepth = null; // below min → remove cap
+    }
+    this.graphData = this.applyFilters();
+  }
+
+  clearDepth(): void {
+    this.maxDepth = null;
+    this.graphData = this.applyFilters();
   }
 
   nodeChange(event) {
     this.selectNode(event.id);
+    if (this.maxDepth !== null) {
+      this.graphData = this.applyFilters(); // recompute depth from new selection
+    }
   }
 
   selectNode(id: string) {
