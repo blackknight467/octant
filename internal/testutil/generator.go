@@ -13,6 +13,7 @@ import (
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -183,8 +184,17 @@ func CreateEvent(name string) *corev1.Event {
 	}
 }
 
-// CreateHorizontalPodAutoscaler creates a horizontal pod autoscaler
-func CreateHorizontalPodAutoscaler(name string) *autoscalingv1.HorizontalPodAutoscaler {
+// CreateHorizontalPodAutoscaler creates a horizontal pod autoscaler (autoscaling/v2).
+func CreateHorizontalPodAutoscaler(name string) *autoscalingv2.HorizontalPodAutoscaler {
+	return &autoscalingv2.HorizontalPodAutoscaler{
+		TypeMeta:   genTypeMeta(gvk.HorizontalPodAutoscaler),
+		ObjectMeta: genObjectMeta(name, true),
+	}
+}
+
+// CreateHorizontalPodAutoscalerV1 creates a horizontal pod autoscaler (autoscaling/v1).
+// Retained for tests that specifically exercise the v1 API path.
+func CreateHorizontalPodAutoscalerV1(name string) *autoscalingv1.HorizontalPodAutoscaler {
 	return &autoscalingv1.HorizontalPodAutoscaler{
 		TypeMeta:   genTypeMeta(gvk.HorizontalPodAutoscaler),
 		ObjectMeta: genObjectMeta(name, true),

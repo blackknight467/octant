@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1505,7 +1505,7 @@ func TestObjectStoreQueryer_ScaleTarget(t *testing.T) {
 	deployment := testutil.CreateDeployment("deployment")
 
 	hpa := testutil.CreateHorizontalPodAutoscaler("hpa")
-	hpa.Spec.ScaleTargetRef = autoscalingv1.CrossVersionObjectReference{
+	hpa.Spec.ScaleTargetRef = autoscalingv2.CrossVersionObjectReference{
 		APIVersion: deployment.APIVersion,
 		Kind:       deployment.Kind,
 		Name:       deployment.Name,

@@ -31,6 +31,8 @@ func AddHandlers(p Handler) error {
 		DeploymentListHandler,
 		HorizontalPodAutoscalerHandler,
 		HorizontalPodAutoscalerListHandler,
+		HorizontalPodAutoscalerV2Handler,
+		HorizontalPodAutoscalerV2ListHandler,
 		IngressListHandler,
 		IngressHandler,
 		JobListHandler,
@@ -71,6 +73,12 @@ func AddHandlers(p Handler) error {
 		MutatingWebhookConfigurationListHandler,
 		ValidatingWebhookConfigurationHandler,
 		ValidatingWebhookConfigurationListHandler,
+		PodDisruptionBudgetHandler,
+		PodDisruptionBudgetListHandler,
+		EndpointSliceHandler,
+		EndpointSliceListHandler,
+		ValidatingAdmissionPolicyHandler,
+		ValidatingAdmissionPolicyListHandler,
 	}
 
 	for _, handler := range handlers {

@@ -98,7 +98,7 @@ func Test_HorizontalPodAutoscalerListHandler(t *testing.T) {
 
 func Test_HorizontalPodAutoscalerConfiguration(t *testing.T) {
 	var replicas int32 = 1
-	hpa := testutil.CreateHorizontalPodAutoscaler("hpa")
+	hpa := testutil.CreateHorizontalPodAutoscalerV1("hpa")
 	hpa.Spec.MinReplicas = &replicas
 	hpa.Spec.MaxReplicas = 10
 
@@ -189,7 +189,7 @@ func Test_createHorizontalPodAutoscalerSummaryStatus(t *testing.T) {
 	var targetCPUPercent int32 = 80
 	now := testutil.Time()
 
-	hpa := testutil.CreateHorizontalPodAutoscaler("hpa")
+	hpa := testutil.CreateHorizontalPodAutoscalerV1("hpa")
 	hpa.Status.ObservedGeneration = &observedGeneration
 	hpa.Status.LastScaleTime = &metav1.Time{Time: now}
 	hpa.Status.CurrentReplicas = 2
@@ -350,7 +350,7 @@ func Test_createHorizontalPodAutoscalerConditionsView(t *testing.T) {
 
 	condition := `[{"type":"AbleToScale","status":"True","reason":"reason","message":"message","lastTransitionTime":"2019-01-11T12:57:10Z"}]`
 
-	horizontalPodAutoscaler := testutil.CreateHorizontalPodAutoscaler("hpa")
+	horizontalPodAutoscaler := testutil.CreateHorizontalPodAutoscalerV1("hpa")
 	horizontalPodAutoscaler.Annotations = map[string]string{
 		"autoscaling.alpha.kubernetes.io/conditions": condition,
 	}
@@ -375,7 +375,7 @@ func Test_createHorizontalPodAutoscalerConditionsView(t *testing.T) {
 }
 
 func Test_getCombinedMetrics(t *testing.T) {
-	hpa := testutil.CreateHorizontalPodAutoscaler("hpa")
+	hpa := testutil.CreateHorizontalPodAutoscalerV1("hpa")
 	cases := []struct {
 		name                    string
 		horizontalPodAutoscaler autoscalingv1.HorizontalPodAutoscaler

@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/sync/errgroup"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -37,7 +37,7 @@ func (s *HorizontalPodAutoscaler) Visit(ctx context.Context, object *unstructure
 	ctx, span := trace.StartSpan(ctx, "visitHorizontalPodAutoscaler")
 	defer span.End()
 
-	hpa := &autoscalingv1.HorizontalPodAutoscaler{}
+	hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 	if err := kubernetes.FromUnstructured(object, hpa); err != nil {
 		return err
 	}

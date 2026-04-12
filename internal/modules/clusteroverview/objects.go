@@ -7,6 +7,7 @@ package clusteroverview
 
 import (
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	admissionregistrationv1alpha1 "k8s.io/api/admissionregistration/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -66,7 +67,18 @@ var (
 		"Webhooks",
 		webhooksMutatingWebhooks,
 		webhooksValidatingWebhooks,
+		webhooksValidatingAdmissionPolicies,
 	)
+
+	webhooksValidatingAdmissionPolicies = describer.NewResource(describer.ResourceOptions{
+		Path:           "/webhooks/validating-admission-policies",
+		ObjectStoreKey: store.Key{APIVersion: "admissionregistration.k8s.io/v1alpha1", Kind: "ValidatingAdmissionPolicy"},
+		ListType:       &admissionregistrationv1alpha1.ValidatingAdmissionPolicyList{},
+		ObjectType:     &admissionregistrationv1alpha1.ValidatingAdmissionPolicy{},
+		Titles:         describer.ResourceTitle{List: "Validating Admission Policies", Object: "Validating Admission Policies"},
+		ClusterWide:    true,
+		IconName:       icon.Webhooks,
+	})
 
 	webhooksValidatingWebhooks = describer.NewResource(describer.ResourceOptions{
 		Path:           "/webhooks/validating-webhooks",

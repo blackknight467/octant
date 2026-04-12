@@ -300,6 +300,8 @@ func webhookEntries(ctx context.Context, prefix, namespace string, objectStore s
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.MutatingWebhookConfiguration), objectStore))
 	neh.Add("Validating Webhooks", "validating-webhooks",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ValidatingWebhookConfiguration), objectStore))
+	neh.Add("Validating Admission Policies", "validating-admission-policies",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ValidatingAdmissionPolicy), objectStore))
 
 	children, err := neh.Generate(prefix, namespace, "")
 	if err != nil {

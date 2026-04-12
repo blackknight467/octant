@@ -9,8 +9,10 @@ import (
 	"sync"
 
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -114,6 +116,14 @@ func initNamespacedOverview() *Section {
 		Titles:         ResourceTitle{List: "Stateful Sets", Object: "Stateful Sets"},
 	})
 
+	workloadsPodDisruptionBudgets := NewResource(ResourceOptions{
+		Path:           "/workloads/pod-disruption-budgets",
+		ObjectStoreKey: store.Key{APIVersion: "policy/v1", Kind: "PodDisruptionBudget"},
+		ListType:       &policyv1.PodDisruptionBudgetList{},
+		ObjectType:     &policyv1.PodDisruptionBudget{},
+		Titles:         ResourceTitle{List: "Pod Disruption Budgets", Object: "Pod Disruption Budgets"},
+	})
+
 	workloadsDescriber := NewSection(
 		"/workloads",
 		"Workloads",
@@ -125,14 +135,26 @@ func initNamespacedOverview() *Section {
 		workloadsReplicaSets,
 		workloadsReplicationControllers,
 		workloadsStatefulSets,
+		workloadsPodDisruptionBudgets,
 	)
 
+	// dlbHorizontalPodAutoscalers prefers autoscaling/v2 (stable since Kubernetes 1.23).
+	// The autoscaling/v1 types are retained in the printer for backwards compatibility
+	// with clusters that only expose the v1 API.
 	dlbHorizontalPodAutoscalers := NewResource(ResourceOptions{
 		Path:           "/discovery-and-load-balancing/horizontal-pod-autoscalers",
-		ObjectStoreKey: store.Key{APIVersion: "autoscaling/v1", Kind: "HorizontalPodAutoscaler"},
-		ListType:       &autoscalingv1.HorizontalPodAutoscalerList{},
-		ObjectType:     &autoscalingv1.HorizontalPodAutoscaler{},
+		ObjectStoreKey: store.Key{APIVersion: "autoscaling/v2", Kind: "HorizontalPodAutoscaler"},
+		ListType:       &autoscalingv2.HorizontalPodAutoscalerList{},
+		ObjectType:     &autoscalingv2.HorizontalPodAutoscaler{},
 		Titles:         ResourceTitle{List: "Horizontal Pod Autoscalers", Object: "Horizontal Pod Autoscalers"},
+	})
+
+	dlbEndpointSlices := NewResource(ResourceOptions{
+		Path:           "/discovery-and-load-balancing/endpoint-slices",
+		ObjectStoreKey: store.Key{APIVersion: "discovery.k8s.io/v1", Kind: "EndpointSlice"},
+		ListType:       &discoveryv1.EndpointSliceList{},
+		ObjectType:     &discoveryv1.EndpointSlice{},
+		Titles:         ResourceTitle{List: "Endpoint Slices", Object: "Endpoint Slices"},
 	})
 
 	dlbIngresses := NewResource(ResourceOptions{
@@ -163,6 +185,7 @@ func initNamespacedOverview() *Section {
 		"/discovery-and-load-balancing",
 		"Discovery and Load Balancing",
 		dlbHorizontalPodAutoscalers,
+		dlbEndpointSlices,
 		dlbIngresses,
 		dlbServices,
 		dlbNetworkPolicies,

@@ -15,6 +15,7 @@ import (
 
 	"github.com/pkg/errors"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -627,3 +628,401 @@ func parseAnnotations(horizontalPodAutoscaler autoscalingv1.HorizontalPodAutosca
 
 	return horizontalPodAutoscalerMetrics, horizontalPodAutoscalerCurrentMetrics, nil
 }
+
+// ---- autoscaling/v2 handlers ----
+
+// HorizontalPodAutoscalerV2ListHandler is a printFunc that lists autoscaling/v2 HPAs.
+func HorizontalPodAutoscalerV2ListHandler(ctx context.Context, list *autoscalingv2.HorizontalPodAutoscalerList, options Options) (component.Component, error) {
+	if list == nil {
+		return nil, errors.New("horizontalpodautoscaler v2 list is nil")
+	}
+
+	cols := component.NewTableCols("Name", "Labels", "Targets", "Minimum Pods", "Maximum Pods", "Replicas", "Age")
+	ot := NewObjectTable("Horizontal Pod Autoscalers",
+		"We couldn't find any horizontal pod autoscalers", cols, options.DashConfig.ObjectStore())
+	ot.EnablePluginStatus(options.DashConfig.PluginManager())
+
+	for _, hpa := range list.Items {
+		row := component.TableRow{}
+		nameLink, err := options.Link.ForObject(&hpa, hpa.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		minReplicas := "<unset>"
+		if hpa.Spec.MinReplicas != nil {
+			minReplicas = fmt.Sprintf("%d", *hpa.Spec.MinReplicas)
+		}
+
+		row["Name"] = nameLink
+		row["Labels"] = component.NewLabels(hpa.Labels)
+		row["Targets"] = component.NewText(v2MetricTargets(hpa))
+		row["Minimum Pods"] = component.NewText(minReplicas)
+		row["Maximum Pods"] = component.NewText(fmt.Sprintf("%d", hpa.Spec.MaxReplicas))
+		row["Replicas"] = component.NewText(fmt.Sprintf("%d", hpa.Status.CurrentReplicas))
+		row["Age"] = component.NewTimestamp(hpa.CreationTimestamp.Time)
+
+		if err := ot.AddRowForObject(ctx, &hpa, row); err != nil {
+			return nil, fmt.Errorf("add row for object: %w", err)
+		}
+	}
+
+	return ot.ToComponent()
+}
+
+// HorizontalPodAutoscalerV2Handler is a printFunc that prints a single autoscaling/v2 HPA.
+func HorizontalPodAutoscalerV2Handler(ctx context.Context, hpa *autoscalingv2.HorizontalPodAutoscaler, options Options) (component.Component, error) {
+	o := NewObject(hpa)
+	o.EnableEvents()
+	o.DisableConditions()
+
+	// Configuration section
+	configSummary, err := createV2HPAConfigSummary(ctx, hpa, options)
+	if err != nil {
+		return nil, errors.Wrap(err, "print horizontalpodautoscaler v2 configuration")
+	}
+	o.RegisterConfig(configSummary)
+
+	// Status section
+	statusSummary, err := createV2HPAStatusSummary(hpa)
+	if err != nil {
+		return nil, errors.Wrap(err, "print horizontalpodautoscaler v2 status")
+	}
+	o.RegisterSummary(statusSummary)
+
+	// Per-metric sections
+	for i := range hpa.Spec.Metrics {
+		spec := hpa.Spec.Metrics[i]
+		current := findV2CurrentMetric(hpa.Status.CurrentMetrics, spec)
+		o.RegisterItems(ItemDescriptor{
+			Width: component.WidthFull,
+			Func: func() (component.Component, error) {
+				return createV2MetricSummary(spec, current)
+			},
+		})
+	}
+
+	// Conditions section
+	if len(hpa.Status.Conditions) > 0 {
+		o.RegisterItems(ItemDescriptor{
+			Width: component.WidthFull,
+			Func: func() (component.Component, error) {
+				return createV2HPAConditionsTable(hpa), nil
+			},
+		})
+	}
+
+	return o.ToComponent(ctx, options)
+}
+
+func createV2HPAConfigSummary(ctx context.Context, hpa *autoscalingv2.HorizontalPodAutoscaler, options Options) (*component.Summary, error) {
+	sections := component.SummarySections{}
+
+	scaleTarget, err := forScaleTargetV2(ctx, hpa, &hpa.Spec.ScaleTargetRef, options)
+	if err != nil {
+		return nil, err
+	}
+	sections = append(sections, component.SummarySection{Header: "Scale Target", Content: scaleTarget})
+
+	minReplicas := "<unset>"
+	if hpa.Spec.MinReplicas != nil {
+		minReplicas = fmt.Sprintf("%d", *hpa.Spec.MinReplicas)
+	}
+	sections.AddText("Min Replicas", minReplicas)
+	sections.AddText("Max Replicas", fmt.Sprintf("%d", hpa.Spec.MaxReplicas))
+
+	if b := hpa.Spec.Behavior; b != nil {
+		cols := component.NewTableCols("Stabilization Window", "Select Policies", "Policies")
+
+		if b.ScaleUp != nil {
+			var upPolicies []string
+			for _, p := range b.ScaleUp.Policies {
+				upPolicies = append(upPolicies, fmt.Sprintf("%d %s / %d seconds", p.Value, p.Type, p.PeriodSeconds))
+			}
+			stabilizationWindow := "<default>"
+			if b.ScaleUp.StabilizationWindowSeconds != nil {
+				stabilizationWindow = fmt.Sprintf("%d seconds", *b.ScaleUp.StabilizationWindowSeconds)
+			}
+			selectPolicy := "<default>"
+			if b.ScaleUp.SelectPolicy != nil {
+				selectPolicy = string(*b.ScaleUp.SelectPolicy)
+			}
+			scaleUpTbl := component.NewTableWithRows("", "There are no scale up policies!", cols,
+				[]component.TableRow{{
+					"Stabilization Window": component.NewText(stabilizationWindow),
+					"Select Policies":      component.NewText(selectPolicy),
+					"Policies":             component.NewText(strings.Join(upPolicies, ", ")),
+				}})
+			sections.Add("Scale Up", scaleUpTbl)
+		}
+
+		if b.ScaleDown != nil {
+			var downPolicies []string
+			for _, p := range b.ScaleDown.Policies {
+				downPolicies = append(downPolicies, fmt.Sprintf("%d %s / %d seconds", p.Value, p.Type, p.PeriodSeconds))
+			}
+			stabilizationWindow := "<default>"
+			if b.ScaleDown.StabilizationWindowSeconds != nil {
+				stabilizationWindow = fmt.Sprintf("%d seconds", *b.ScaleDown.StabilizationWindowSeconds)
+			}
+			selectPolicy := "<default>"
+			if b.ScaleDown.SelectPolicy != nil {
+				selectPolicy = string(*b.ScaleDown.SelectPolicy)
+			}
+			scaleDownTbl := component.NewTableWithRows("", "There are no scale down policies!", cols,
+				[]component.TableRow{{
+					"Stabilization Window": component.NewText(stabilizationWindow),
+					"Select Policies":      component.NewText(selectPolicy),
+					"Policies":             component.NewText(strings.Join(downPolicies, ", ")),
+				}})
+			sections.Add("Scale Down", scaleDownTbl)
+		}
+	}
+
+	return component.NewSummary("Configuration", sections...), nil
+}
+
+func createV2HPAStatusSummary(hpa *autoscalingv2.HorizontalPodAutoscaler) (*component.Summary, error) {
+	sections := component.SummarySections{}
+	sections.AddText("Targets", v2MetricTargets(*hpa))
+	sections.AddText("Current Replicas", fmt.Sprintf("%d", hpa.Status.CurrentReplicas))
+	sections.AddText("Desired Replicas", fmt.Sprintf("%d", hpa.Status.DesiredReplicas))
+
+	if hpa.Status.ObservedGeneration != nil {
+		sections = append(sections, component.SummarySection{
+			Header:  "Observed Generation",
+			Content: component.NewText(fmt.Sprintf("%d", *hpa.Status.ObservedGeneration)),
+		})
+	}
+	if hpa.Status.LastScaleTime != nil {
+		sections = append(sections, component.SummarySection{
+			Header:  "Last Scale Time",
+			Content: component.NewTimestamp(hpa.Status.LastScaleTime.Time),
+		})
+	}
+
+	return component.NewSummary("Status", sections...), nil
+}
+
+func createV2MetricSummary(spec autoscalingv2.MetricSpec, current *autoscalingv2.MetricStatus) (*component.Summary, error) {
+	sections := component.SummarySections{}
+	sections.AddText("Type", string(spec.Type))
+
+	target := v2MetricTargetString(spec)
+	sections.AddText("Target", target)
+
+	if current != nil {
+		cur := v2CurrentMetricString(*current)
+		sections.AddText("Current", cur)
+	}
+
+	switch spec.Type {
+	case autoscalingv2.ResourceMetricSourceType:
+		if spec.Resource != nil {
+			sections.AddText("Resource", string(spec.Resource.Name))
+		}
+	case autoscalingv2.ObjectMetricSourceType:
+		if spec.Object != nil {
+			sections.AddText("Metric", spec.Object.Metric.Name)
+			sections.AddText("Described Object", fmt.Sprintf("%s/%s", spec.Object.DescribedObject.Kind, spec.Object.DescribedObject.Name))
+		}
+	case autoscalingv2.PodsMetricSourceType:
+		if spec.Pods != nil {
+			sections.AddText("Metric", spec.Pods.Metric.Name)
+		}
+	case autoscalingv2.ExternalMetricSourceType:
+		if spec.External != nil {
+			sections.AddText("Metric", spec.External.Metric.Name)
+		}
+	case autoscalingv2.ContainerResourceMetricSourceType:
+		if spec.ContainerResource != nil {
+			sections.AddText("Resource", string(spec.ContainerResource.Name))
+			sections.AddText("Container", spec.ContainerResource.Container)
+		}
+	}
+
+	return component.NewSummary("Metric", sections...), nil
+}
+
+func createV2HPAConditionsTable(hpa *autoscalingv2.HorizontalPodAutoscaler) *component.Table {
+	cols := component.NewTableCols("Type", "Status", "Reason", "Message", "Last Transition")
+	rows := make([]component.TableRow, 0, len(hpa.Status.Conditions))
+	for _, c := range hpa.Status.Conditions {
+		row := component.TableRow{
+			"Type":            component.NewText(string(c.Type)),
+			"Status":          component.NewText(string(c.Status)),
+			"Reason":          component.NewText(c.Reason),
+			"Message":         component.NewText(c.Message),
+			"Last Transition": component.NewTimestamp(c.LastTransitionTime.Time),
+		}
+		rows = append(rows, row)
+	}
+	return component.NewTableWithRows("Conditions", "There are no conditions!", cols, rows)
+}
+
+// v2MetricTargets builds a compact "<current>/<target>" string for all metrics.
+func v2MetricTargets(hpa autoscalingv2.HorizontalPodAutoscaler) string {
+	var parts []string
+	for _, spec := range hpa.Spec.Metrics {
+		current := findV2CurrentMetric(hpa.Status.CurrentMetrics, spec)
+		cur := "<unknown>"
+		if current != nil {
+			cur = v2CurrentMetricString(*current)
+		}
+		parts = append(parts, cur+"/"+v2MetricTargetString(spec))
+	}
+	sort.Strings(parts)
+	return strings.Join(parts, ", ")
+}
+
+// v2MetricTargetString formats the target value for a single MetricSpec.
+func v2MetricTargetString(spec autoscalingv2.MetricSpec) string {
+	var t autoscalingv2.MetricTarget
+	switch spec.Type {
+	case autoscalingv2.ResourceMetricSourceType:
+		if spec.Resource != nil {
+			t = spec.Resource.Target
+		}
+	case autoscalingv2.ObjectMetricSourceType:
+		if spec.Object != nil {
+			t = spec.Object.Target
+		}
+	case autoscalingv2.PodsMetricSourceType:
+		if spec.Pods != nil {
+			t = spec.Pods.Target
+		}
+	case autoscalingv2.ExternalMetricSourceType:
+		if spec.External != nil {
+			t = spec.External.Target
+		}
+	case autoscalingv2.ContainerResourceMetricSourceType:
+		if spec.ContainerResource != nil {
+			t = spec.ContainerResource.Target
+		}
+	}
+	switch t.Type {
+	case autoscalingv2.UtilizationMetricType:
+		if t.AverageUtilization != nil {
+			return fmt.Sprintf("%d%%", *t.AverageUtilization)
+		}
+	case autoscalingv2.AverageValueMetricType:
+		if t.AverageValue != nil {
+			return t.AverageValue.String()
+		}
+	case autoscalingv2.ValueMetricType:
+		if t.Value != nil {
+			return t.Value.String()
+		}
+	}
+	return "<unknown>"
+}
+
+// v2CurrentMetricString formats the current value for a single MetricStatus.
+func v2CurrentMetricString(ms autoscalingv2.MetricStatus) string {
+	var cur autoscalingv2.MetricValueStatus
+	switch ms.Type {
+	case autoscalingv2.ResourceMetricSourceType:
+		if ms.Resource != nil {
+			cur = ms.Resource.Current
+		}
+	case autoscalingv2.ObjectMetricSourceType:
+		if ms.Object != nil {
+			cur = ms.Object.Current
+		}
+	case autoscalingv2.PodsMetricSourceType:
+		if ms.Pods != nil {
+			cur = ms.Pods.Current
+		}
+	case autoscalingv2.ExternalMetricSourceType:
+		if ms.External != nil {
+			cur = ms.External.Current
+		}
+	case autoscalingv2.ContainerResourceMetricSourceType:
+		if ms.ContainerResource != nil {
+			cur = ms.ContainerResource.Current
+		}
+	}
+	if cur.AverageUtilization != nil {
+		return fmt.Sprintf("%d%%", *cur.AverageUtilization)
+	}
+	if cur.AverageValue != nil {
+		return cur.AverageValue.String()
+	}
+	if cur.Value != nil {
+		return cur.Value.String()
+	}
+	return "<unknown>"
+}
+
+// findV2CurrentMetric returns the MetricStatus entry that corresponds to the given MetricSpec.
+func findV2CurrentMetric(current []autoscalingv2.MetricStatus, spec autoscalingv2.MetricSpec) *autoscalingv2.MetricStatus {
+	for i := range current {
+		ms := &current[i]
+		if ms.Type != spec.Type {
+			continue
+		}
+		switch spec.Type {
+		case autoscalingv2.ResourceMetricSourceType:
+			if spec.Resource != nil && ms.Resource != nil && ms.Resource.Name == spec.Resource.Name {
+				return ms
+			}
+		case autoscalingv2.ContainerResourceMetricSourceType:
+			if spec.ContainerResource != nil && ms.ContainerResource != nil &&
+				ms.ContainerResource.Name == spec.ContainerResource.Name &&
+				ms.ContainerResource.Container == spec.ContainerResource.Container {
+				return ms
+			}
+		case autoscalingv2.ObjectMetricSourceType:
+			if spec.Object != nil && ms.Object != nil &&
+				ms.Object.Metric.Name == spec.Object.Metric.Name {
+				return ms
+			}
+		case autoscalingv2.PodsMetricSourceType:
+			if spec.Pods != nil && ms.Pods != nil &&
+				ms.Pods.Metric.Name == spec.Pods.Metric.Name {
+				return ms
+			}
+		case autoscalingv2.ExternalMetricSourceType:
+			if spec.External != nil && ms.External != nil &&
+				ms.External.Metric.Name == spec.External.Metric.Name {
+				return ms
+			}
+		}
+	}
+	return nil
+}
+
+// forScaleTargetV2 returns a link to the scale target for a v2 HPA.
+func forScaleTargetV2(ctx context.Context, object runtime.Object, scaleTarget *autoscalingv2.CrossVersionObjectReference, options Options) (*component.Link, error) {
+	if scaleTarget == nil || object == nil {
+		return component.NewLink("", "none", ""), nil
+	}
+
+	accessor := meta.NewAccessor()
+	ns, err := accessor.Namespace(object)
+	if err != nil {
+		return component.NewLink("", "none", ""), nil
+	}
+
+	key := store.Key{
+		Namespace:  ns,
+		APIVersion: scaleTarget.APIVersion,
+		Kind:       scaleTarget.Kind,
+		Name:       scaleTarget.Name,
+	}
+
+	objectStore := options.DashConfig.ObjectStore()
+	u, err := objectStore.Get(ctx, key)
+	if err != nil || u == nil {
+		return component.NewLink("", "none", ""), nil
+	}
+
+	return options.Link.ForGVK(
+		ns,
+		scaleTarget.APIVersion,
+		scaleTarget.Kind,
+		scaleTarget.Name,
+		scaleTarget.Name,
+	)
+}
+

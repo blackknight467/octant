@@ -12,6 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
@@ -176,14 +177,18 @@ func createPersistentVolumeClaimStatusView(ctx context.Context, persistentVolume
 				return nil, err
 			}
 
-			volumeLink, err := options.Link.ForObject(pv, persistentVolumeClaim.Spec.VolumeName)
-			if err != nil {
-				return nil, err
+			if pv != nil {
+				volumeLink, err := options.Link.ForObject(pv, persistentVolumeClaim.Spec.VolumeName)
+				if err != nil {
+					return nil, err
+				}
+				sections = append(sections, component.SummarySection{
+					Header:  "Bound Volume",
+					Content: volumeLink,
+				})
+			} else {
+				sections.AddText("Bound Volume", persistentVolumeClaim.Spec.VolumeName+" (not found)")
 			}
-			sections = append(sections, component.SummarySection{
-				Header:  "Bound Volume",
-				Content: volumeLink,
-			})
 		}
 
 		if availableStorage, ok := persistentVolumeClaim.Status.Capacity[corev1.ResourceStorage]; ok {
@@ -260,16 +265,20 @@ func getBoundPersistentVolume(ctx context.Context, pvc *corev1.PersistentVolumeC
 
 	pv, err := objectStore.Get(ctx, key)
 	if err != nil {
+		if kerrors.IsNotFound(err) {
+			// PV may have been deleted while the PVC still references it; treat as unbound.
+			return nil, nil
+		}
 		return nil, errors.Wrapf(err, "get volume for key %+v", key)
 	}
 
-	if pv != nil {
-		isErr := kubernetes.FromUnstructured(pv, persistentVolume)
-		if isErr != nil {
-			return nil, isErr
-		}
-	} else {
-		return nil, errors.New("volume not found")
+	if pv == nil {
+		// Not yet visible in the informer cache; not an error condition.
+		return nil, nil
+	}
+
+	if isErr := kubernetes.FromUnstructured(pv, persistentVolume); isErr != nil {
+		return nil, isErr
 	}
 
 	return persistentVolume, nil

@@ -17,10 +17,11 @@ import (
 	"golang.org/x/sync/semaphore"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,14 +51,20 @@ type Queryer interface {
 	MutatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.MutatingWebhookConfiguration, error)
 	ValidatingWebhookConfigurationsForService(ctx context.Context, service *corev1.Service) ([]*admissionregistrationv1.ValidatingWebhookConfiguration, error)
 	OwnerReference(ctx context.Context, object *unstructured.Unstructured) (bool, []*unstructured.Unstructured, error)
-	ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error)
+	ScaleTarget(ctx context.Context, hpa *autoscalingv2.HorizontalPodAutoscaler) (map[string]interface{}, error)
 	PodsForService(ctx context.Context, service *corev1.Service) ([]*corev1.Pod, error)
+	PodsForPodDisruptionBudget(ctx context.Context, pdb *policyv1.PodDisruptionBudget) ([]*corev1.Pod, error)
 	ServicesForIngress(ctx context.Context, ingress *networkingv1.Ingress) (*unstructured.UnstructuredList, error)
 	ServicesForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Service, error)
 	ServiceAccountForPod(ctx context.Context, pod *corev1.Pod) (*corev1.ServiceAccount, error)
 	ConfigMapsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.ConfigMap, error)
 	SecretsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Secret, error)
 	PersistentVolumeClaimsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.PersistentVolumeClaim, error)
+	BoundPersistentVolumeForPVC(ctx context.Context, pvc *corev1.PersistentVolumeClaim) (*corev1.PersistentVolume, error)
+	BoundPVCForPersistentVolume(ctx context.Context, pv *corev1.PersistentVolume) (*corev1.PersistentVolumeClaim, error)
+	PodsForPVC(ctx context.Context, pvc *corev1.PersistentVolumeClaim) ([]*corev1.Pod, error)
+	PodsForConfigMap(ctx context.Context, configMap *corev1.ConfigMap) ([]*corev1.Pod, error)
+	PodsForSecret(ctx context.Context, secret *corev1.Secret) ([]*corev1.Pod, error)
 }
 
 type childrenCache struct {
@@ -597,7 +604,7 @@ func (osq *ObjectStoreQueryer) handle(
 	return true, owner, nil
 }
 
-func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscalingv1.HorizontalPodAutoscaler) (map[string]interface{}, error) {
+func (osq *ObjectStoreQueryer) ScaleTarget(ctx context.Context, hpa *autoscalingv2.HorizontalPodAutoscaler) (map[string]interface{}, error) {
 	if hpa == nil {
 		return nil, errors.New("can't find scale target for nil hpa")
 	}
@@ -681,6 +688,29 @@ func (osq *ObjectStoreQueryer) PodsForService(ctx context.Context, service *core
 	}
 
 	osq.podsForServices.set(service.UID, pods)
+
+	return pods, nil
+}
+
+func (osq *ObjectStoreQueryer) PodsForPodDisruptionBudget(ctx context.Context, pdb *policyv1.PodDisruptionBudget) ([]*corev1.Pod, error) {
+	if pdb == nil {
+		return nil, errors.New("nil pod disruption budget")
+	}
+
+	key := store.Key{
+		Namespace:  pdb.Namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	}
+
+	selector, err := osq.getSelector(pdb)
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating pod selector for pod disruption budget: %v", pdb.Name)
+	}
+	pods, err := osq.loadPods(ctx, key, selector)
+	if err != nil {
+		return nil, errors.Wrapf(err, "fetching pods for pod disruption budget: %v", pdb.Name)
+	}
 
 	return pods, nil
 }
@@ -872,6 +902,68 @@ func (osq *ObjectStoreQueryer) ConfigMapsForPod(ctx context.Context, pod *corev1
 	return configMaps, nil
 }
 
+func (osq *ObjectStoreQueryer) PodsForConfigMap(ctx context.Context, configMap *corev1.ConfigMap) ([]*corev1.Pod, error) {
+	if configMap == nil {
+		return nil, errors.New("configmap is nil")
+	}
+
+	ul, _, err := osq.objectStore.List(ctx, store.Key{
+		Namespace:  configMap.Namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "listing pods for configmap")
+	}
+
+	var pods []*corev1.Pod
+	for i := range ul.Items {
+		pod := &corev1.Pod{}
+		if err := kubernetes.FromUnstructured(&ul.Items[i], pod); err != nil {
+			return nil, err
+		}
+
+		if podReferencesConfigMap(pod, configMap.Name) {
+			pods = append(pods, pod)
+		}
+	}
+
+	return pods, nil
+}
+
+func podReferencesConfigMap(pod *corev1.Pod, name string) bool {
+	for _, v := range pod.Spec.Volumes {
+		if v.ConfigMap != nil && v.ConfigMap.Name == name {
+			return true
+		}
+	}
+	for _, c := range pod.Spec.Containers {
+		for _, e := range c.Env {
+			if e.ValueFrom != nil && e.ValueFrom.ConfigMapKeyRef != nil && e.ValueFrom.ConfigMapKeyRef.Name == name {
+				return true
+			}
+		}
+		for _, e := range c.EnvFrom {
+			if e.ConfigMapRef != nil && e.ConfigMapRef.Name == name {
+				return true
+			}
+		}
+	}
+	for _, c := range pod.Spec.InitContainers {
+		for _, e := range c.Env {
+			if e.ValueFrom != nil && e.ValueFrom.ConfigMapKeyRef != nil && e.ValueFrom.ConfigMapKeyRef.Name == name {
+				return true
+			}
+		}
+		for _, e := range c.EnvFrom {
+			if e.ConfigMapRef != nil && e.ConfigMapRef.Name == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.Secret, error) {
 	if pod == nil {
 		return nil, errors.New("pod is nil")
@@ -926,6 +1018,63 @@ func (osq *ObjectStoreQueryer) SecretsForPod(ctx context.Context, pod *corev1.Po
 	return secrets, nil
 }
 
+func (osq *ObjectStoreQueryer) PodsForSecret(ctx context.Context, secret *corev1.Secret) ([]*corev1.Pod, error) {
+	if secret == nil {
+		return nil, errors.New("secret is nil")
+	}
+
+	ul, _, err := osq.objectStore.List(ctx, store.Key{
+		Namespace:  secret.Namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "listing pods for secret")
+	}
+
+	var pods []*corev1.Pod
+	for i := range ul.Items {
+		pod := &corev1.Pod{}
+		if err := kubernetes.FromUnstructured(&ul.Items[i], pod); err != nil {
+			return nil, err
+		}
+		if podReferencesSecret(pod, secret.Name) {
+			pods = append(pods, pod)
+		}
+	}
+
+	return pods, nil
+}
+
+func podReferencesSecret(pod *corev1.Pod, name string) bool {
+	for _, v := range pod.Spec.Volumes {
+		if v.Secret != nil && v.Secret.SecretName == name {
+			return true
+		}
+	}
+	for _, containers := range [][]corev1.Container{pod.Spec.Containers, pod.Spec.InitContainers} {
+		for _, c := range containers {
+			for _, e := range c.Env {
+				if e.ValueFrom != nil && e.ValueFrom.SecretKeyRef != nil && e.ValueFrom.SecretKeyRef.Name == name {
+					return true
+				}
+			}
+			for _, e := range c.EnvFrom {
+				if e.SecretRef != nil && e.SecretRef.Name == name {
+					return true
+				}
+			}
+		}
+	}
+	// imagePullSecrets
+	for _, ips := range pod.Spec.ImagePullSecrets {
+		if ips.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 func (osq *ObjectStoreQueryer) PersistentVolumeClaimsForPod(ctx context.Context, pod *corev1.Pod) ([]*corev1.PersistentVolumeClaim, error) {
 	if pod == nil {
 		return nil, errors.New("pod is nil")
@@ -959,6 +1108,107 @@ func (osq *ObjectStoreQueryer) PersistentVolumeClaimsForPod(ctx context.Context,
 	return persistentVolumeClaims, nil
 }
 
+func (osq *ObjectStoreQueryer) BoundPersistentVolumeForPVC(ctx context.Context, pvc *corev1.PersistentVolumeClaim) (*corev1.PersistentVolume, error) {
+	if pvc == nil {
+		return nil, errors.New("pvc is nil")
+	}
+
+	if pvc.Spec.VolumeName == "" {
+		return nil, nil
+	}
+
+	key := store.Key{
+		APIVersion: "v1",
+		Kind:       "PersistentVolume",
+		Name:       pvc.Spec.VolumeName,
+	}
+
+	object, err := osq.objectStore.Get(ctx, key)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, errors.Wrapf(err, "get persistent volume %s", pvc.Spec.VolumeName)
+	}
+	if object == nil {
+		return nil, nil
+	}
+
+	pv := &corev1.PersistentVolume{}
+	if err := kubernetes.FromUnstructured(object, pv); err != nil {
+		return nil, err
+	}
+
+	return pv, nil
+}
+
+func (osq *ObjectStoreQueryer) PodsForPVC(ctx context.Context, pvc *corev1.PersistentVolumeClaim) ([]*corev1.Pod, error) {
+	if pvc == nil {
+		return nil, errors.New("pvc is nil")
+	}
+
+	ul, _, err := osq.objectStore.List(ctx, store.Key{
+		Namespace:  pvc.Namespace,
+		APIVersion: "v1",
+		Kind:       "Pod",
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "listing pods for pvc")
+	}
+
+	var pods []*corev1.Pod
+	for i := range ul.Items {
+		pod := &corev1.Pod{}
+		if err := kubernetes.FromUnstructured(&ul.Items[i], pod); err != nil {
+			return nil, err
+		}
+		for _, v := range pod.Spec.Volumes {
+			if v.PersistentVolumeClaim != nil && v.PersistentVolumeClaim.ClaimName == pvc.Name {
+				pods = append(pods, pod)
+				break
+			}
+		}
+	}
+
+	return pods, nil
+}
+
+func (osq *ObjectStoreQueryer) BoundPVCForPersistentVolume(ctx context.Context, pv *corev1.PersistentVolume) (*corev1.PersistentVolumeClaim, error) {
+	if pv == nil {
+		return nil, errors.New("pv is nil")
+	}
+
+	ref := pv.Spec.ClaimRef
+	if ref == nil || ref.Name == "" {
+		return nil, nil
+	}
+
+	key := store.Key{
+		Namespace:  ref.Namespace,
+		APIVersion: "v1",
+		Kind:       "PersistentVolumeClaim",
+		Name:       ref.Name,
+	}
+
+	object, err := osq.objectStore.Get(ctx, key)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, errors.Wrapf(err, "get persistent volume claim %s/%s", ref.Namespace, ref.Name)
+	}
+	if object == nil {
+		return nil, nil
+	}
+
+	pvc := &corev1.PersistentVolumeClaim{}
+	if err := kubernetes.FromUnstructured(object, pvc); err != nil {
+		return nil, err
+	}
+
+	return pvc, nil
+}
+
 func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.LabelSelector, error) {
 	switch t := object.(type) {
 	case *appsv1.DaemonSet:
@@ -983,6 +1233,8 @@ func (osq *ObjectStoreQueryer) getSelector(object runtime.Object) (*metav1.Label
 			MatchLabels: t.Spec.Selector,
 		}
 		return selector, nil
+	case *policyv1.PodDisruptionBudget:
+		return t.Spec.Selector, nil
 	default:
 		return nil, errors.Errorf("unable to retrieve selector for type %T", object)
 	}

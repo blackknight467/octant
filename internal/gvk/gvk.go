@@ -26,7 +26,10 @@ var (
 	ExtDeployment                  = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "Deployment"}
 	ExtReplicaSet                  = schema.GroupVersionKind{Group: "extensions", Version: "v1beta1", Kind: "ReplicaSet"}
 	Event                          = schema.GroupVersionKind{Version: "v1", Kind: "Event"}
-	HorizontalPodAutoscaler        = schema.GroupVersionKind{Group: "autoscaling", Version: "v1", Kind: "HorizontalPodAutoscaler"}
+	EndpointSlice                  = schema.GroupVersionKind{Group: "discovery.k8s.io", Version: "v1", Kind: "EndpointSlice"}
+	HorizontalPodAutoscaler        = schema.GroupVersionKind{Group: "autoscaling", Version: "v2", Kind: "HorizontalPodAutoscaler"}
+	PodDisruptionBudget            = schema.GroupVersionKind{Group: "policy", Version: "v1", Kind: "PodDisruptionBudget"}
+	ValidatingAdmissionPolicy      = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1alpha1", Kind: "ValidatingAdmissionPolicy"}
 	Ingress                        = schema.GroupVersionKind{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"}
 	Job                            = schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}
 	MutatingWebhookConfiguration   = schema.GroupVersionKind{Group: "admissionregistration.k8s.io", Version: "v1", Kind: "MutatingWebhookConfiguration"}

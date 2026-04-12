@@ -10,9 +10,10 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1 "k8s.io/api/admissionregistration/v1"
-	v10 "k8s.io/api/autoscaling/v1"
+	v10 "k8s.io/api/autoscaling/v2"
 	v11 "k8s.io/api/core/v1"
 	v12 "k8s.io/api/networking/v1"
+	v15 "k8s.io/api/policy/v1"
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	v14 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
@@ -160,6 +161,96 @@ func (m *MockQueryer) PersistentVolumeClaimsForPod(arg0 context.Context, arg1 *v
 func (mr *MockQueryerMockRecorder) PersistentVolumeClaimsForPod(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PersistentVolumeClaimsForPod", reflect.TypeOf((*MockQueryer)(nil).PersistentVolumeClaimsForPod), arg0, arg1)
+}
+
+// PodsForConfigMap mocks base method.
+func (m *MockQueryer) PodsForConfigMap(arg0 context.Context, arg1 *v11.ConfigMap) ([]*v11.Pod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodsForConfigMap", arg0, arg1)
+	ret0, _ := ret[0].([]*v11.Pod)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PodsForConfigMap indicates an expected call of PodsForConfigMap.
+func (mr *MockQueryerMockRecorder) PodsForConfigMap(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodsForConfigMap", reflect.TypeOf((*MockQueryer)(nil).PodsForConfigMap), arg0, arg1)
+}
+
+// PodsForSecret mocks base method.
+func (m *MockQueryer) PodsForSecret(arg0 context.Context, arg1 *v11.Secret) ([]*v11.Pod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodsForSecret", arg0, arg1)
+	ret0, _ := ret[0].([]*v11.Pod)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PodsForSecret indicates an expected call of PodsForSecret.
+func (mr *MockQueryerMockRecorder) PodsForSecret(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodsForSecret", reflect.TypeOf((*MockQueryer)(nil).PodsForSecret), arg0, arg1)
+}
+
+// PodsForPVC mocks base method.
+func (m *MockQueryer) PodsForPVC(arg0 context.Context, arg1 *v11.PersistentVolumeClaim) ([]*v11.Pod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodsForPVC", arg0, arg1)
+	ret0, _ := ret[0].([]*v11.Pod)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PodsForPVC indicates an expected call of PodsForPVC.
+func (mr *MockQueryerMockRecorder) PodsForPVC(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodsForPVC", reflect.TypeOf((*MockQueryer)(nil).PodsForPVC), arg0, arg1)
+}
+
+// BoundPVCForPersistentVolume mocks base method.
+func (m *MockQueryer) BoundPVCForPersistentVolume(arg0 context.Context, arg1 *v11.PersistentVolume) (*v11.PersistentVolumeClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BoundPVCForPersistentVolume", arg0, arg1)
+	ret0, _ := ret[0].(*v11.PersistentVolumeClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BoundPVCForPersistentVolume indicates an expected call of BoundPVCForPersistentVolume.
+func (mr *MockQueryerMockRecorder) BoundPVCForPersistentVolume(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BoundPVCForPersistentVolume", reflect.TypeOf((*MockQueryer)(nil).BoundPVCForPersistentVolume), arg0, arg1)
+}
+
+// BoundPersistentVolumeForPVC mocks base method.
+func (m *MockQueryer) BoundPersistentVolumeForPVC(arg0 context.Context, arg1 *v11.PersistentVolumeClaim) (*v11.PersistentVolume, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BoundPersistentVolumeForPVC", arg0, arg1)
+	ret0, _ := ret[0].(*v11.PersistentVolume)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BoundPersistentVolumeForPVC indicates an expected call of BoundPersistentVolumeForPVC.
+func (mr *MockQueryerMockRecorder) BoundPersistentVolumeForPVC(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BoundPersistentVolumeForPVC", reflect.TypeOf((*MockQueryer)(nil).BoundPersistentVolumeForPVC), arg0, arg1)
+}
+
+// PodsForPodDisruptionBudget mocks base method.
+func (m *MockQueryer) PodsForPodDisruptionBudget(arg0 context.Context, arg1 *v15.PodDisruptionBudget) ([]*v11.Pod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodsForPodDisruptionBudget", arg0, arg1)
+	ret0, _ := ret[0].([]*v11.Pod)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PodsForPodDisruptionBudget indicates an expected call of PodsForPodDisruptionBudget.
+func (mr *MockQueryerMockRecorder) PodsForPodDisruptionBudget(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodsForPodDisruptionBudget", reflect.TypeOf((*MockQueryer)(nil).PodsForPodDisruptionBudget), arg0, arg1)
 }
 
 // PodsForService mocks base method.

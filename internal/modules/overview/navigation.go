@@ -44,6 +44,8 @@ func workloadEntries(ctx context.Context, prefix, namespace string, objectStore 
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.ReplicationController), objectStore))
 	neh.Add("Stateful Sets", "stateful-sets",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.StatefulSet), objectStore))
+	neh.Add("Pod Disruption Budgets", "pod-disruption-budgets",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.PodDisruptionBudget), objectStore))
 
 	children, err := neh.Generate(prefix, namespace, "")
 
@@ -59,6 +61,8 @@ func discoAndLBEntries(ctx context.Context, prefix, namespace string, objectStor
 
 	neh.Add("Horizontal Pod Autoscalers", "horizontal-pod-autoscalers",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.HorizontalPodAutoscaler), objectStore))
+	neh.Add("Endpoint Slices", "endpoint-slices",
+		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.EndpointSlice), objectStore))
 	neh.Add("Ingresses", "ingresses",
 		loading.IsObjectLoading(ctx, namespace, store.KeyFromGroupVersionKind(gvk.Ingress), objectStore))
 	neh.Add("Services", "services",

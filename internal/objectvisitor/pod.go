@@ -116,6 +116,10 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
+				if err := visitor.Visit(ctx, u, handler, visitDescendants, level); err != nil {
+					return errors.Wrapf(err, "pod %s visit configmap %s",
+						kubernetes.PrintObject(pod), kubernetes.PrintObject(configMap))
+				}
 				return handler.AddEdge(ctx, object, u, level)
 			})
 		}
@@ -157,6 +161,10 @@ func (p *Pod) Visit(ctx context.Context, object *unstructured.Unstructured, hand
 					return err
 				}
 				u := &unstructured.Unstructured{Object: m}
+				if err := visitor.Visit(ctx, u, handler, visitDescendants, level); err != nil {
+					return errors.Wrapf(err, "pod %s visit pvc %s",
+						kubernetes.PrintObject(pod), kubernetes.PrintObject(pvc))
+				}
 				return handler.AddEdge(ctx, object, u, level)
 			})
 		}

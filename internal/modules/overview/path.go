@@ -39,6 +39,8 @@ var (
 		gvk.RoleBinding,
 		gvk.Role,
 		gvk.Event,
+		gvk.PodDisruptionBudget,
+		gvk.EndpointSlice,
 	}
 )
 
@@ -84,7 +86,7 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/config-and-storage/persistent-volume-claims"
 	case apiVersion == "v1" && kind == "ServiceAccount":
 		p = "/config-and-storage/service-accounts"
-	case (apiVersion == "autoscaling/v1" || apiVersion == "autoscaling/v2beta2") && kind == "HorizontalPodAutoscaler":
+	case (apiVersion == "autoscaling/v1" || apiVersion == "autoscaling/v2" || apiVersion == "autoscaling/v2beta1" || apiVersion == "autoscaling/v2beta2") && kind == "HorizontalPodAutoscaler":
 		p = "/discovery-and-load-balancing/horizontal-pod-autoscalers"
 	case apiVersion == "networking.k8s.io/v1" && kind == "Ingress":
 		p = "/discovery-and-load-balancing/ingresses"
@@ -100,6 +102,10 @@ func gvkPath(namespace, apiVersion, kind, name string) (string, error) {
 		p = "/events"
 	case apiVersion == "v1" && kind == "Pod":
 		p = "/workloads/pods"
+	case apiVersion == "policy/v1" && kind == "PodDisruptionBudget":
+		p = "/workloads/pod-disruption-budgets"
+	case apiVersion == "discovery.k8s.io/v1" && kind == "EndpointSlice":
+		p = "/discovery-and-load-balancing/endpoint-slices"
 	default:
 		return "", errors.Errorf("unknown object %s %s", apiVersion, kind)
 	}
@@ -149,6 +155,10 @@ func gvkReversePath(contentPath, namespace string) (schema.GroupVersionKind, err
 		return gvk.Event, nil
 	case reducedPath == "/workloads/pods":
 		return gvk.Pod, nil
+	case reducedPath == "/workloads/pod-disruption-budgets":
+		return gvk.PodDisruptionBudget, nil
+	case reducedPath == "/discovery-and-load-balancing/endpoint-slices":
+		return gvk.EndpointSlice, nil
 	default:
 		return schema.GroupVersionKind{}, errors.Errorf("unknown gvk %s", contentPath)
 	}
