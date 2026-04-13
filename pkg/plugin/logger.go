@@ -123,6 +123,11 @@ func (za *zapAdapter) SetLevel(level hclog.Level) {
 	// no-op
 }
 
+// Returns the current log level.
+func (za *zapAdapter) GetLevel() hclog.Level {
+	return hclog.Info
+}
+
 // Return a value that conforms to the stdlib log.Logger interface
 func (za *zapAdapter) StandardLogger(opts *hclog.StandardLoggerOptions) *golog.Logger {
 	if opts == nil {

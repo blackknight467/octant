@@ -6,8 +6,7 @@
 // both proto2 and proto3 versions of the protocol buffer language.
 //
 // For more information about the usage of this plugin, see:
-//
-//	https://developers.google.com/protocol-buffers/docs/reference/go-generated
+// https://protobuf.dev/reference/go/go-generated.
 package main
 
 import (
@@ -22,7 +21,7 @@ import (
 	"google.golang.org/protobuf/internal/version"
 )
 
-const genGoDocURL = "https://developers.google.com/protocol-buffers/docs/reference/go-generated"
+const genGoDocURL = "https://protobuf.dev/reference/go/go-generated"
 const grpcDocURL = "https://grpc.io/docs/languages/go/quickstart/#regenerate-grpc-code"
 
 func main() {
@@ -36,11 +35,13 @@ func main() {
 	}
 
 	var (
-		flags   flag.FlagSet
-		plugins = flags.String("plugins", "", "deprecated option")
+		flags                                 flag.FlagSet
+		plugins                               = flags.String("plugins", "", "deprecated option")
+		experimentalStripNonFunctionalCodegen = flags.Bool("experimental_strip_nonfunctional_codegen", false, "experimental_strip_nonfunctional_codegen true means that the plugin will not emit certain parts of the generated code in order to make it possible to compare a proto2/proto3 file with its equivalent (according to proto spec) editions file. Primarily, this is the encoded descriptor.")
 	)
 	protogen.Options{
-		ParamFunc: flags.Set,
+		ParamFunc:                    flags.Set,
+		InternalStripForEditionsDiff: experimentalStripNonFunctionalCodegen,
 	}.Run(func(gen *protogen.Plugin) error {
 		if *plugins != "" {
 			return errors.New("protoc-gen-go: plugins are not supported; use 'protoc --go-grpc_out=...' to generate gRPC\n\n" +
@@ -52,6 +53,8 @@ func main() {
 			}
 		}
 		gen.SupportedFeatures = gengo.SupportedFeatures
+		gen.SupportedEditionsMinimum = gengo.SupportedEditionsMinimum
+		gen.SupportedEditionsMaximum = gengo.SupportedEditionsMaximum
 		return nil
 	})
 }
