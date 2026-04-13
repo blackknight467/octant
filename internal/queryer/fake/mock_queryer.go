@@ -343,6 +343,21 @@ func (mr *MockQueryerMockRecorder) ServicesForPod(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServicesForPod", reflect.TypeOf((*MockQueryer)(nil).ServicesForPod), arg0, arg1)
 }
 
+// HPAsForObject mocks base method.
+func (m *MockQueryer) HPAsForObject(arg0 context.Context, arg1, arg2, arg3, arg4 string) ([]*v10.HorizontalPodAutoscaler, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HPAsForObject", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].([]*v10.HorizontalPodAutoscaler)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HPAsForObject indicates an expected call of HPAsForObject.
+func (mr *MockQueryerMockRecorder) HPAsForObject(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HPAsForObject", reflect.TypeOf((*MockQueryer)(nil).HPAsForObject), arg0, arg1, arg2, arg3, arg4)
+}
+
 // ValidatingWebhookConfigurationsForService mocks base method.
 func (m *MockQueryer) ValidatingWebhookConfigurationsForService(arg0 context.Context, arg1 *v11.Service) ([]*v1.ValidatingWebhookConfiguration, error) {
 	m.ctrl.T.Helper()

@@ -65,6 +65,7 @@ type Queryer interface {
 	PodsForPVC(ctx context.Context, pvc *corev1.PersistentVolumeClaim) ([]*corev1.Pod, error)
 	PodsForConfigMap(ctx context.Context, configMap *corev1.ConfigMap) ([]*corev1.Pod, error)
 	PodsForSecret(ctx context.Context, secret *corev1.Secret) ([]*corev1.Pod, error)
+	HPAsForObject(ctx context.Context, namespace, apiVersion, kind, name string) ([]*autoscalingv2.HorizontalPodAutoscaler, error)
 }
 
 type childrenCache struct {
@@ -1268,4 +1269,30 @@ func containsBackend(lst []networkingv1.IngressBackend, s string) bool {
 		}
 	}
 	return false
+}
+
+// HPAsForObject returns all HPAs in the given namespace whose scaleTargetRef matches the provided apiVersion/kind/name.
+func (osq *ObjectStoreQueryer) HPAsForObject(ctx context.Context, namespace, apiVersion, kind, name string) ([]*autoscalingv2.HorizontalPodAutoscaler, error) {
+	key := store.Key{
+		Namespace:  namespace,
+		APIVersion: "autoscaling/v2",
+		Kind:       "HorizontalPodAutoscaler",
+	}
+	ul, _, err := osq.objectStore.List(ctx, key)
+	if err != nil {
+		return nil, errors.Wrap(err, "retrieving HPAs")
+	}
+
+	var results []*autoscalingv2.HorizontalPodAutoscaler
+	for i := range ul.Items {
+		hpa := &autoscalingv2.HorizontalPodAutoscaler{}
+		if err := kubernetes.FromUnstructured(&ul.Items[i], hpa); err != nil {
+			return nil, errors.Wrap(err, "converting unstructured HPA")
+		}
+		ref := hpa.Spec.ScaleTargetRef
+		if ref.Kind == kind && ref.Name == name {
+			results = append(results, hpa)
+		}
+	}
+	return results, nil
 }
