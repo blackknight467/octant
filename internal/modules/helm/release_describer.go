@@ -87,7 +87,7 @@ func (d *releaseDescriber) Describe(ctx context.Context, namespace string, optio
 	// Rendered manifest
 	if rel.Manifest != "" {
 		manifestCard := component.NewCard(component.TitleFromString("Rendered Manifest"))
-		manifestCard.SetBody(component.NewText(rel.Manifest))
+		manifestCard.SetBody(component.NewYAML(nil, rel.Manifest))
 		components = append(components, manifestCard)
 	}
 
@@ -148,7 +148,7 @@ func buildValuesCard(client *helmClient, relName, relNamespace string) component
 		card.SetBody(component.NewText(fmt.Sprintf("Unable to render values: %v", err)))
 		return card
 	}
-	card.SetBody(component.NewText(string(out)))
+	card.SetBody(component.NewYAML(nil, string(out)))
 	return card
 }
 
@@ -326,9 +326,10 @@ func octantResourcePath(apiVersion, kind, namespace, name string) string {
 }
 
 // PathFilters returns path filters for individual release detail pages.
+// Pattern captures namespace and name from paths like /default/atlantis.
 func (d *releaseDescriber) PathFilters() []describer.PathFilter {
 	return []describer.PathFilter{
-		*describer.NewPathFilter("/:namespace/:name", d),
+		*describer.NewPathFilter(`/(?P<releaseNamespace>[^/]+)/(?P<name>[^/]+)`, d),
 	}
 }
 
@@ -337,7 +338,7 @@ func (d *releaseDescriber) Reset(ctx context.Context) error { return nil }
 
 func parseReleasePath(fields map[string]string) (namespace, name string, err error) {
 	name = strings.TrimPrefix(fields["name"], "/")
-	namespace = strings.TrimPrefix(fields["namespace"], "/")
+	namespace = strings.TrimPrefix(fields["releaseNamespace"], "/")
 	if name == "" || namespace == "" {
 		return "", "", fmt.Errorf("missing release name or namespace in path (fields: %v)", fields)
 	}
