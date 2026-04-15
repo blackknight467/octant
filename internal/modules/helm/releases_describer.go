@@ -8,6 +8,10 @@ package helm
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
+
+	helmRelease "helm.sh/helm/v3/pkg/release"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
 	"github.com/vmware-tanzu/octant/pkg/action"
@@ -18,6 +22,7 @@ import (
 // releasesDescriber describes all Helm releases.
 type releasesDescriber struct {
 	dashConfig config.Dash
+	namespace  string
 }
 
 var _ describer.Describer = (*releasesDescriber)(nil)
@@ -28,15 +33,33 @@ func newReleasesDescriber(dashConfig config.Dash) *releasesDescriber {
 
 // Describe builds the releases list table.
 func (d *releasesDescriber) Describe(ctx context.Context, namespace string, options describer.Options) (component.ContentResponse, error) {
-	client, err := newHelmClient(d.dashConfig, "")
+	ns := d.namespace
+
+	client, err := newHelmClient(d.dashConfig, ns)
 	if err != nil {
 		return component.EmptyContentResponse, fmt.Errorf("helm client: %w", err)
 	}
 
-	releases, err := client.listReleases()
+	var releases []*helmRelease.Release
+	if ns == "" {
+		releases, err = client.listReleases()
+	} else {
+		releases, err = client.listReleasesInNamespace(ns)
+	}
 	if err != nil {
 		return component.EmptyContentResponse, fmt.Errorf("list releases: %w", err)
 	}
+
+	// Sort by namespace/name
+	sort.Slice(releases, func(i, j int) bool {
+		ni := releases[i].Namespace + "/" + releases[i].Name
+		nj := releases[j].Namespace + "/" + releases[j].Name
+		return ni < nj
+	})
+
+	// Optional status filter from path fields
+	statusFilter := options.Fields["status"]
+	nsFilter := options.Fields["filterNamespace"]
 
 	cols := component.NewTableCols("Name", "Namespace", "Revision", "Updated", "Status", "Chart", "App Version", "Actions")
 	table := component.NewTable("Helm Releases", "No Helm releases found", cols)
@@ -45,8 +68,15 @@ func (d *releasesDescriber) Describe(ctx context.Context, namespace string, opti
 		if rel.Info == nil {
 			continue
 		}
+		if statusFilter != "" && !strings.EqualFold(string(rel.Info.Status), statusFilter) {
+			continue
+		}
+		if nsFilter != "" && rel.Namespace != nsFilter {
+			continue
+		}
 
 		detailPath := fmt.Sprintf("/helm/%s/%s", rel.Namespace, rel.Name)
+
 		uninstallPayload := action.Payload{
 			"action":    ActionHelmUninstall,
 			"name":      rel.Name,
@@ -55,14 +85,13 @@ func (d *releasesDescriber) Describe(ctx context.Context, namespace string, opti
 		uninstallBtn := component.NewButton("Uninstall", uninstallPayload,
 			component.WithButtonConfirmation(
 				"Uninstall Release",
-				fmt.Sprintf("Are you sure you want to uninstall release %q?", rel.Name),
+				fmt.Sprintf("Are you sure you want to uninstall release %q from namespace %q?", rel.Name, rel.Namespace),
 			),
 		)
 		btnGroup := component.NewButtonGroup()
 		btnGroup.AddButton(uninstallBtn)
 
-		chartName := ""
-		appVersion := ""
+		chartName, appVersion := "", ""
 		if rel.Chart != nil && rel.Chart.Metadata != nil {
 			chartName = fmt.Sprintf("%s-%s", rel.Chart.Metadata.Name, rel.Chart.Metadata.Version)
 			appVersion = rel.Chart.Metadata.AppVersion
@@ -94,6 +123,4 @@ func (d *releasesDescriber) PathFilters() []describer.PathFilter {
 }
 
 // Reset does nothing.
-func (d *releasesDescriber) Reset(ctx context.Context) error {
-	return nil
-}
+func (d *releasesDescriber) Reset(ctx context.Context) error { return nil }

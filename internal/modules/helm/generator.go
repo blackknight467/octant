@@ -28,10 +28,13 @@ func newHelmGenerator(pm *describer.PathMatcher, dashConfig config.Dash) (*helmG
 
 // Generate produces a ContentResponse for the given contentPath.
 func (g *helmGenerator) Generate(ctx context.Context, contentPath string) (component.ContentResponse, error) {
-	// Strip module prefix: "/helm/..." → "/..."
+	// Content paths arrive as "helm/..." or "/helm/..." — strip the module prefix either way.
 	path := strings.TrimPrefix(contentPath, "/"+moduleName)
-	if path == "" {
+	path = strings.TrimPrefix(path, moduleName)
+	if path == "" || path == "/" {
 		path = "/"
+	} else if !strings.HasPrefix(path, "/") {
+		path = "/" + path
 	}
 
 	pf, err := g.pathMatcher.Find(path)

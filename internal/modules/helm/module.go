@@ -34,8 +34,9 @@ type Options struct {
 // Module is the native Helm integration module.
 type Module struct {
 	Options
-	namespace   string
-	pathMatcher *describer.PathMatcher
+	namespace        string
+	pathMatcher      *describer.PathMatcher
+	releasesDescriber *releasesDescriber
 }
 
 var _ module.Module = (*Module)(nil)
@@ -48,12 +49,17 @@ func New(ctx context.Context, options Options) (*Module, error) {
 	}
 
 	pm := describer.NewPathMatcher(moduleName)
-	releasesDescriber := newReleasesDescriber(options.DashConfig)
-	for _, pf := range releasesDescriber.PathFilters() {
+	rd := newReleasesDescriber(options.DashConfig)
+	for _, pf := range rd.PathFilters() {
 		pm.Register(ctx, pf)
 	}
+	m.releasesDescriber = rd
 	releaseDescriber := newReleaseDescriber(options.DashConfig)
 	for _, pf := range releaseDescriber.PathFilters() {
+		pm.Register(ctx, pf)
+	}
+	reposDescriber := newReposDescriber(options.DashConfig)
+	for _, pf := range reposDescriber.PathFilters() {
 		pm.Register(ctx, pf)
 	}
 
@@ -94,16 +100,23 @@ func (m *Module) Content(ctx context.Context, contentPath string, opts module.Co
 func (m *Module) Navigation(ctx context.Context, namespace, root string) ([]navigation.Navigation, error) {
 	rootPath := fmt.Sprintf("/%s", moduleName)
 	nav := navigation.Navigation{
-		Title:    "Helm Releases",
+		Title:    "Helm",
 		Path:     rootPath,
 		IconName: "application",
+		Children: []navigation.Navigation{
+			{Title: "Releases", Path: rootPath},
+			{Title: "Repositories", Path: rootPath + "/repos"},
+		},
 	}
 	return []navigation.Navigation{nav}, nil
 }
 
-// SetNamespace stores the current namespace.
+// SetNamespace stores the current namespace and propagates to describers.
 func (m *Module) SetNamespace(namespace string) error {
 	m.namespace = namespace
+	if m.releasesDescriber != nil {
+		m.releasesDescriber.namespace = namespace
+	}
 	return nil
 }
 
@@ -159,6 +172,10 @@ func (m *Module) GvkFromPath(contentPath, namespace string) (schema.GroupVersion
 func (m *Module) ActionPaths() map[string]action.DispatcherFunc {
 	dispatchers := action.Dispatchers{
 		newUninstallAction(m.DashConfig),
+		newRollbackAction(m.DashConfig),
+		newUpgradeAction(m.DashConfig),
+		newTestAction(m.DashConfig),
+		newRemoveRepoAction(m.DashConfig),
 	}
 	return dispatchers.ToActionPaths()
 }
