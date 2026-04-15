@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/util/clock"
+	clocktesting "k8s.io/utils/clock/testing"
 
 	"github.com/vmware-tanzu/octant/internal/describer"
 	internalErr "github.com/vmware-tanzu/octant/internal/errors"
@@ -133,7 +133,7 @@ func Test_loadObjects(t *testing.T) {
 
 func Test_translateTimestamp(t *testing.T) {
 	ti := time.Unix(1538828130, 0)
-	c := clock.NewFakeClock(ti)
+	c := clocktesting.NewFakeClock(ti)
 
 	cases := []struct {
 		name     string

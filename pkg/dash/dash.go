@@ -37,6 +37,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/modules/applications"
 	"github.com/vmware-tanzu/octant/internal/modules/clusteroverview"
 	"github.com/vmware-tanzu/octant/internal/modules/configuration"
+	helmModule "github.com/vmware-tanzu/octant/internal/modules/helm"
 	"github.com/vmware-tanzu/octant/internal/modules/localcontent"
 	"github.com/vmware-tanzu/octant/internal/modules/overview"
 	"github.com/vmware-tanzu/octant/internal/modules/workloads"
@@ -440,6 +441,15 @@ func initModules(ctx context.Context, dashConfig config.Dash, namespace string, 
 	configurationModule := configuration.New(ctx, configurationOptions)
 
 	list = append(list, configurationModule)
+
+	helmOptions := helmModule.Options{
+		DashConfig: dashConfig,
+	}
+	helm, err := helmModule.New(ctx, helmOptions)
+	if err != nil {
+		return nil, fmt.Errorf("create helm module: %w", err)
+	}
+	list = append(list, helm)
 
 	localContentPath := viper.GetString("local-content")
 	if localContentPath != "" {

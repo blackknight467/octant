@@ -10,21 +10,25 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	discovery "k8s.io/client-go/discovery"
 	v1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
+	admregv1alpha1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1alpha1"
 	v1beta1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1beta1"
 	v1alpha1 "k8s.io/client-go/kubernetes/typed/apiserverinternal/v1alpha1"
 	v10 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	v1beta10 "k8s.io/client-go/kubernetes/typed/apps/v1beta1"
 	v1beta2 "k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 	v11 "k8s.io/client-go/kubernetes/typed/authentication/v1"
+	authv1alpha1 "k8s.io/client-go/kubernetes/typed/authentication/v1alpha1"
 	v1beta11 "k8s.io/client-go/kubernetes/typed/authentication/v1beta1"
 	v12 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 	v1beta12 "k8s.io/client-go/kubernetes/typed/authorization/v1beta1"
 	v13 "k8s.io/client-go/kubernetes/typed/autoscaling/v1"
+	autoscalingv2 "k8s.io/client-go/kubernetes/typed/autoscaling/v2"
 	v2beta1 "k8s.io/client-go/kubernetes/typed/autoscaling/v2beta1"
 	v2beta2 "k8s.io/client-go/kubernetes/typed/autoscaling/v2beta2"
 	v14 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	v1beta13 "k8s.io/client-go/kubernetes/typed/batch/v1beta1"
 	v15 "k8s.io/client-go/kubernetes/typed/certificates/v1"
+	certv1alpha1 "k8s.io/client-go/kubernetes/typed/certificates/v1alpha1"
 	v1beta14 "k8s.io/client-go/kubernetes/typed/certificates/v1beta1"
 	v16 "k8s.io/client-go/kubernetes/typed/coordination/v1"
 	v1beta15 "k8s.io/client-go/kubernetes/typed/coordination/v1beta1"
@@ -34,9 +38,12 @@ import (
 	v19 "k8s.io/client-go/kubernetes/typed/events/v1"
 	v1beta17 "k8s.io/client-go/kubernetes/typed/events/v1beta1"
 	v1beta18 "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
-	v1alpha10 "k8s.io/client-go/kubernetes/typed/flowcontrol/v1alpha1"
+	flowcontrolv1 "k8s.io/client-go/kubernetes/typed/flowcontrol/v1"
 	v1beta19 "k8s.io/client-go/kubernetes/typed/flowcontrol/v1beta1"
+	flowcontrolv1beta2 "k8s.io/client-go/kubernetes/typed/flowcontrol/v1beta2"
+	flowcontrolv1beta3 "k8s.io/client-go/kubernetes/typed/flowcontrol/v1beta3"
 	v110 "k8s.io/client-go/kubernetes/typed/networking/v1"
+	netv1alpha1 "k8s.io/client-go/kubernetes/typed/networking/v1alpha1"
 	v1beta110 "k8s.io/client-go/kubernetes/typed/networking/v1beta1"
 	v111 "k8s.io/client-go/kubernetes/typed/node/v1"
 	v1alpha11 "k8s.io/client-go/kubernetes/typed/node/v1alpha1"
@@ -46,6 +53,7 @@ import (
 	v113 "k8s.io/client-go/kubernetes/typed/rbac/v1"
 	v1alpha12 "k8s.io/client-go/kubernetes/typed/rbac/v1alpha1"
 	v1beta113 "k8s.io/client-go/kubernetes/typed/rbac/v1beta1"
+	resourcev1alpha2 "k8s.io/client-go/kubernetes/typed/resource/v1alpha2"
 	v114 "k8s.io/client-go/kubernetes/typed/scheduling/v1"
 	v1alpha13 "k8s.io/client-go/kubernetes/typed/scheduling/v1alpha1"
 	v1beta114 "k8s.io/client-go/kubernetes/typed/scheduling/v1beta1"
@@ -427,18 +435,18 @@ func (mr *MockKubernetesInterfaceMockRecorder) ExtensionsV1beta1() *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionsV1beta1", reflect.TypeOf((*MockKubernetesInterface)(nil).ExtensionsV1beta1))
 }
 
-// FlowcontrolV1alpha1 mocks base method.
-func (m *MockKubernetesInterface) FlowcontrolV1alpha1() v1alpha10.FlowcontrolV1alpha1Interface {
+// FlowcontrolV1 mocks base method.
+func (m *MockKubernetesInterface) FlowcontrolV1() flowcontrolv1.FlowcontrolV1Interface {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowcontrolV1alpha1")
-	ret0, _ := ret[0].(v1alpha10.FlowcontrolV1alpha1Interface)
+	ret := m.ctrl.Call(m, "FlowcontrolV1")
+	ret0, _ := ret[0].(flowcontrolv1.FlowcontrolV1Interface)
 	return ret0
 }
 
-// FlowcontrolV1alpha1 indicates an expected call of FlowcontrolV1alpha1.
-func (mr *MockKubernetesInterfaceMockRecorder) FlowcontrolV1alpha1() *gomock.Call {
+// FlowcontrolV1 indicates an expected call of FlowcontrolV1.
+func (mr *MockKubernetesInterfaceMockRecorder) FlowcontrolV1() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowcontrolV1alpha1", reflect.TypeOf((*MockKubernetesInterface)(nil).FlowcontrolV1alpha1))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowcontrolV1", reflect.TypeOf((*MockKubernetesInterface)(nil).FlowcontrolV1))
 }
 
 // FlowcontrolV1beta1 mocks base method.
@@ -453,6 +461,34 @@ func (m *MockKubernetesInterface) FlowcontrolV1beta1() v1beta19.FlowcontrolV1bet
 func (mr *MockKubernetesInterfaceMockRecorder) FlowcontrolV1beta1() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowcontrolV1beta1", reflect.TypeOf((*MockKubernetesInterface)(nil).FlowcontrolV1beta1))
+}
+
+// FlowcontrolV1beta2 mocks base method.
+func (m *MockKubernetesInterface) FlowcontrolV1beta2() flowcontrolv1beta2.FlowcontrolV1beta2Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowcontrolV1beta2")
+	ret0, _ := ret[0].(flowcontrolv1beta2.FlowcontrolV1beta2Interface)
+	return ret0
+}
+
+// FlowcontrolV1beta2 indicates an expected call of FlowcontrolV1beta2.
+func (mr *MockKubernetesInterfaceMockRecorder) FlowcontrolV1beta2() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowcontrolV1beta2", reflect.TypeOf((*MockKubernetesInterface)(nil).FlowcontrolV1beta2))
+}
+
+// FlowcontrolV1beta3 mocks base method.
+func (m *MockKubernetesInterface) FlowcontrolV1beta3() flowcontrolv1beta3.FlowcontrolV1beta3Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowcontrolV1beta3")
+	ret0, _ := ret[0].(flowcontrolv1beta3.FlowcontrolV1beta3Interface)
+	return ret0
+}
+
+// FlowcontrolV1beta3 indicates an expected call of FlowcontrolV1beta3.
+func (mr *MockKubernetesInterfaceMockRecorder) FlowcontrolV1beta3() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowcontrolV1beta3", reflect.TypeOf((*MockKubernetesInterface)(nil).FlowcontrolV1beta3))
 }
 
 // InternalV1alpha1 mocks base method.
@@ -691,4 +727,88 @@ func (m *MockKubernetesInterface) StorageV1beta1() v1beta115.StorageV1beta1Inter
 func (mr *MockKubernetesInterfaceMockRecorder) StorageV1beta1() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1beta1", reflect.TypeOf((*MockKubernetesInterface)(nil).StorageV1beta1))
+}
+
+// AdmissionregistrationV1alpha1 mocks base method.
+func (m *MockKubernetesInterface) AdmissionregistrationV1alpha1() admregv1alpha1.AdmissionregistrationV1alpha1Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AdmissionregistrationV1alpha1")
+	ret0, _ := ret[0].(admregv1alpha1.AdmissionregistrationV1alpha1Interface)
+	return ret0
+}
+
+// AdmissionregistrationV1alpha1 indicates an expected call of AdmissionregistrationV1alpha1.
+func (mr *MockKubernetesInterfaceMockRecorder) AdmissionregistrationV1alpha1() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdmissionregistrationV1alpha1", reflect.TypeOf((*MockKubernetesInterface)(nil).AdmissionregistrationV1alpha1))
+}
+
+// AuthenticationV1alpha1 mocks base method.
+func (m *MockKubernetesInterface) AuthenticationV1alpha1() authv1alpha1.AuthenticationV1alpha1Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthenticationV1alpha1")
+	ret0, _ := ret[0].(authv1alpha1.AuthenticationV1alpha1Interface)
+	return ret0
+}
+
+// AuthenticationV1alpha1 indicates an expected call of AuthenticationV1alpha1.
+func (mr *MockKubernetesInterfaceMockRecorder) AuthenticationV1alpha1() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthenticationV1alpha1", reflect.TypeOf((*MockKubernetesInterface)(nil).AuthenticationV1alpha1))
+}
+
+// AutoscalingV2 mocks base method.
+func (m *MockKubernetesInterface) AutoscalingV2() autoscalingv2.AutoscalingV2Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AutoscalingV2")
+	ret0, _ := ret[0].(autoscalingv2.AutoscalingV2Interface)
+	return ret0
+}
+
+// AutoscalingV2 indicates an expected call of AutoscalingV2.
+func (mr *MockKubernetesInterfaceMockRecorder) AutoscalingV2() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AutoscalingV2", reflect.TypeOf((*MockKubernetesInterface)(nil).AutoscalingV2))
+}
+
+// CertificatesV1alpha1 mocks base method.
+func (m *MockKubernetesInterface) CertificatesV1alpha1() certv1alpha1.CertificatesV1alpha1Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CertificatesV1alpha1")
+	ret0, _ := ret[0].(certv1alpha1.CertificatesV1alpha1Interface)
+	return ret0
+}
+
+// CertificatesV1alpha1 indicates an expected call of CertificatesV1alpha1.
+func (mr *MockKubernetesInterfaceMockRecorder) CertificatesV1alpha1() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesV1alpha1", reflect.TypeOf((*MockKubernetesInterface)(nil).CertificatesV1alpha1))
+}
+
+// NetworkingV1alpha1 mocks base method.
+func (m *MockKubernetesInterface) NetworkingV1alpha1() netv1alpha1.NetworkingV1alpha1Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NetworkingV1alpha1")
+	ret0, _ := ret[0].(netv1alpha1.NetworkingV1alpha1Interface)
+	return ret0
+}
+
+// NetworkingV1alpha1 indicates an expected call of NetworkingV1alpha1.
+func (mr *MockKubernetesInterfaceMockRecorder) NetworkingV1alpha1() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingV1alpha1", reflect.TypeOf((*MockKubernetesInterface)(nil).NetworkingV1alpha1))
+}
+
+// ResourceV1alpha2 mocks base method.
+func (m *MockKubernetesInterface) ResourceV1alpha2() resourcev1alpha2.ResourceV1alpha2Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResourceV1alpha2")
+	ret0, _ := ret[0].(resourcev1alpha2.ResourceV1alpha2Interface)
+	return ret0
+}
+
+// ResourceV1alpha2 indicates an expected call of ResourceV1alpha2.
+func (mr *MockKubernetesInterfaceMockRecorder) ResourceV1alpha2() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceV1alpha2", reflect.TypeOf((*MockKubernetesInterface)(nil).ResourceV1alpha2))
 }
