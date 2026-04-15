@@ -287,7 +287,7 @@ func buildResourceTable(manifest, relNamespace string) *component.Table {
 
 // octantResourcePath returns the Octant URL path for a known K8s resource kind.
 func octantResourcePath(apiVersion, kind, namespace, name string) string {
-	base := fmt.Sprintf("/namespace/%s", namespace)
+	base := fmt.Sprintf("/overview/namespace/%s", namespace)
 	switch kind {
 	case "Deployment":
 		return fmt.Sprintf("%s/workloads/deployments/%s", base, name)
@@ -315,8 +315,10 @@ func octantResourcePath(apiVersion, kind, namespace, name string) string {
 		return fmt.Sprintf("%s/config-and-storage/persistent-volume-claims/%s", base, name)
 	case "ServiceAccount":
 		return fmt.Sprintf("%s/config-and-storage/service-accounts/%s", base, name)
-	case "Role", "ClusterRole", "RoleBinding", "ClusterRoleBinding":
-		return fmt.Sprintf("%s/rbac/%s/%s", base, strings.ToLower(kind)+"s", name)
+	case "Role":
+		return fmt.Sprintf("%s/rbac/roles/%s", base, name)
+	case "RoleBinding":
+		return fmt.Sprintf("%s/rbac/role-bindings/%s", base, name)
 	case "HorizontalPodAutoscaler":
 		return fmt.Sprintf("%s/discovery-and-load-balancing/horizontal-pod-autoscalers/%s", base, name)
 	case "PodDisruptionBudget":
