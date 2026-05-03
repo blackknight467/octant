@@ -478,9 +478,14 @@ func (d *DynamicCache) watchErrorHandler(ctx context.Context, gvr schema.GroupVe
 		span.AddAttributes(trace.StringAttribute("gvr", fmt.Sprintf("%s", gvr)))
 
 		logger := log.From(ctx)
-		logger.Warnf("unable to start watcher ", err.Error())
+		logger.Warnf("watch error for %s: %s", gvr, err.Error())
 
-		d.removeCh <- gvr
+		// Only permanently stop the watcher for permission errors. Transient
+		// errors (e.g., network drop during laptop sleep/wake) are retried
+		// automatically by the k8s reflector, so we leave it running.
+		if kerrors.IsForbidden(err) || kerrors.IsUnauthorized(err) {
+			d.removeCh <- gvr
+		}
 	}
 }
 
