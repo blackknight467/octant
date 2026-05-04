@@ -401,6 +401,7 @@ export interface TextView extends View {
     trustedContent?: boolean;
     status?: number;
     clipboardValue?: string;
+    className?: string;
   };
 }
 

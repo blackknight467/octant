@@ -14,12 +14,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apiEquality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/vmware-tanzu/octant/internal/link"
+	"github.com/vmware-tanzu/octant/internal/log"
+	"github.com/vmware-tanzu/octant/internal/octant"
 	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
@@ -147,6 +151,9 @@ func PodHandler(ctx context.Context, pod *corev1.Pod, options Options) (componen
 	}
 	if err := ph.Status(options); err != nil {
 		return nil, errors.Wrap(err, "print pod status")
+	}
+	if err := ph.Metrics(ctx, options); err != nil {
+		return nil, errors.Wrap(err, "print pod metrics")
 	}
 	if err := ph.InitContainers(ctx, options); err != nil {
 		return nil, errors.Wrap(err, "print pod init containers")
@@ -703,6 +710,169 @@ func (p *podHandler) Additional(options Options) error {
 	p.object.RegisterItems(itemDescriptors...)
 
 	return nil
+}
+
+// Metrics adds CPU and Memory Summary cards when metrics-server is available.
+func (p *podHandler) Metrics(ctx context.Context, options Options) error {
+	pml, err := octant.NewClusterPodMetricsLoader(options.DashConfig.ClusterClient())
+	if err != nil {
+		log.From(ctx).Warnf("create pod metrics loader: %v", err)
+		return nil
+	}
+
+	supported, err := pml.SupportsMetrics(ctx)
+	if err != nil || !supported {
+		return nil
+	}
+
+	metricsObj, found, err := pml.Load(ctx, p.pod.Namespace, p.pod.Name)
+	if err != nil {
+		log.From(ctx).Warnf("load pod metrics for %s/%s: %v", p.pod.Namespace, p.pod.Name, err)
+		return nil
+	}
+	if !found {
+		return nil
+	}
+
+	containersRaw, found, err := unstructured.NestedSlice(metricsObj.Object, "containers")
+	if err != nil || !found {
+		return nil
+	}
+
+	cpuUsage := resource.Quantity{}
+	memUsage := resource.Quantity{}
+
+	for _, c := range containersRaw {
+		container, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		usage, found, err := unstructured.NestedMap(container, "usage")
+		if err != nil || !found {
+			continue
+		}
+		if q, err := podMetricQuantity(usage, "cpu"); err == nil {
+			cpuUsage.Add(q)
+		}
+		if q, err := podMetricQuantity(usage, "memory"); err == nil {
+			memUsage.Add(q)
+		}
+	}
+
+	// Sum requests/limits across containers
+	var cpuReq, cpuLim, memReq, memLim resource.Quantity
+	for _, c := range p.pod.Spec.Containers {
+		if q := c.Resources.Requests.Cpu(); q != nil {
+			cpuReq.Add(*q)
+		}
+		if q := c.Resources.Limits.Cpu(); q != nil {
+			cpuLim.Add(*q)
+		}
+		if q := c.Resources.Requests.Memory(); q != nil {
+			memReq.Add(*q)
+		}
+		if q := c.Resources.Limits.Memory(); q != nil {
+			memLim.Add(*q)
+		}
+	}
+
+	cpuStatus := podMetricStatus(cpuUsage.MilliValue(), cpuReq.MilliValue(), cpuLim.MilliValue())
+	memStatus := podMetricStatus(memUsage.Value(), memReq.Value(), memLim.Value())
+
+	cpuSummary := component.NewSummary("CPU")
+	cpuSections := component.SummarySections{}
+	cpuSections.Add("Current", podMetricValueText(fmt.Sprintf("%vm", cpuUsage.MilliValue()), cpuStatus))
+	if !cpuReq.IsZero() {
+		cpuSections.AddText("Request", fmt.Sprintf("%vm", cpuReq.MilliValue()))
+	}
+	if !cpuLim.IsZero() {
+		cpuSections.AddText("Limit", fmt.Sprintf("%vm", cpuLim.MilliValue()))
+	}
+	cpuSummary.Add(cpuSections...)
+
+	memSummary := component.NewSummary("Memory")
+	memSections := component.SummarySections{}
+	memSections.Add("Current", podMetricValueText(fmt.Sprintf("%vMi", memUsage.Value()/(1024*1024)), memStatus))
+	if !memReq.IsZero() {
+		memSections.AddText("Request", fmt.Sprintf("%vMi", memReq.Value()/(1024*1024)))
+	}
+	if !memLim.IsZero() {
+		memSections.AddText("Limit", fmt.Sprintf("%vMi", memLim.Value()/(1024*1024)))
+	}
+	memSummary.Add(memSections...)
+
+	p.object.RegisterItems(
+		ItemDescriptor{Width: component.WidthHalf, Component: cpuSummary},
+		ItemDescriptor{Width: component.WidthHalf, Component: memSummary},
+	)
+
+	return nil
+}
+
+// podMetricQuantity extracts and parses a resource.Quantity from a metrics usage map.
+func podMetricQuantity(usage map[string]interface{}, field string) (resource.Quantity, error) {
+	s, found, err := unstructured.NestedString(usage, field)
+	if err != nil {
+		return resource.Quantity{}, fmt.Errorf("parse %s: %w", field, err)
+	}
+	if !found {
+		return resource.Quantity{}, fmt.Errorf("field %s not found", field)
+	}
+	return resource.ParseQuantity(s)
+}
+
+// podMetricStatus computes the display status for a resource metric value given
+// its request and limit (all in the same unit — millivalue for CPU, value for memory).
+//
+// Rules:
+//   - Both unset → 0 (black)
+//   - Request set, within 5% of limit → Error (red, takes precedence over yellow)
+//   - Request unset, limit set, within 10% of limit → Error (red)
+//   - Current < request → OK (green)
+//   - Current ≥ request → Warning (yellow), whether or not limit is set
+func podMetricStatus(current, request, limit int64) component.TextStatus {
+	hasReq := request > 0
+	hasLim := limit > 0
+
+	if !hasReq && !hasLim {
+		return 0 // black
+	}
+
+	// Red: request set and within 5% of limit (takes precedence over yellow)
+	if hasReq && hasLim && current*100 >= limit*95 {
+		return component.TextStatusError
+	}
+
+	// Red: no request but has limit, within 10%
+	if !hasReq && hasLim && current*100 >= limit*90 {
+		return component.TextStatusError
+	}
+
+	if !hasReq {
+		// Has limit but not in red zone; no request to compare against
+		return 0 // black
+	}
+
+	if current < request {
+		return component.TextStatusOK // green
+	}
+
+	return component.TextStatusWarning // yellow
+}
+
+// podMetricValueText creates a Text component with a CSS class for status color.
+// No markdown or HTML is used so the value stays column-aligned with plain rows.
+func podMetricValueText(value string, status component.TextStatus) *component.Text {
+	classes := map[component.TextStatus]string{
+		component.TextStatusOK:      "text-metric-ok",
+		component.TextStatusWarning: "text-metric-warning",
+		component.TextStatusError:   "text-metric-error",
+	}
+	t := component.NewText(value)
+	if class, ok := classes[status]; ok {
+		t.SetClassName(class)
+	}
+	return t
 }
 
 func podTableFilters() map[string]component.TableFilter {

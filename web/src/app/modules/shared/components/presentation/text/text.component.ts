@@ -28,6 +28,7 @@ export class TextComponent
   copied: boolean;
 
   isMarkdown: boolean;
+  className: string;
 
   hasStatus = false;
 
@@ -55,6 +56,10 @@ export class TextComponent
 
     if (view.config.status) {
       this.hasStatus = true;
+    }
+
+    if (view.config.className) {
+      this.className = view.config.className;
     }
 
     if (view.config.clipboardValue) {

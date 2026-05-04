@@ -50,3 +50,8 @@ app-helper cds-icon {
   color: var(--clr-header-font-color);
 }
 
+// Pod metric status colors applied via Text component className field.
+.text-metric-ok      { color: #60b515; }
+.text-metric-warning { color: #f57600; }
+.text-metric-error   { color: #e12200; }
+

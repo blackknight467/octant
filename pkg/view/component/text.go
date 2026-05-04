@@ -45,6 +45,8 @@ type TextConfig struct {
 	Status TextStatus `json:"status,omitempty"`
 	// ClipboardValue adds a copy button with text to be added to clipboard
 	ClipboardValue string `json:"clipboardValue,omitempty"`
+	// ClassName is an optional CSS class applied to the rendered text span.
+	ClassName string `json:"className,omitempty"`
 }
 
 // NewText creates a text component
@@ -114,6 +116,11 @@ func (t *Text) AddClipboard(value string) {
 // SetStatus sets the status of the text component.
 func (t *Text) SetStatus(status TextStatus) {
 	t.Config.Status = status
+}
+
+// SetClassName sets a CSS class applied to the rendered text span.
+func (t *Text) SetClassName(class string) {
+	t.Config.ClassName = class
 }
 
 // SupportsTitle denotes this is a TextComponent.
