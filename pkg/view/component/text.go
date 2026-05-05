@@ -47,6 +47,9 @@ type TextConfig struct {
 	ClipboardValue string `json:"clipboardValue,omitempty"`
 	// ClassName is an optional CSS class applied to the rendered text span.
 	ClassName string `json:"className,omitempty"`
+	// FilterValue overrides the value used for table column filter matching.
+	// When set, the filter compares against this instead of Value.
+	FilterValue string `json:"filterValue,omitempty"`
 }
 
 // NewText creates a text component
@@ -121,6 +124,12 @@ func (t *Text) SetStatus(status TextStatus) {
 // SetClassName sets a CSS class applied to the rendered text span.
 func (t *Text) SetClassName(class string) {
 	t.Config.ClassName = class
+}
+
+// SetFilterValue sets the value used for table column filter matching,
+// overriding the display value.
+func (t *Text) SetFilterValue(v string) {
+	t.Config.FilterValue = v
 }
 
 // SupportsTitle denotes this is a TextComponent.

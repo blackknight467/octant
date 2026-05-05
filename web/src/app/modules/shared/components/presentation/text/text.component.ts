@@ -54,17 +54,9 @@ export class TextComponent
       this.value = view.config.value;
     }
 
-    if (view.config.status) {
-      this.hasStatus = true;
-    }
-
-    if (view.config.className) {
-      this.className = view.config.className;
-    }
-
-    if (view.config.clipboardValue) {
-      this.clipboardValue = view.config.clipboardValue;
-    }
+    this.hasStatus = !!view.config.status;
+    this.className = view.config.className || '';
+    this.clipboardValue = view.config.clipboardValue || '';
   }
 
   copyToClipboard(): void {

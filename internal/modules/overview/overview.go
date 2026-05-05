@@ -304,6 +304,7 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewObjectUpdaterDispatcher(co.dashConfig.ObjectStore()),
 		octant.NewApplyYaml(co.logger, co.dashConfig.ObjectStore()),
 		octant.NewManifest(co.logger),
+		octant.NewRolloutRestart(co.dashConfig.ClusterClient()),
 	}
 
 	return dispatchers.ToActionPaths()

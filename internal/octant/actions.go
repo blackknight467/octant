@@ -23,6 +23,7 @@ const (
 	ActionDeploymentConfiguration = "action.octant.dev/deploymentConfiguration"
 	ActionUpdateObject            = "action.octant.dev/update"
 	ActionGetManifest             = "action.octant.dev/manifest"
+	ActionOverviewRolloutRestart  = "action.octant.dev/rolloutRestart"
 )
 
 func sendAlert(alerter action.Alerter, alertType action.AlertType, message string, expiration *time.Time) {

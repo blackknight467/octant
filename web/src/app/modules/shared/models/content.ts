@@ -402,6 +402,7 @@ export interface TextView extends View {
     status?: number;
     clipboardValue?: string;
     className?: string;
+    filterValue?: string;
   };
 }
 

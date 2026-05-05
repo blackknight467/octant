@@ -29,11 +29,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
-var (
-	podColsWithLabels    = component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
-	podColsWithOutLabels = component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
-	podResourceCols      = component.NewTableCols("Container", "Request: Memory", "Request: CPU", "Limit: Memory", "Limit: CPU")
-)
+var podResourceCols = component.NewTableCols("Container", "Request: Memory", "Request: CPU", "Limit: Memory", "Limit: CPU")
 
 // PodListHandler is a printFunc that prints pods
 func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (component.Component, error) {
@@ -41,11 +37,26 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 		return nil, errors.New("list is nil")
 	}
 
-	cols := podColsWithLabels
-	if opts.DisableLabels {
-		cols = podColsWithOutLabels
+	// Check metrics-server availability once before building the table.
+	var pml *octant.ClusterPodMetricsLoader
+	if cc := opts.DashConfig.ClusterClient(); cc != nil {
+		if loader, err := octant.NewClusterPodMetricsLoader(cc); err == nil {
+			if ok, err := loader.SupportsMetrics(ctx); err == nil && ok {
+				pml = loader
+			}
+		}
 	}
 
+	colNames := []string{"Name", "Ready", "Status", "Restarts", "Node", "Age"}
+	if pml != nil {
+		colNames = []string{"Name", "Ready", "Status", "CPU / Memory", "Restarts", "Node", "Age"}
+	}
+	if !opts.DisableLabels {
+		// Insert "Labels" after "Name"
+		colNames = append([]string{colNames[0], "Labels"}, colNames[1:]...)
+	}
+
+	cols := component.NewTableCols(colNames...)
 	ot := NewObjectTable("Pods", "We couldn't find any pods!", cols, opts.DashConfig.ObjectStore())
 	ot.AddFilters(podTableFilters())
 	ot.EnablePluginStatus(opts.DashConfig.PluginManager())
@@ -53,11 +64,11 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 	for i := range list.Items {
 		row := component.TableRow{}
 		pod := list.Items[i]
+
 		nameLink, err := opts.Link.ForObject(&pod, pod.Name)
 		if err != nil {
 			return nil, err
 		}
-
 		row["Name"] = nameLink
 
 		if !opts.DisableLabels {
@@ -70,43 +81,27 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 				readyCounter++
 			}
 		}
-		ready := fmt.Sprintf("%d/%d", readyCounter, len(pod.Spec.Containers))
-		row["Ready"] = component.NewText(ready)
+		row["Ready"] = component.NewText(fmt.Sprintf("%d/%d", readyCounter, len(pod.Spec.Containers)))
 
-		row["Phase"] = component.NewText(string(pod.Status.Phase))
+		row["Status"] = podCombinedStatusText(&pod)
 
-		if len(pod.Status.ContainerStatuses) > 0 {
-			lastStatus := pod.Status.ContainerStatuses[len(pod.Status.ContainerStatuses)-1]
-
-			if state := lastStatus.State.Waiting; state != nil {
-				row["Status"] = component.NewText(lastStatus.State.Waiting.Reason)
-			} else if state := lastStatus.State.Running; state != nil {
-				row["Status"] = component.NewText("Running")
-			}
-
-			if pod.DeletionTimestamp != nil && lastStatus.State.Terminated == nil {
-				row["Status"] = component.NewText("Terminating")
-			}
-		} else {
-			row["Status"] = component.NewText("")
+		if pml != nil {
+			row["CPU / Memory"] = podListResourceText(ctx, pml, &pod)
 		}
 
 		restartCounter := 0
 		for _, c := range pod.Status.ContainerStatuses {
 			restartCounter += int(c.RestartCount)
 		}
-		restarts := fmt.Sprintf("%d", restartCounter)
-		row["Restarts"] = component.NewText(restarts)
+		row["Restarts"] = component.NewText(fmt.Sprintf("%d", restartCounter))
 
 		nodeComponent, err := podNode(&pod, opts.Link)
 		if err != nil {
 			return nil, err
 		}
-
 		row["Node"] = nodeComponent
 
-		ts := pod.CreationTimestamp.Time
-		row["Age"] = component.NewTimestamp(ts)
+		row["Age"] = component.NewTimestamp(pod.CreationTimestamp.Time)
 
 		if err := ot.AddRowForObject(ctx, &pod, row); err != nil {
 			return nil, fmt.Errorf("add row for object: %w", err)
@@ -114,8 +109,83 @@ func PodListHandler(ctx context.Context, list *corev1.PodList, opts Options) (co
 	}
 
 	ot.SetSortOrder("Name", false)
-
 	return ot.ToComponent()
+}
+
+// podCombinedStatusText returns a single text component for the combined
+// Phase/Status column. The status reason is shown when available; phase is
+// shown only when there is no more specific status (e.g. unscheduled Pending
+// pods). Color encodes phase: red=Failed/Unknown, yellow=Pending.
+// The phase is NOT appended as text so that filter matching on "Pending" and
+// "Running" continues to work for pods whose status reason differs from phase.
+func podCombinedStatusText(pod *corev1.Pod) *component.Text {
+	statusStr := ""
+	if len(pod.Status.ContainerStatuses) > 0 {
+		last := pod.Status.ContainerStatuses[len(pod.Status.ContainerStatuses)-1]
+		if last.State.Waiting != nil {
+			statusStr = last.State.Waiting.Reason
+		} else if last.State.Running != nil {
+			statusStr = "Running"
+		}
+		if pod.DeletionTimestamp != nil && last.State.Terminated == nil {
+			statusStr = "Terminating"
+		}
+	}
+
+	display := statusStr
+	if display == "" {
+		display = string(pod.Status.Phase)
+	}
+
+	t := component.NewText(display)
+	// The filter matches on phase so that "ContainerCreating" pods still match
+	// the "Pending" filter, and "Running" pods match regardless of specific reason.
+	t.SetFilterValue(string(pod.Status.Phase))
+	switch pod.Status.Phase {
+	case corev1.PodFailed, corev1.PodUnknown:
+		t.SetClassName("text-metric-error")
+	case corev1.PodPending:
+		t.SetClassName("text-metric-warning")
+	}
+	return t
+}
+
+// podListResourceText loads metrics for a single pod and returns a "CPU / Memory"
+// text component. Returns a dash if metrics are not yet available for the pod.
+func podListResourceText(ctx context.Context, pml *octant.ClusterPodMetricsLoader, pod *corev1.Pod) *component.Text {
+	metricsObj, found, err := pml.Load(ctx, pod.Namespace, pod.Name)
+	if err != nil || !found {
+		return component.NewText("-")
+	}
+
+	containersRaw, found, err := unstructured.NestedSlice(metricsObj.Object, "containers")
+	if err != nil || !found {
+		return component.NewText("-")
+	}
+
+	cpuUsage := resource.Quantity{}
+	memUsage := resource.Quantity{}
+	for _, c := range containersRaw {
+		container, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		usage, found, err := unstructured.NestedMap(container, "usage")
+		if err != nil || !found {
+			continue
+		}
+		if q, err := podMetricQuantity(usage, "cpu"); err == nil {
+			cpuUsage.Add(q)
+		}
+		if q, err := podMetricQuantity(usage, "memory"); err == nil {
+			memUsage.Add(q)
+		}
+	}
+
+	return component.NewText(fmt.Sprintf("%vm / %vMi",
+		cpuUsage.MilliValue(),
+		memUsage.Value()/(1024*1024),
+	))
 }
 
 func podNode(pod *corev1.Pod, linkGenerator link.Interface) (component.Component, error) {
@@ -877,7 +947,7 @@ func podMetricValueText(value string, status component.TextStatus) *component.Te
 
 func podTableFilters() map[string]component.TableFilter {
 	return map[string]component.TableFilter{
-		"Phase": {
+		"Status": {
 			Values:   []string{"Pending", "Running", "Succeeded", "Failed", "Unknown"},
 			Selected: []string{"Pending", "Running"},
 		},

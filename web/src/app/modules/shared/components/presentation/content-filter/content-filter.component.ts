@@ -47,7 +47,8 @@ export class ContentFilterComponent
     }
 
     const view = row.data[this.column] as TextView;
-    return selected.includes(view.config.value);
+    const matchValue = view.config.filterValue ?? view.config.value;
+    return selected.includes(matchValue);
   }
 
   isActive(): boolean {

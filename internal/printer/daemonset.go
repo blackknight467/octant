@@ -13,6 +13,8 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/internal/octant"
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
 
@@ -208,10 +210,24 @@ func defaultDaemonSetSummary(daemonSet *appsv1.DaemonSet, option Options) (*comp
 func (d *daemonSetHandler) Pods(ctx context.Context, object runtime.Object, options Options) error {
 	d.object.EnablePodTemplate(d.daemonSet.Spec.Template)
 
+	daemonSet := d.daemonSet
 	d.object.RegisterItems(ItemDescriptor{
 		Width: component.WidthFull,
 		Func: func() (component.Component, error) {
-			return d.podFunc(ctx, object, options)
+			c, err := d.podFunc(ctx, object, options)
+			if err != nil {
+				return nil, err
+			}
+			if table, ok := c.(*component.Table); ok {
+				table.AddButton("Rollout Restart", action.Payload{
+					"action":     octant.ActionOverviewRolloutRestart,
+					"apiVersion": "apps/v1",
+					"kind":       "DaemonSet",
+					"namespace":  daemonSet.Namespace,
+					"name":       daemonSet.Name,
+				})
+			}
+			return c, nil
 		},
 	})
 	return nil

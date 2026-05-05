@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/vmware-tanzu/octant/pkg/action"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -328,10 +329,24 @@ func (d *deploymentHandler) Pods(ctx context.Context, object runtime.Object, opt
 		objectList[i] = replicaSets[i]
 	}
 
+	deployment := d.deployment
 	d.object.RegisterItems(ItemDescriptor{
 		Width: component.WidthFull,
 		Func: func() (component.Component, error) {
-			return d.podFunc(ctx, objectList, options)
+			c, err := d.podFunc(ctx, objectList, options)
+			if err != nil {
+				return nil, err
+			}
+			if table, ok := c.(*component.Table); ok {
+				table.AddButton("Rollout Restart", action.Payload{
+					"action":     octant.ActionOverviewRolloutRestart,
+					"apiVersion": "apps/v1",
+					"kind":       "Deployment",
+					"namespace":  deployment.Namespace,
+					"name":       deployment.Name,
+				})
+			}
+			return c, nil
 		},
 	})
 

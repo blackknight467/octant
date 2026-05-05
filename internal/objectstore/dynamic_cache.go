@@ -480,10 +480,13 @@ func (d *DynamicCache) watchErrorHandler(ctx context.Context, gvr schema.GroupVe
 		logger := log.From(ctx)
 		logger.Warnf("watch error for %s: %s", gvr, err.Error())
 
-		// Only permanently stop the watcher for permission errors. Transient
-		// errors (e.g., network drop during laptop sleep/wake) are retried
-		// automatically by the k8s reflector, so we leave it running.
-		if kerrors.IsForbidden(err) || kerrors.IsUnauthorized(err) {
+		// Permanently stop the watcher for auth errors and for resources that
+		// don't exist on the server (e.g., CRDs not installed in this cluster).
+		// Transient errors (e.g., network drop during laptop sleep/wake) are
+		// retried automatically by the k8s reflector, so we leave it running.
+		// On cluster switch, UpdateClusterClient resets d.unwatched so these
+		// resources are re-evaluated against the new cluster.
+		if kerrors.IsForbidden(err) || kerrors.IsUnauthorized(err) || kerrors.IsNotFound(err) {
 			d.removeCh <- gvr
 		}
 	}
