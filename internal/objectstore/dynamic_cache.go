@@ -414,24 +414,26 @@ func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionR
 
 		i := factory.ForResource(gvr)
 		stopCh := make(chan struct{})
-		i.Informer().SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr, stopCh))
-		if handler != nil {
-			i.Informer().AddEventHandlerWithResyncPeriod(handler, resyncPeriod)
-		}
+		newII := interruptibleInformer{stopCh, i, gvr}
 
-		go func() {
-			logger.Debugf("starting informer for %s", gvr)
-			i.Informer().Run(stopCh)
-			logger.Debugf("stopping informer for %s", gvr)
-		}()
-
-		ii := interruptibleInformer{
-			stopCh,
-			i,
-			gvr,
+		existing, loaded := d.knownInformers.LoadOrStore(gvr, newII)
+		if loaded {
+			// Another goroutine created this informer first; discard ours.
+			close(stopCh)
+			v = existing
+		} else {
+			// We won the race; configure and start the informer.
+			i.Informer().SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr, stopCh))
+			if handler != nil {
+				i.Informer().AddEventHandlerWithResyncPeriod(handler, resyncPeriod)
+			}
+			go func() {
+				logger.Debugf("starting informer for %s", gvr)
+				i.Informer().Run(stopCh)
+				logger.Debugf("stopping informer for %s", gvr)
+			}()
+			return newII
 		}
-		d.knownInformers.Store(gvr, ii)
-		return ii
 	}
 	ii := v.(interruptibleInformer)
 	if handler != nil {
