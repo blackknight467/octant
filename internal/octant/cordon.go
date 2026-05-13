@@ -29,13 +29,13 @@ import (
 // Cordon cordons a node
 type Cordon struct {
 	store         store.Store
-	clusterClient cluster.ClientInterface
+	clusterClient func() cluster.ClientInterface
 }
 
 var _ action.Dispatcher = (*Cordon)(nil)
 
 // NewCordon creates an instance of Cordon
-func NewCordon(objectStore store.Store, clusterClient cluster.ClientInterface) *Cordon {
+func NewCordon(objectStore store.Store, clusterClient func() cluster.ClientInterface) *Cordon {
 	cordon := &Cordon{
 		store:         objectStore,
 		clusterClient: clusterClient,
@@ -92,7 +92,7 @@ func (c *Cordon) Cordon(node *corev1.Node) error {
 		return errors.New("nil node")
 	}
 
-	client, err := c.clusterClient.KubernetesClient()
+	client, err := c.clusterClient().KubernetesClient()
 	if err != nil {
 		return err
 	}
@@ -132,13 +132,13 @@ func (c *Cordon) Cordon(node *corev1.Node) error {
 // Uncordon uncordons a node
 type Uncordon struct {
 	store         store.Store
-	clusterClient cluster.ClientInterface
+	clusterClient func() cluster.ClientInterface
 }
 
 var _ action.Dispatcher = (*Uncordon)(nil)
 
 // NewUncordon creates an instances of uncordon
-func NewUncordon(objectStore store.Store, clusterClient cluster.ClientInterface) *Uncordon {
+func NewUncordon(objectStore store.Store, clusterClient func() cluster.ClientInterface) *Uncordon {
 	uncordon := &Uncordon{
 		store:         objectStore,
 		clusterClient: clusterClient,
@@ -195,7 +195,7 @@ func (u *Uncordon) Uncordon(node *corev1.Node) error {
 		return errors.New("nil node")
 	}
 
-	client, err := u.clusterClient.KubernetesClient()
+	client, err := u.clusterClient().KubernetesClient()
 	if err != nil {
 		return err
 	}

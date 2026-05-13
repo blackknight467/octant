@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -70,12 +71,20 @@ type Cluster struct {
 
 var _ clusterTypes.ClientInterface = (*Cluster)(nil)
 
+var schemeOnce sync.Once
+
+func initScheme() {
+	schemeOnce.Do(func() {
+		install.Install(scheme.Scheme)
+		_ = admissionregistrationv1.AddToScheme(scheme.Scheme)
+		_ = apiregistrationv1.AddToScheme(scheme.Scheme)
+	})
+}
+
 func newCluster(ctx context.Context, clientConfig clientcmd.ClientConfig, restClient *rest.Config, defaultNamespace string, providedNamespaces []string) (*Cluster, error) {
 	logger := internalLog.From(ctx).With("component", "cluster client")
 
-	install.Install(scheme.Scheme)
-	_ = admissionregistrationv1.AddToScheme(scheme.Scheme)
-	_ = apiregistrationv1.AddToScheme(scheme.Scheme)
+	initScheme()
 
 	kubernetesClient, err := kubernetes.NewForConfig(restClient)
 	if err != nil {

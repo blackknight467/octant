@@ -407,11 +407,12 @@ func (d *DynamicCache) forResource(ctx context.Context, gvr schema.GroupVersionR
 
 	v, ok := d.knownInformers.Load(gvr)
 	if !ok {
+		factory := d.informerFactory
 		if !d.CheckResourceAccess(ctx, gvr) {
-			d.informerFactory = dynamicinformer.NewFilteredDynamicSharedInformerFactory(d.dynamicClient, resyncPeriod, namespace, nil)
+			factory = dynamicinformer.NewFilteredDynamicSharedInformerFactory(d.dynamicClient, resyncPeriod, namespace, nil)
 		}
 
-		i := d.informerFactory.ForResource(gvr)
+		i := factory.ForResource(gvr)
 		stopCh := make(chan struct{})
 		i.Informer().SetWatchErrorHandler(d.watchErrorHandler(ctx, gvr, stopCh))
 		if handler != nil {

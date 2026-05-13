@@ -19,12 +19,12 @@ import (
 
 // RolloutRestart triggers a rollout restart on a Deployment or DaemonSet.
 type RolloutRestart struct {
-	clusterClient cluster.ClientInterface
+	clusterClient func() cluster.ClientInterface
 }
 
 var _ action.Dispatcher = (*RolloutRestart)(nil)
 
-func NewRolloutRestart(clusterClient cluster.ClientInterface) *RolloutRestart {
+func NewRolloutRestart(clusterClient func() cluster.ClientInterface) *RolloutRestart {
 	return &RolloutRestart{clusterClient: clusterClient}
 }
 
@@ -41,7 +41,7 @@ func (r *RolloutRestart) Handle(ctx context.Context, alerter action.Alerter, pay
 		return err
 	}
 
-	client, err := r.clusterClient.KubernetesClient()
+	client, err := r.clusterClient().KubernetesClient()
 	if err != nil {
 		return err
 	}

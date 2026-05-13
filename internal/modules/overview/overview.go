@@ -296,15 +296,15 @@ func (co *Overview) ActionPaths() map[string]action.DispatcherFunc {
 		octant.NewServiceConfigurationEditor(co.dashConfig.ObjectStore()),
 		octant.NewPortForward(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.PortForwarder()),
 		octant.NewPortForwardDelete(co.logger, co.dashConfig.ObjectStore(), co.dashConfig.PortForwarder()),
-		octant.NewCordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
-		octant.NewUncordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
-		octant.NewCronJobTrigger(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
-		octant.NewCronJobSuspend(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
-		octant.NewCronJobResume(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient()),
+		octant.NewCordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient),
+		octant.NewUncordon(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient),
+		octant.NewCronJobTrigger(co.dashConfig.ObjectStore(), co.dashConfig.ClusterClient),
+		octant.NewCronJobSuspend(co.dashConfig.ObjectStore()),
+		octant.NewCronJobResume(co.dashConfig.ObjectStore()),
 		octant.NewObjectUpdaterDispatcher(co.dashConfig.ObjectStore()),
 		octant.NewApplyYaml(co.logger, co.dashConfig.ObjectStore()),
 		octant.NewManifest(co.logger),
-		octant.NewRolloutRestart(co.dashConfig.ClusterClient()),
+		octant.NewRolloutRestart(co.dashConfig.ClusterClient),
 	}
 
 	return dispatchers.ToActionPaths()

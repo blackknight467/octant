@@ -406,7 +406,7 @@ func listReplicaSetsAsObjects(ctx context.Context, object runtime.Object, option
 			if ownerReference.APIVersion == apiVersion &&
 				ownerReference.Kind == kind &&
 				ownerReference.Name == name {
-				if *(replicaSet.Spec.Replicas) == 0 {
+				if replicaSet.Spec.Replicas != nil && *(replicaSet.Spec.Replicas) == 0 {
 					continue
 				}
 				replicaSetList = append(replicaSetList, replicaSet)

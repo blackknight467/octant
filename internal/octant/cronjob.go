@@ -28,13 +28,13 @@ import (
 // CronJobTrigger manually triggers a cronjob
 type CronJobTrigger struct {
 	store         store.Store
-	clusterClient cluster.ClientInterface
+	clusterClient func() cluster.ClientInterface
 }
 
 var _ action.Dispatcher = (*CronJobTrigger)(nil)
 
 // NewCronJobTrigger creates an instance of CronJobTrigger
-func NewCronJobTrigger(objectStore store.Store, clusterClient cluster.ClientInterface) *CronJobTrigger {
+func NewCronJobTrigger(objectStore store.Store, clusterClient func() cluster.ClientInterface) *CronJobTrigger {
 	cronjob := &CronJobTrigger{
 		store:         objectStore,
 		clusterClient: clusterClient,
@@ -92,7 +92,7 @@ func (c *CronJobTrigger) Trigger(name string, cronJob *batchv1.CronJob) error {
 		return errors.New("nil cronjob")
 	}
 
-	client, err := c.clusterClient.KubernetesClient()
+	client, err := c.clusterClient().KubernetesClient()
 	if err != nil {
 		return err
 	}
@@ -138,18 +138,13 @@ func createJobName(cronJobName string) string {
 
 // CronJobSuspend pauses a cronjob
 type CronJobSuspend struct {
-	store         store.Store
-	clusterClient cluster.ClientInterface
+	store store.Store
 }
 
 var _ action.Dispatcher = (*CronJobSuspend)(nil)
 
-func NewCronJobSuspend(objectStore store.Store, clusterClient cluster.ClientInterface) *CronJobSuspend {
-	cronjob := &CronJobSuspend{
-		store:         objectStore,
-		clusterClient: clusterClient,
-	}
-	return cronjob
+func NewCronJobSuspend(objectStore store.Store) *CronJobSuspend {
+	return &CronJobSuspend{store: objectStore}
 }
 
 // Handle suspending cronjob
@@ -233,18 +228,13 @@ func (c *CronJobSuspend) ActionName() string {
 
 // CronJobResume resumes a cronjob
 type CronJobResume struct {
-	store         store.Store
-	clusterClient cluster.ClientInterface
+	store store.Store
 }
 
 var _ action.Dispatcher = (*CronJobResume)(nil)
 
-func NewCronJobResume(objectStore store.Store, clusterClient cluster.ClientInterface) *CronJobResume {
-	cronjob := &CronJobResume{
-		store:         objectStore,
-		clusterClient: clusterClient,
-	}
-	return cronjob
+func NewCronJobResume(objectStore store.Store) *CronJobResume {
+	return &CronJobResume{store: objectStore}
 }
 
 // Handle resuming cronjob
