@@ -131,9 +131,20 @@ func (d *DynamicCache) List(ctx context.Context, key store.Key) (list *unstructu
 		trace.StringAttribute("selector", fmt.Sprintf("%s", selector)),
 	)
 
+	// gvrFromKey result is cached at this point; check whether the informer has
+	// completed its initial list from the API server.
+	if gvr, gvrErr := d.gvrFromKey(ctx, key); gvrErr == nil {
+		if v, ok := d.knownInformers.Load(gvr); ok {
+			ii := v.(interruptibleInformer)
+			loading = !ii.informer.Informer().HasSynced()
+		} else {
+			loading = true
+		}
+	}
+
 	objs, err := resourceLister.List(selector)
 	if err != nil {
-		return nil, false, err
+		return nil, loading, err
 	}
 
 	objectCount := len(objs)
@@ -147,12 +158,12 @@ func (d *DynamicCache) List(ctx context.Context, key store.Key) (list *unstructu
 	for i := 0; i < objectCount; i++ {
 		u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(objs[i])
 		if err != nil {
-			return nil, false, err
+			return nil, loading, err
 		}
 		ul.Items[i].Object = u
 	}
 
-	return ul, false, err
+	return ul, loading, err
 }
 
 func (d *DynamicCache) Get(ctx context.Context, key store.Key) (object *unstructured.Unstructured, err error) {
@@ -268,7 +279,19 @@ func (d *DynamicCache) Update(ctx context.Context, key store.Key, updater func(*
 func (d *DynamicCache) IsLoading(ctx context.Context, key store.Key) bool {
 	_, span := trace.StartSpan(ctx, "dynamicCache:IsLoading")
 	defer span.End()
-	return false
+
+	gvr, err := d.gvrFromKey(ctx, key)
+	if err != nil {
+		return false
+	}
+
+	v, ok := d.knownInformers.Load(gvr)
+	if !ok {
+		return true
+	}
+
+	ii := v.(interruptibleInformer)
+	return !ii.informer.Informer().HasSynced()
 }
 
 func (d *DynamicCache) Create(ctx context.Context, object *unstructured.Unstructured) error {
