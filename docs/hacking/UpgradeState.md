@@ -1,7 +1,9 @@
 # Upgrade state — Go/k8s + Angular 12→22
 
-Working notes from an in-progress upgrade. **Nothing is committed**; `git checkout .`
-reverts everything. 440 non-vendor files changed, plus ~3700 vendored files.
+Working notes from this upgrade. It is **committed and pushed** to
+`angular-22-k8s-036-upgrade` on the fork, in two commits: the upgrade itself
+(4,623 files) and the `strictTemplates` defect fixes. CI is green on Linux, macOS and
+Windows.
 
 The application builds and runs, verified against a live EKS cluster. The Go suite is at
 its pre-upgrade baseline. The Angular suite runs deterministically at 271/274. A clean
@@ -507,6 +509,32 @@ Others are type-model gaps rather than bugs, and it is worth separating them: th
 side *does* send both fields — the TypeScript `Port` interface simply omits them. Nothing
 is broken at runtime.
 
+**The defects are now fixed; the modelling work is not. 61 → 37.**
+
+Behavioural:
+
+- The logs **Since** dropdown rendered each option's text from `container`, which is not
+  in scope in that loop and is not a member of `LogsComponent` — it was copy-pasted from
+  the Container dropdown above it. Options now show the duration label. Pre-existing: the
+  `*ngFor` version at HEAD had the identical expression.
+- Three `cds-modal` elements set `size="md"`. The stylesheet only carries
+  `[size=sm|lg|xl]` rules, so `md` matched nothing and rendered at the default width —
+  now stated as `default`, which is what they were already doing.
+- quick-switcher passed `$event` to `onEnter()`, which takes no arguments.
+
+Correctness without behaviour change: five `@for` blocks called a one-argument trackBy
+with two arguments (each of those functions only returns the index, so they now track
+`$index` directly), `modal.component.html` referenced a `trackByFn` the component never
+defined, `NamespaceComponent.routerLinkPath` was private but called from its template,
+`ModalComponent.size` is typed to cds-modal's union rather than `string`, and the `Port`
+model gained the two fields Go was already sending.
+
+The 37 that remain are all one class — type modelling. `AbstractViewComponent`'s generic
+does not narrow `view` to the concrete type (so `view.config` is unknown on the base
+`View`), `$event.target` is an `EventTarget`, several unions are never narrowed, and
+Clarity's string-enum inputs reject plain `string`. Worth doing, but it is a modelling
+project rather than a bug hunt.
+
 ### Old Angular-coupled dependencies
 
 Four packages are compiled against Angular 12–13 and run under 22. The linker honours
@@ -560,42 +588,49 @@ rendered manifest and computed values, and the error component.
 Nothing here blocks the application from running; these are the open items in the order
 worth doing them.
 
-### 1. Decide whether to land this
+### 1. Merge the branch
 
-440 non-vendor files in one uncommitted change. It was built as all-or-nothing, so the
-decision is to commit or `git checkout .`. If it lands, it wants splitting into at least
-backend (k8s/helm/Go + EndpointSlice), frontend (Angular ladder), and CI/Electron.
+Committed and pushed to `angular-22-k8s-036-upgrade`, not to `master`. Merging it is the
+open decision. Opening a PR against the fork's own master would also run `lint`,
+`preflight-checks` (the Go suites) and `verify-generated`, which the `electron` workflow
+does not cover.
 
-### 2. CI — less useful here than it first looks
+### 2. CI has now run — green on all three platforms
 
-`origin` is `blackknight467/octant`, a **public fork of the archived
-`vmware-archive/octant`**. There is no upstream to send anything to, and `gh run list`
-returns nothing: this fork has never run a single workflow. A first run would be
-validating the workflows themselves as much as the edits.
+`origin` is `blackknight467/octant`, a public fork of the archived
+`vmware-archive/octant`, and until this branch it had never run a workflow. Pushing
+`angular-22-k8s-036-upgrade` triggered `electron.yaml`, which is `on: [push]` unfiltered.
 
-More importantly, **the edits most likely to break are not reachable by an ordinary
-push.** The `upload-artifact@v4` work — per-platform names plus `merge-multiple` on
-download, which needed semantic changes rather than a version bump — sits behind
-`if: startsWith(github.ref, 'refs/tags/v')` in `preflight-checks.yaml` and behind
-schedule/`workflow_dispatch` in `nightly.yaml`.
+**All three jobs passed: ubuntu-latest, macos-latest, windows-latest.**
 
-| workflow | fires on | reachable without cutting a release? |
-|---|---|---|
-| `electron` | `[push, pull_request]`, unfiltered | yes — any branch push |
-| `lint`, `preflight-checks`, `verify-generated` | push to `master`/`release-*`, or PR targeting them | yes — PR against this fork's own master |
-| `nightly` | schedule + `workflow_dispatch` | **do not** |
+That is worth more than it sounds, because of what that workflow actually does on each OS:
 
-A branch push or PR would cover the Node 16 → 24.19.0 bump, `checkout`/`setup-node`/
-`setup-go` upgrades, Go tests, lint, verify-generated, and the Electron build on three
-OSes. It would *not* cover the artifact wiring.
+- `setup-node` 24.19.0 and `setup-go` 1.26.x
+- `go run build.go build-electron`, which is **`npm ci` from the lockfile**, then a
+  vendored Go build, then the Angular production build
+- `electron-builder` packaging, including the `nsis` target on Windows and `AppImage`
+  on Linux
+
+So the two gaps this document previously called un-closable locally are closed: the build
+is no longer macOS-only, and `npm ci` resolves cleanly on Linux and Windows — native
+optional packages (`lmdb`, `msgpackr-extract`, `@parcel/watcher`, esbuild's platform
+binaries) and all. The packaging path ran on every platform with the `.angular` exclusion
+in place.
+
+What it still does **not** cover:
+
+- **The `upload-artifact@v4` changes.** Per-platform names and `merge-multiple` on
+  download sit behind `if: startsWith(github.ref, 'refs/tags/v')` in
+  `preflight-checks.yaml` and behind schedule/`workflow_dispatch` in `nightly.yaml`. Only
+  a `v*` tag reaches them, and cutting a release to exercise a workflow is not worth it.
+- **The test suites.** `preflight-checks` (Go tests) and `lint`/`verify-generated` only
+  fire on a push to `master`/`release-*` or a PR targeting them. Opening a PR from this
+  branch against the fork's own master would run them.
 
 **Do not trigger `nightly` to test it.** It runs goreleaser with
 `git tag "$(git describe --abbrev=0)+dev"` and publishes to Google Cloud Storage via
 `upload-cloud-storage` — tag creation plus an external publish, which would also likely
 fail on absent secrets.
-
-So: leaving CI unrun is defensible. The artifact changes stay unverified short of a `v*`
-tag, and cutting one purely to exercise a workflow is not worth it.
 
 ### 3. Nothing here is unexercised any more
 
