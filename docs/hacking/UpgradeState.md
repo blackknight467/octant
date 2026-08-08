@@ -686,7 +686,7 @@ Measured figures and the reasoning behind them are in
 
 | item | size | note |
 |---|---|---|
-| `strictTemplates` — remaining 37 | one modelling project | All one class. `AbstractViewComponent`'s generic does not narrow `view` to the concrete type, so `view.config` is unknown on the base `View`. Fixing that alone should clear roughly a third. |
+| `strictTemplates` — remaining 37 | a long tail, ~15 independent fixes | Measured, not estimated: narrowing `AbstractViewComponent`'s `view` getter to `T` (legal since TS 4.3 — accessors may have different get/set types) clears only **4**, taking 37 → 33. The rest have no common cause: `$event.target` typed as `EventTarget` (3), `View` used where a `Tab` is wanted (4), Clarity string-enum inputs (4), `SafeHtml` passed to `string` parameters (2), un-narrowed selector unions (2), and singletons. |
 | `strict: true` | 243 errors | With `strictPropertyInitialization` off, which is the usual Angular posture. 494 with it on. |
 | `d3-graphviz`, `dagre-d3`, `d3-zoom` | 3 dependencies | Unreachable — `NewGraphviz` is constructed nowhere in-tree. Removable if anyone is trimming. |
 | Electron package size | ~323 MB `app.asar` | Mostly `node_modules` already compiled into `dist/`. The main process needs only `electron-store`, `get-port`, `open`, `ws`; moving the frontend packages to `devDependencies` would cut most of it. Pre-existing, and it changes install semantics. |
