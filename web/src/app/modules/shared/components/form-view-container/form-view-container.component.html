@@ -1,11 +1,10 @@
 <cds-form-group layout="vertical">
-  @for (field of form?.fields; track trackByFn($index)) { @if
-  (field.config.type ==='layout') {
+  @for (field of form?.fields; track $index) { @if (field.config.type
+  ==='layout') {
   <div class="horizontal-layout">
     @if (field.config.label) {
     <h6 slot="label">{{ field.config.label }}</h6>
-    } @for (f of field.config.configuration.fields; track trackByFn($index, f))
-    {
+    } @for (f of field.config.configuration.fields; track $index) {
     <ng-container
       *ngTemplateOutlet="formInputs; context: { field: f }"
     ></ng-container>
@@ -24,7 +23,7 @@
     @switch (field?.config?.type) { @case ('checkbox') {
     <cds-checkbox-group [style.width.%]="field.config.width">
       <label [for]="field.config.name">{{ field.config.label }}</label>
-      @for (opt of fieldChoices(field); track trackByFn($index, opt)) {
+      @for (opt of fieldChoices(field); track $index) {
       <cds-checkbox>
         <input
           type="checkbox"
@@ -44,7 +43,7 @@
     } @case ('radio') {
     <cds-radio-group>
       <label [for]="field.config.name">{{ field.config.label }}</label>
-      @for (opt of fieldChoices(field); track trackByFn($index, opt)) {
+      @for (opt of fieldChoices(field); track $index) {
       <cds-radio>
         <input
           type="radio"
@@ -103,7 +102,7 @@
         [attr.multiple]="field.config.configuration.multiple"
         (change)="onSelect($event, field.config.name)"
       >
-        @for (opt of fieldChoices(field); track trackByFn($index, opt)) {
+        @for (opt of fieldChoices(field); track $index) {
         <option [value]="opt.value" [selected]="opt.checked">
           {{ opt.label }}
         </option>

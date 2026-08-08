@@ -25,7 +25,7 @@
       >
         @for (duration of v?.config.durations; track duration) {
         <option label="{{ duration.label }}" value="{{ duration.seconds }}">
-          {{ container === '' ? '[all containers]' : container }}
+          {{ duration.label }}
         </option>
         }
       </select>

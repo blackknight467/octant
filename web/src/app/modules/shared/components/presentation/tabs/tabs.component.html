@@ -2,7 +2,7 @@
   <app-breadcrumb [path]="title"> </app-breadcrumb>
   @if (titleComponents?.length > 0) {
   <div class="title-container">
-    @for (component of titleComponents; track trackByIndex($index, component)) {
+    @for (component of titleComponents; track $index) {
     <div class="item">
       <app-view-container [view]="component"></app-view-container>
     </div>

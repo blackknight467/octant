@@ -18,8 +18,7 @@
     }
   </cds-modal-content>
   <cds-modal-actions>
-    @if (buttons) { @for (button of buttons; track trackByFn($index, button);
-    let isLast = $last) {
+    @if (buttons) { @for (button of buttons; track $index; let isLast = $last) {
     <button
       type="button"
       class="btn"

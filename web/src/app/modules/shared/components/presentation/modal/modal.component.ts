@@ -44,7 +44,9 @@ export class ModalComponent
   body: View;
   form: ActionForm;
   opened = false;
-  size: string;
+  // Mirrors cds-modal's own union. The backend's ModalSize is sm | lg | xl and
+  // is omitempty, so an absent value has to fall back to 'default'.
+  size: 'default' | 'sm' | 'lg' | 'xl';
   action: string;
   buttons: ButtonView[];
   alert: Alert;
@@ -73,7 +75,7 @@ export class ModalComponent
   update() {
     this.title = this.v.metadata.title as TitleView[];
     this.body = this.v.config.body;
-    this.size = this.v.config.size;
+    this.size = (this.v.config.size as 'sm' | 'lg' | 'xl') || 'default';
     this.form = this.v.config.form;
     this.opened = this.v.config.opened;
     this.modalService.setState(this.opened);

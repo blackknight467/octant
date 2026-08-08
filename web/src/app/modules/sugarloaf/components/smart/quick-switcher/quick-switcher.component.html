@@ -1,5 +1,5 @@
 <cds-modal
-  size="md"
+  size="default"
   class="quick-switcher-modal"
   id="quick-switcher-modal"
   [closable]="false"
@@ -33,7 +33,7 @@
           identifyDestinationItem(index, destination); let index = $index) {
           <tr
             (mouseover)="activeIndex = index"
-            (click)="onEnter($event)"
+            (click)="onEnter()"
             [class.destination-active]="index == activeIndex"
             [attr.aria-label]="destination.title"
           >

@@ -8,10 +8,9 @@
 </div>
 } @if (alert) {
 <app-alert [alert]="alert"></app-alert>
-} @if (v?.config?.sections) { @for (section of sections; track
-identifySection($index, section)) {
+} @if (v?.config?.sections) { @for (section of sections; track $index) {
 <div class="clr-row">
-  @for (item of section; track identifySection($index, item)) {
+  @for (item of section; track $index) {
   <div class="clr-col-md-{{ item.width / 2 }} content-card-parent">
     <app-view-container [view]="item.view"></app-view-container>
   </div>

@@ -547,6 +547,9 @@ export interface Port extends View {
   config: {
     port: number;
     protocol: string;
+    // Both are sent by Go's PortConfig with omitempty, so they may be absent.
+    targetPort?: number;
+    targetPortName?: string;
     state: Partial<{
       id: string;
       isForwarded: boolean;

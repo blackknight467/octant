@@ -104,7 +104,8 @@ export class NamespaceComponent implements OnInit, OnDestroy {
         : this.namespaces.length;
   }
 
-  private routerLinkPath(namespace: string): string {
+  // Used from the template, so it cannot be private.
+  routerLinkPath(namespace: string): string {
     return this.navigationService.redirect(namespace);
   }
 }
