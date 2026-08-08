@@ -1,6 +1,15 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActionField, ActionForm } from '../../models/content';
-import { FormArray, FormControl, FormGroup } from '@angular/forms';
+import {
+  UntypedFormArray,
+  UntypedFormControl,
+  UntypedFormGroup,
+} from '@angular/forms';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 
 import '@cds/core/checkbox/register.js';
@@ -15,39 +24,43 @@ import { Choice } from '../../models/form-helper';
   selector: 'app-form-view-container',
   templateUrl: './form-view-container.component.html',
   styleUrls: ['./form-view-container.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class FormViewContainerComponent implements OnInit {
   @Input()
   form: ActionForm;
   @Input()
-  formGroupContainer: FormGroup;
+  formGroupContainer: UntypedFormGroup;
 
-  formArray: FormArray;
+  formArray: UntypedFormArray;
 
   trackByFn = trackByIndex;
 
   ngOnInit(): void {}
 
   onCheck(event, field: string) {
-    this.formArray = this.formGroupContainer.get(field) as FormArray;
+    this.formArray = this.formGroupContainer.get(field) as UntypedFormArray;
     if (event.target.checked) {
-      this.formArray.push(new FormControl(event.target.value));
+      this.formArray.push(new UntypedFormControl(event.target.value));
     } else {
-      this.formArray.controls.forEach((fc: FormControl, index: number) => {
-        if (fc.value === event.target.value) {
-          this.formArray.removeAt(index);
+      this.formArray.controls.forEach(
+        (fc: UntypedFormControl, index: number) => {
+          if (fc.value === event.target.value) {
+            this.formArray.removeAt(index);
+          }
         }
-      });
+      );
     }
   }
 
   onSelect(event, field: string): void {
-    this.formArray = this.formGroupContainer.get(field) as FormArray;
+    this.formArray = this.formGroupContainer.get(field) as UntypedFormArray;
     this.formArray.clear();
 
     const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
     Array.from(selectedOptions).forEach(options => {
-      this.formArray.push(new FormControl(options.value));
+      this.formArray.push(new UntypedFormControl(options.value));
     });
   }
 

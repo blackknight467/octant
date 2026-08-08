@@ -8,14 +8,12 @@ describe('ButtonGroupComponent', () => {
   let component: ButtonGroupComponent;
   let fixture: ComponentFixture<ButtonGroupComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ButtonGroupComponent],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [ButtonGroupComponent],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ButtonGroupComponent);

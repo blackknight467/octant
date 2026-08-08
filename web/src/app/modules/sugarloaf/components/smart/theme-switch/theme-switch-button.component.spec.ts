@@ -12,14 +12,12 @@ describe('ThemeSwitchButtonComponent', () => {
   let fixture: ComponentFixture<ThemeSwitchButtonComponent>;
   let themeService: ThemeService;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ThemeSwitchButtonComponent],
-        providers: [{ provide: ThemeService, useValue: themeServiceStub }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [ThemeSwitchButtonComponent],
+      providers: [{ provide: ThemeService, useValue: themeServiceStub }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     themeService = TestBed.inject(ThemeService);

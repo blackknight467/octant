@@ -1,19 +1,22 @@
-<ng-container *ngIf="!isMarkdown; else markdown">
-  <ng-container *ngIf="hasStatus">
-    <app-indicator [status]="view.config.status"></app-indicator>
-  </ng-container>
-  <span *ngIf="className; else plain" [class]="className">{{ value }}</span>
-  <ng-template #plain>{{ value }}</ng-template>
-  <div *ngIf="clipboardValue" class="button-container">
-    <div cds-layout="horizontal gap:sm">
-      <cds-icon-button action="flat" ariaLabel="copy-button" (click)="copyToClipboard()">
-        <cds-icon shape="clipboard"></cds-icon>
-        <ng-container *ngIf="copied">Copied</ng-container>
-      </cds-icon-button>
-    </div>
+@if (!isMarkdown) { @if (hasStatus) {
+<app-indicator [status]="view.config.status"></app-indicator>
+} @if (className) {
+<span [class]="className">{{ value }}</span>
+} @else {
+{{ value }}
+} @if (clipboardValue) {
+<div class="button-container">
+  <div cds-layout="horizontal gap:sm">
+    <cds-icon-button
+      action="flat"
+      ariaLabel="copy-button"
+      (click)="copyToClipboard()"
+    >
+      <clr-icon shape="clipboard"></clr-icon>
+      @if (copied) { Copied }
+    </cds-icon-button>
   </div>
-</ng-container>
-
-<ng-template #markdown>
-  <div ngPreserveWhitespaces [innerHTML]="value" class="markdown"></div>
-</ng-template>
+</div>
+} } @else {
+<div ngPreserveWhitespaces [innerHTML]="value" class="markdown"></div>
+}

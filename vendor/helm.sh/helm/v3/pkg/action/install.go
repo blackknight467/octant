@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/url"
 	"os"
 	"path"
@@ -55,7 +56,7 @@ import (
 	"helm.sh/helm/v3/pkg/storage/driver"
 )
 
-// NOTESFILE_SUFFIX that we want to treat special. It goes through the templating engine
+// notesFileSuffix that we want to treat special. It goes through the templating engine
 // but it's not a yaml file (resource) hence can't have hooks, etc. And the user actually
 // wants to see this file after rendering in the status command. However, it must be a suffix
 // since there can be filepath in front of it.
@@ -69,11 +70,14 @@ type Install struct {
 
 	ChartPathOptions
 
-	ClientOnly               bool
-	Force                    bool
-	CreateNamespace          bool
-	DryRun                   bool
-	DryRunOption             string
+	ClientOnly      bool
+	Force           bool
+	CreateNamespace bool
+	DryRun          bool
+	DryRunOption    string
+	// HideSecret can be set to true when DryRun is enabled in order to hide
+	// Kubernetes Secrets in the output. It cannot be used outside of DryRun.
+	HideSecret               bool
 	DisableHooks             bool
 	Replace                  bool
 	Wait                     bool
@@ -90,6 +94,8 @@ type Install struct {
 	Atomic                   bool
 	SkipCRDs                 bool
 	SubNotes                 bool
+	HideNotes                bool
+	SkipSchemaValidation     bool
 	DisableOpenAPIValidation bool
 	IncludeCRDs              bool
 	Labels                   map[string]string
@@ -105,7 +111,9 @@ type Install struct {
 	// Used by helm template to add the release as part of OutputDir path
 	// OutputDir/<ReleaseName>
 	UseReleaseName bool
-	PostRenderer   postrender.PostRenderer
+	// TakeOwnership will ignore the check for helm annotations and take ownership of the resources.
+	TakeOwnership bool
+	PostRenderer  postrender.PostRenderer
 	// Lock to control raceconditions when the process receives a SIGTERM
 	Lock sync.Mutex
 }
@@ -178,32 +186,34 @@ func (i *Install) installCRDs(crds []chart.CRD) error {
 			return err
 		}
 
-		// If we have already gathered the capabilities, we need to invalidate
-		// the cache so that the new CRDs are recognized. This should only be
-		// the case when an action configuration is reused for multiple actions,
-		// as otherwise it is later loaded by ourselves when getCapabilities
-		// is called later on in the installation process.
-		if i.cfg.Capabilities != nil {
-			discoveryClient, err := i.cfg.RESTClientGetter.ToDiscoveryClient()
+		if i.cfg.RESTClientGetter != nil {
+			// If we have already gathered the capabilities, we need to invalidate
+			// the cache so that the new CRDs are recognized. This should only be
+			// the case when an action configuration is reused for multiple actions,
+			// as otherwise it is later loaded by ourselves when getCapabilities
+			// is called later on in the installation process.
+			if i.cfg.Capabilities != nil {
+				discoveryClient, err := i.cfg.RESTClientGetter.ToDiscoveryClient()
+				if err != nil {
+					return err
+				}
+				if discoveryClient != nil {
+					i.cfg.Log("Clearing discovery cache")
+					discoveryClient.Invalidate()
+					_, _ = discoveryClient.ServerGroups()
+				}
+			}
+
+			// Invalidate the REST mapper, since it will not have the new CRDs
+			// present.
+			restMapper, err := i.cfg.RESTClientGetter.ToRESTMapper()
 			if err != nil {
 				return err
 			}
-
-			i.cfg.Log("Clearing discovery cache")
-			discoveryClient.Invalidate()
-
-			_, _ = discoveryClient.ServerGroups()
-		}
-
-		// Invalidate the REST mapper, since it will not have the new CRDs
-		// present.
-		restMapper, err := i.cfg.RESTClientGetter.ToRESTMapper()
-		if err != nil {
-			return err
-		}
-		if resettable, ok := restMapper.(meta.ResettableRESTMapper); ok {
-			i.cfg.Log("Clearing REST mapper cache")
-			resettable.Reset()
+			if resettable, ok := restMapper.(meta.ResettableRESTMapper); ok {
+				i.cfg.Log("Clearing REST mapper cache")
+				resettable.Reset()
+			}
 		}
 	}
 	return nil
@@ -228,6 +238,11 @@ func (i *Install) RunWithContext(ctx context.Context, chrt *chart.Chart, vals ma
 		if err := i.cfg.KubeClient.IsReachable(); err != nil {
 			return nil, err
 		}
+	}
+
+	// HideSecret must be used with dry run. Otherwise, return an error.
+	if !i.isDryRun() && i.HideSecret {
+		return nil, errors.New("Hiding Kubernetes secrets requires a dry-run mode")
 	}
 
 	if err := i.availableName(); err != nil {
@@ -289,19 +304,19 @@ func (i *Install) RunWithContext(ctx context.Context, chrt *chart.Chart, vals ma
 		IsInstall: !isUpgrade,
 		IsUpgrade: isUpgrade,
 	}
-	valuesToRender, err := chartutil.ToRenderValues(chrt, vals, options, caps)
+	valuesToRender, err := chartutil.ToRenderValuesWithSchemaValidation(chrt, vals, options, caps, i.SkipSchemaValidation)
 	if err != nil {
 		return nil, err
 	}
 
 	if driver.ContainsSystemLabels(i.Labels) {
-		return nil, fmt.Errorf("user suplied labels contains system reserved label name. System labels: %+v", driver.GetSystemLabels())
+		return nil, fmt.Errorf("user supplied labels contains system reserved label name. System labels: %+v", driver.GetSystemLabels())
 	}
 
 	rel := i.createRelease(chrt, vals, i.Labels)
 
 	var manifestDoc *bytes.Buffer
-	rel.Hooks, manifestDoc, rel.Info.Notes, err = i.cfg.renderResources(chrt, valuesToRender, i.ReleaseName, i.OutputDir, i.SubNotes, i.UseReleaseName, i.IncludeCRDs, i.PostRenderer, interactWithRemote, i.EnableDNS)
+	rel.Hooks, manifestDoc, rel.Info.Notes, err = i.cfg.renderResources(chrt, valuesToRender, i.ReleaseName, i.OutputDir, i.SubNotes, i.UseReleaseName, i.IncludeCRDs, i.PostRenderer, interactWithRemote, i.EnableDNS, i.HideSecret)
 	// Even for errors, attach this if available
 	if manifestDoc != nil {
 		rel.Manifest = manifestDoc.String()
@@ -335,7 +350,11 @@ func (i *Install) RunWithContext(ctx context.Context, chrt *chart.Chart, vals ma
 	// deleting the release because the manifest will be pointing at that
 	// resource
 	if !i.ClientOnly && !isUpgrade && len(resources) > 0 {
-		toBeAdopted, err = existingResourceConflict(resources, rel.Name, rel.Namespace)
+		if i.TakeOwnership {
+			toBeAdopted, err = requireAdoption(resources)
+		} else {
+			toBeAdopted, err = existingResourceConflict(resources, rel.Name, rel.Namespace)
+		}
 		if err != nil {
 			return nil, errors.Wrap(err, "Unable to continue with install")
 		}
@@ -373,7 +392,7 @@ func (i *Install) RunWithContext(ctx context.Context, chrt *chart.Chart, vals ma
 		}
 	}
 
-	// If Replace is true, we need to supercede the last release.
+	// If Replace is true, we need to supersede the last release.
 	if i.Replace {
 		if err := i.replaceRelease(rel); err != nil {
 			return nil, err
@@ -439,7 +458,11 @@ func (i *Install) performInstall(rel *release.Release, toBeAdopted kube.Resource
 	if len(toBeAdopted) == 0 && len(resources) > 0 {
 		_, err = i.cfg.KubeClient.Create(resources)
 	} else if len(resources) > 0 {
-		_, err = i.cfg.KubeClient.Update(toBeAdopted, resources, i.Force)
+		if i.TakeOwnership {
+			_, err = i.cfg.KubeClient.(kube.InterfaceThreeWayMerge).UpdateThreeWayMerge(toBeAdopted, resources, i.Force)
+		} else {
+			_, err = i.cfg.KubeClient.Update(toBeAdopted, resources, i.Force)
+		}
 	}
 	if err != nil {
 		return rel, err
@@ -598,7 +621,7 @@ func writeToFile(outputDir string, name string, data string, append bool) error 
 
 	defer f.Close()
 
-	_, err = f.WriteString(fmt.Sprintf("---\n# Source: %s\n%s\n", name, data))
+	_, err = fmt.Fprintf(f, "---\n# Source: %s\n%s\n", name, data)
 
 	if err != nil {
 		return err
@@ -615,7 +638,7 @@ func createOrOpenFile(filename string, append bool) (*os.File, error) {
 	return os.Create(filename)
 }
 
-// check if the directory exists to create file. creates if don't exists
+// check if the directory exists to create file. creates if doesn't exist
 func ensureDirectoryForFile(file string) error {
 	baseDir := path.Dir(file)
 	_, err := os.Stat(baseDir)
@@ -730,6 +753,12 @@ func (c *ChartPathOptions) LocateChart(name string, settings *cli.EnvSettings) (
 	version := strings.TrimSpace(c.Version)
 
 	if _, err := os.Stat(name); err == nil {
+		// Issue #7862: Helm prioritizes local charts over repository URL.
+		// This behavior is maintained for backwards compatibility but with a warning.
+		if c.RepoURL != "" {
+			slog.Warn("local chart found in current working directory. repository url ignored", "chart", name, "repository", c.RepoURL)
+		}
+
 		abs, err := filepath.Abs(name)
 		if err != nil {
 			return abs, err
@@ -754,6 +783,7 @@ func (c *ChartPathOptions) LocateChart(name string, settings *cli.EnvSettings) (
 			getter.WithTLSClientConfig(c.CertFile, c.KeyFile, c.CaFile),
 			getter.WithInsecureSkipVerifyTLS(c.InsecureSkipTLSverify),
 			getter.WithPlainHTTP(c.PlainHTTP),
+			getter.WithBasicAuth(c.Username, c.Password),
 		},
 		RepositoryConfig: settings.RepositoryConfig,
 		RepositoryCache:  settings.RepositoryCache,

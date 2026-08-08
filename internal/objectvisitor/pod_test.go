@@ -78,7 +78,9 @@ func TestPod_Visit(t *testing.T) {
 
 	sortObjectsByName(t, visited)
 
-	expected := testutil.ToUnstructuredList(t, service, serviceAccount)
+	// The pod visitor also walks mounted config maps and PVCs. Secrets get an
+	// edge but are deliberately not visited.
+	expected := testutil.ToUnstructuredList(t, configMap, pvc, service, serviceAccount)
 	assert.Equal(t, expected.Items, visited)
 	assert.NoError(t, err)
 }

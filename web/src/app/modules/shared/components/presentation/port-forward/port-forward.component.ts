@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { PortForwardView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -10,6 +10,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-port-forward',
   templateUrl: './port-forward.component.html',
   styleUrls: ['./port-forward.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class PortForwardComponent extends AbstractViewComponent<PortForwardView> {
   constructor() {

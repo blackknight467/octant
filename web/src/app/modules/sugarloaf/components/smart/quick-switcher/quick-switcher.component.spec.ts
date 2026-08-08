@@ -11,14 +11,12 @@ describe('QuickSwitcherComponent', () => {
   let component: QuickSwitcherComponent;
   let fixture: ComponentFixture<QuickSwitcherComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [QuickSwitcherComponent, DefaultPipe],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [QuickSwitcherComponent, DefaultPipe],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(QuickSwitcherComponent);

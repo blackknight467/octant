@@ -12,15 +12,13 @@ describe('TimestampComponent', () => {
   let component: TimestampComponent;
   let fixture: ComponentFixture<TimestampComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [SharedModule],
-        declarations: [EditorComponent],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [SharedModule],
+      declarations: [EditorComponent],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TimestampComponent);

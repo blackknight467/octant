@@ -8,9 +8,9 @@ import {
   OnDestroy,
   Output,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import '@cds/core/button/register.js';
-import { ClarityIcons, linkIcon } from '@cds/core/icon';
 import { PortsView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -19,6 +19,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './ports.component.html',
   styleUrls: ['./ports.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class PortsComponent
   extends AbstractViewComponent<PortsView>
@@ -30,7 +32,6 @@ export class PortsComponent
 
   constructor() {
     super();
-    ClarityIcons.addIcons(linkIcon);
   }
 
   update() {

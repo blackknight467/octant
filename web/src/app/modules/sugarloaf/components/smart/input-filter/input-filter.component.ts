@@ -8,18 +8,20 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   Filter,
   LabelFilterService,
 } from '../../../../shared/services/label-filter/label-filter.service';
-import { ClarityIcons, angleIcon, timesIcon } from '@cds/core/icon';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-input-filter',
   templateUrl: './input-filter.component.html',
   styleUrls: ['./input-filter.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class InputFilterComponent implements OnInit, OnDestroy {
   inputValue = '';
@@ -31,10 +33,7 @@ export class InputFilterComponent implements OnInit, OnDestroy {
   constructor(
     private eRef: ElementRef,
     private labelFilterService: LabelFilterService
-  ) {
-    ClarityIcons.addIcons(angleIcon);
-    ClarityIcons.addIcons(timesIcon);
-  }
+  ) {}
 
   ngOnInit() {
     this.labelFilterSubscription = this.labelFilterService.filters.subscribe(

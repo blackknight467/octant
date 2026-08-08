@@ -3,7 +3,6 @@
 //
 
 import {
-  AfterContentChecked,
   AfterViewChecked,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -31,11 +30,12 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class LogsComponent
   extends AbstractViewComponent<LogsView>
-  implements OnInit, OnDestroy, AfterContentChecked, AfterViewChecked
+  implements OnInit, OnDestroy, AfterViewChecked
 {
   private logStream: PodLogsStreamer;
 
@@ -49,14 +49,33 @@ export class LogsComponent
   shouldDisplayTimestamp = false;
   shouldDisplayName = true;
   showOnlyFiltered = false;
-  filterText = '';
-  oldFilterText = '';
   currentSelection = 0;
   totalSelections = 0;
   timeFormat = 'MMM d, y h:mm:ss a z';
   regexFlags = 'gi';
 
   private logSubscription: Subscription;
+
+  private _filterText = '';
+  private filterChanged = false;
+
+  get filterText(): string {
+    return this._filterText;
+  }
+
+  /**
+   * Recomputes the match count as the filter changes rather than from
+   * ngAfterContentChecked. totalSelections is template-bound, and writing it
+   * from a lifecycle hook is what Angular reports as NG0100.
+   */
+  set filterText(value: string) {
+    if (value === this._filterText) {
+      return;
+    }
+    this._filterText = value;
+    this.updateSelectedCount();
+    this.filterChanged = true;
+  }
 
   constructor(
     private podLogsService: PodLogsService,
@@ -142,21 +161,17 @@ export class LogsComponent
     }
   }
 
-  identifyLog(index: number, item: LogEntry) {
-    return `${item.timestamp}-${item.message}`;
-  }
-
-  ngAfterContentChecked() {
-    if (this.filterText !== this.oldFilterText) {
-      this.updateSelectedCount();
-    }
-  }
-
   ngAfterViewChecked() {
-    const change = this.containerLogsDiffer.diff(this.containerLogs);
-    if (this.filterText !== this.oldFilterText) {
-      this.oldFilterText = this.filterText;
-      this.scrollToHighlight(0, 0);
+    this.containerLogsDiffer.diff(this.containerLogs);
+    if (this.filterChanged) {
+      this.filterChanged = false;
+      // Needs the re-rendered highlights, so this cannot move into the setter.
+      // Deferred past the current change-detection pass because it writes
+      // currentSelection, which is template-bound.
+      Promise.resolve().then(() => {
+        this.scrollToHighlight(0, 0);
+        this.cdr.markForCheck();
+      });
     }
   }
 
@@ -171,12 +186,32 @@ export class LogsComponent
     }
   }
 
+  /**
+   * Compiles a filter pattern, or returns null if it is not valid yet.
+   *
+   * The filter box is bound with ngModel, so this sees every keystroke —
+   * including intermediate states like a lone "(" on the way to "(foo|bar)".
+   * Those must not throw: treat an incomplete pattern as "no filter".
+   */
+  private safeRegex(pattern: string): RegExp | null {
+    try {
+      return new RegExp(pattern, this.regexFlags);
+    } catch {
+      return null;
+    }
+  }
+
   public highlightText(text: string) {
     if (!this.filterText) {
       return text;
     }
 
-    const matched = new RegExp(this.filterText, this.regexFlags).exec(text);
+    const search = this.safeRegex(this.filterText);
+    if (!search) {
+      return text;
+    }
+
+    const matched = search.exec(text);
     if (matched === null) {
       return text;
     }
@@ -186,7 +221,12 @@ export class LogsComponent
         ? this.filterText
         : this.filterText + '.*$';
 
-    return text.replace(new RegExp(filter, this.regexFlags), match => {
+    const replacement = this.safeRegex(filter);
+    if (!replacement) {
+      return text;
+    }
+
+    return text.replace(replacement, match => {
       return '<span class="highlight">' + match + '</span>';
     });
   }
@@ -255,9 +295,12 @@ export class LogsComponent
   }
 
   matchRegex(input: LogEntry) {
-    let match = input.message.match(
-      new RegExp(this.filterText, this.regexFlags)
-    );
+    const search = this.safeRegex(this.filterText);
+    if (!search) {
+      return null;
+    }
+
+    let match = input.message.match(search);
     if (match) {
       return match;
     }
@@ -265,7 +308,7 @@ export class LogsComponent
     if (this.shouldDisplayTimestamp && input.timestamp) {
       const timestamp = formatDate(input.timestamp, this.timeFormat, 'en-US');
       if (timestamp && timestamp.length > 0) {
-        match = timestamp.match(new RegExp(this.filterText, this.regexFlags));
+        match = timestamp.match(search);
         if (match) {
           return match;
         }
@@ -273,9 +316,7 @@ export class LogsComponent
     }
 
     if (this.shouldDisplayName) {
-      match = input.container.match(
-        new RegExp(this.filterText, this.regexFlags)
-      );
+      match = input.container.match(search);
       return match || [];
     }
     return [];

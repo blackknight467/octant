@@ -11,14 +11,12 @@ describe('SelectorsComponent', () => {
   let component: SelectorsComponent;
   let fixture: ComponentFixture<SelectorsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [EditorComponent],
-        imports: [SharedModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [EditorComponent],
+      imports: [SharedModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SelectorsComponent);

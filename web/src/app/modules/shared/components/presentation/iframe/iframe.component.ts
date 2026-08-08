@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { IFrameView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -6,6 +6,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-iframe',
   templateUrl: './iframe.component.html',
   styleUrls: ['./iframe.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class IFrameComponent extends AbstractViewComponent<IFrameView> {
   url: string;

@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { ipcRenderer, webFrame } from 'electron';
+import { ipcRenderer, webFrame, webUtils } from 'electron';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import { PreferencesService } from '../preferences/preferences.service';
@@ -15,6 +15,7 @@ import { PreferencesService } from '../preferences/preferences.service';
 export class ElectronService {
   ipcRenderer: typeof ipcRenderer;
   webFrame: typeof webFrame;
+  webUtils: typeof webUtils;
   childProcess: typeof childProcess;
   fs: typeof fs;
 
@@ -23,6 +24,7 @@ export class ElectronService {
     if (this.isElectron()) {
       this.ipcRenderer = window.require('electron').ipcRenderer;
       this.webFrame = window.require('electron').webFrame;
+      this.webUtils = window.require('electron').webUtils;
       this.childProcess = window.require('child_process');
       this.fs = window.require('fs');
 
@@ -50,6 +52,19 @@ export class ElectronService {
    */
   port(): number {
     return this.portNumber;
+  }
+
+  /**
+   * Returns the absolute filesystem path for a File chosen in the renderer.
+   *
+   * Electron 32 removed the non-standard `File.path` property; webUtils.getPathForFile
+   * is its replacement. Returns an empty string outside Electron.
+   */
+  pathForFile(file: File): string {
+    if (!this.webUtils) {
+      return '';
+    }
+    return this.webUtils.getPathForFile(file);
   }
 
   /**

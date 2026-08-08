@@ -8,9 +8,12 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	openapi_v2 "github.com/googleapis/gnostic/openapiv2"
+	openapi_v2 "github.com/google/gnostic-models/openapiv2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	version "k8s.io/apimachinery/pkg/version"
+	discovery "k8s.io/client-go/discovery"
+	openapi "k8s.io/client-go/openapi"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -50,6 +53,20 @@ func (m *MockDiscoveryInterface) OpenAPISchema() (*openapi_v2.Document, error) {
 func (mr *MockDiscoveryInterfaceMockRecorder) OpenAPISchema() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPISchema", reflect.TypeOf((*MockDiscoveryInterface)(nil).OpenAPISchema))
+}
+
+// OpenAPIV3 mocks base method.
+func (m *MockDiscoveryInterface) OpenAPIV3() openapi.Client {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OpenAPIV3")
+	ret0, _ := ret[0].(openapi.Client)
+	return ret0
+}
+
+// OpenAPIV3 indicates an expected call of OpenAPIV3.
+func (mr *MockDiscoveryInterfaceMockRecorder) OpenAPIV3() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPIV3", reflect.TypeOf((*MockDiscoveryInterface)(nil).OpenAPIV3))
 }
 
 // RESTClient mocks base method.
@@ -127,21 +144,6 @@ func (mr *MockDiscoveryInterfaceMockRecorder) ServerPreferredResources() *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerPreferredResources", reflect.TypeOf((*MockDiscoveryInterface)(nil).ServerPreferredResources))
 }
 
-// ServerResources mocks base method.
-func (m *MockDiscoveryInterface) ServerResources() ([]*v1.APIResourceList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServerResources")
-	ret0, _ := ret[0].([]*v1.APIResourceList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServerResources indicates an expected call of ServerResources.
-func (mr *MockDiscoveryInterfaceMockRecorder) ServerResources() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerResources", reflect.TypeOf((*MockDiscoveryInterface)(nil).ServerResources))
-}
-
 // ServerResourcesForGroupVersion mocks base method.
 func (m *MockDiscoveryInterface) ServerResourcesForGroupVersion(groupVersion string) (*v1.APIResourceList, error) {
 	m.ctrl.T.Helper()
@@ -170,6 +172,208 @@ func (m *MockDiscoveryInterface) ServerVersion() (*version.Info, error) {
 func (mr *MockDiscoveryInterfaceMockRecorder) ServerVersion() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerVersion", reflect.TypeOf((*MockDiscoveryInterface)(nil).ServerVersion))
+}
+
+// WithLegacy mocks base method.
+func (m *MockDiscoveryInterface) WithLegacy() discovery.DiscoveryInterface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithLegacy")
+	ret0, _ := ret[0].(discovery.DiscoveryInterface)
+	return ret0
+}
+
+// WithLegacy indicates an expected call of WithLegacy.
+func (mr *MockDiscoveryInterfaceMockRecorder) WithLegacy() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLegacy", reflect.TypeOf((*MockDiscoveryInterface)(nil).WithLegacy))
+}
+
+// MockAggregatedDiscoveryInterface is a mock of AggregatedDiscoveryInterface interface.
+type MockAggregatedDiscoveryInterface struct {
+	ctrl     *gomock.Controller
+	recorder *MockAggregatedDiscoveryInterfaceMockRecorder
+}
+
+// MockAggregatedDiscoveryInterfaceMockRecorder is the mock recorder for MockAggregatedDiscoveryInterface.
+type MockAggregatedDiscoveryInterfaceMockRecorder struct {
+	mock *MockAggregatedDiscoveryInterface
+}
+
+// NewMockAggregatedDiscoveryInterface creates a new mock instance.
+func NewMockAggregatedDiscoveryInterface(ctrl *gomock.Controller) *MockAggregatedDiscoveryInterface {
+	mock := &MockAggregatedDiscoveryInterface{ctrl: ctrl}
+	mock.recorder = &MockAggregatedDiscoveryInterfaceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAggregatedDiscoveryInterface) EXPECT() *MockAggregatedDiscoveryInterfaceMockRecorder {
+	return m.recorder
+}
+
+// GroupsAndMaybeResources mocks base method.
+func (m *MockAggregatedDiscoveryInterface) GroupsAndMaybeResources() (*v1.APIGroupList, map[schema.GroupVersion]*v1.APIResourceList, map[schema.GroupVersion]error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupsAndMaybeResources")
+	ret0, _ := ret[0].(*v1.APIGroupList)
+	ret1, _ := ret[1].(map[schema.GroupVersion]*v1.APIResourceList)
+	ret2, _ := ret[2].(map[schema.GroupVersion]error)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GroupsAndMaybeResources indicates an expected call of GroupsAndMaybeResources.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) GroupsAndMaybeResources() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupsAndMaybeResources", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).GroupsAndMaybeResources))
+}
+
+// OpenAPISchema mocks base method.
+func (m *MockAggregatedDiscoveryInterface) OpenAPISchema() (*openapi_v2.Document, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OpenAPISchema")
+	ret0, _ := ret[0].(*openapi_v2.Document)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OpenAPISchema indicates an expected call of OpenAPISchema.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) OpenAPISchema() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPISchema", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).OpenAPISchema))
+}
+
+// OpenAPIV3 mocks base method.
+func (m *MockAggregatedDiscoveryInterface) OpenAPIV3() openapi.Client {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OpenAPIV3")
+	ret0, _ := ret[0].(openapi.Client)
+	return ret0
+}
+
+// OpenAPIV3 indicates an expected call of OpenAPIV3.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) OpenAPIV3() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPIV3", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).OpenAPIV3))
+}
+
+// RESTClient mocks base method.
+func (m *MockAggregatedDiscoveryInterface) RESTClient() rest.Interface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RESTClient")
+	ret0, _ := ret[0].(rest.Interface)
+	return ret0
+}
+
+// RESTClient indicates an expected call of RESTClient.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) RESTClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RESTClient", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).RESTClient))
+}
+
+// ServerGroups mocks base method.
+func (m *MockAggregatedDiscoveryInterface) ServerGroups() (*v1.APIGroupList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerGroups")
+	ret0, _ := ret[0].(*v1.APIGroupList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServerGroups indicates an expected call of ServerGroups.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) ServerGroups() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerGroups", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).ServerGroups))
+}
+
+// ServerGroupsAndResources mocks base method.
+func (m *MockAggregatedDiscoveryInterface) ServerGroupsAndResources() ([]*v1.APIGroup, []*v1.APIResourceList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerGroupsAndResources")
+	ret0, _ := ret[0].([]*v1.APIGroup)
+	ret1, _ := ret[1].([]*v1.APIResourceList)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ServerGroupsAndResources indicates an expected call of ServerGroupsAndResources.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) ServerGroupsAndResources() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerGroupsAndResources", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).ServerGroupsAndResources))
+}
+
+// ServerPreferredNamespacedResources mocks base method.
+func (m *MockAggregatedDiscoveryInterface) ServerPreferredNamespacedResources() ([]*v1.APIResourceList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerPreferredNamespacedResources")
+	ret0, _ := ret[0].([]*v1.APIResourceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServerPreferredNamespacedResources indicates an expected call of ServerPreferredNamespacedResources.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) ServerPreferredNamespacedResources() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerPreferredNamespacedResources", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).ServerPreferredNamespacedResources))
+}
+
+// ServerPreferredResources mocks base method.
+func (m *MockAggregatedDiscoveryInterface) ServerPreferredResources() ([]*v1.APIResourceList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerPreferredResources")
+	ret0, _ := ret[0].([]*v1.APIResourceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServerPreferredResources indicates an expected call of ServerPreferredResources.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) ServerPreferredResources() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerPreferredResources", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).ServerPreferredResources))
+}
+
+// ServerResourcesForGroupVersion mocks base method.
+func (m *MockAggregatedDiscoveryInterface) ServerResourcesForGroupVersion(groupVersion string) (*v1.APIResourceList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerResourcesForGroupVersion", groupVersion)
+	ret0, _ := ret[0].(*v1.APIResourceList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServerResourcesForGroupVersion indicates an expected call of ServerResourcesForGroupVersion.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) ServerResourcesForGroupVersion(groupVersion interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerResourcesForGroupVersion", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).ServerResourcesForGroupVersion), groupVersion)
+}
+
+// ServerVersion mocks base method.
+func (m *MockAggregatedDiscoveryInterface) ServerVersion() (*version.Info, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServerVersion")
+	ret0, _ := ret[0].(*version.Info)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServerVersion indicates an expected call of ServerVersion.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) ServerVersion() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerVersion", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).ServerVersion))
+}
+
+// WithLegacy mocks base method.
+func (m *MockAggregatedDiscoveryInterface) WithLegacy() discovery.DiscoveryInterface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithLegacy")
+	ret0, _ := ret[0].(discovery.DiscoveryInterface)
+	return ret0
+}
+
+// WithLegacy indicates an expected call of WithLegacy.
+func (mr *MockAggregatedDiscoveryInterfaceMockRecorder) WithLegacy() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLegacy", reflect.TypeOf((*MockAggregatedDiscoveryInterface)(nil).WithLegacy))
 }
 
 // MockCachedDiscoveryInterface is a mock of CachedDiscoveryInterface interface.
@@ -234,6 +438,20 @@ func (m *MockCachedDiscoveryInterface) OpenAPISchema() (*openapi_v2.Document, er
 func (mr *MockCachedDiscoveryInterfaceMockRecorder) OpenAPISchema() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPISchema", reflect.TypeOf((*MockCachedDiscoveryInterface)(nil).OpenAPISchema))
+}
+
+// OpenAPIV3 mocks base method.
+func (m *MockCachedDiscoveryInterface) OpenAPIV3() openapi.Client {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OpenAPIV3")
+	ret0, _ := ret[0].(openapi.Client)
+	return ret0
+}
+
+// OpenAPIV3 indicates an expected call of OpenAPIV3.
+func (mr *MockCachedDiscoveryInterfaceMockRecorder) OpenAPIV3() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPIV3", reflect.TypeOf((*MockCachedDiscoveryInterface)(nil).OpenAPIV3))
 }
 
 // RESTClient mocks base method.
@@ -311,21 +529,6 @@ func (mr *MockCachedDiscoveryInterfaceMockRecorder) ServerPreferredResources() *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerPreferredResources", reflect.TypeOf((*MockCachedDiscoveryInterface)(nil).ServerPreferredResources))
 }
 
-// ServerResources mocks base method.
-func (m *MockCachedDiscoveryInterface) ServerResources() ([]*v1.APIResourceList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServerResources")
-	ret0, _ := ret[0].([]*v1.APIResourceList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServerResources indicates an expected call of ServerResources.
-func (mr *MockCachedDiscoveryInterfaceMockRecorder) ServerResources() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerResources", reflect.TypeOf((*MockCachedDiscoveryInterface)(nil).ServerResources))
-}
-
 // ServerResourcesForGroupVersion mocks base method.
 func (m *MockCachedDiscoveryInterface) ServerResourcesForGroupVersion(groupVersion string) (*v1.APIResourceList, error) {
 	m.ctrl.T.Helper()
@@ -354,6 +557,20 @@ func (m *MockCachedDiscoveryInterface) ServerVersion() (*version.Info, error) {
 func (mr *MockCachedDiscoveryInterfaceMockRecorder) ServerVersion() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerVersion", reflect.TypeOf((*MockCachedDiscoveryInterface)(nil).ServerVersion))
+}
+
+// WithLegacy mocks base method.
+func (m *MockCachedDiscoveryInterface) WithLegacy() discovery.DiscoveryInterface {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithLegacy")
+	ret0, _ := ret[0].(discovery.DiscoveryInterface)
+	return ret0
+}
+
+// WithLegacy indicates an expected call of WithLegacy.
+func (mr *MockCachedDiscoveryInterfaceMockRecorder) WithLegacy() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLegacy", reflect.TypeOf((*MockCachedDiscoveryInterface)(nil).WithLegacy))
 }
 
 // MockServerGroupsInterface is a mock of ServerGroupsInterface interface.
@@ -463,21 +680,6 @@ func (mr *MockServerResourcesInterfaceMockRecorder) ServerPreferredResources() *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerPreferredResources", reflect.TypeOf((*MockServerResourcesInterface)(nil).ServerPreferredResources))
 }
 
-// ServerResources mocks base method.
-func (m *MockServerResourcesInterface) ServerResources() ([]*v1.APIResourceList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServerResources")
-	ret0, _ := ret[0].([]*v1.APIResourceList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServerResources indicates an expected call of ServerResources.
-func (mr *MockServerResourcesInterfaceMockRecorder) ServerResources() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerResources", reflect.TypeOf((*MockServerResourcesInterface)(nil).ServerResources))
-}
-
 // ServerResourcesForGroupVersion mocks base method.
 func (m *MockServerResourcesInterface) ServerResourcesForGroupVersion(groupVersion string) (*v1.APIResourceList, error) {
 	m.ctrl.T.Helper()
@@ -567,4 +769,41 @@ func (m *MockOpenAPISchemaInterface) OpenAPISchema() (*openapi_v2.Document, erro
 func (mr *MockOpenAPISchemaInterfaceMockRecorder) OpenAPISchema() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPISchema", reflect.TypeOf((*MockOpenAPISchemaInterface)(nil).OpenAPISchema))
+}
+
+// MockOpenAPIV3SchemaInterface is a mock of OpenAPIV3SchemaInterface interface.
+type MockOpenAPIV3SchemaInterface struct {
+	ctrl     *gomock.Controller
+	recorder *MockOpenAPIV3SchemaInterfaceMockRecorder
+}
+
+// MockOpenAPIV3SchemaInterfaceMockRecorder is the mock recorder for MockOpenAPIV3SchemaInterface.
+type MockOpenAPIV3SchemaInterfaceMockRecorder struct {
+	mock *MockOpenAPIV3SchemaInterface
+}
+
+// NewMockOpenAPIV3SchemaInterface creates a new mock instance.
+func NewMockOpenAPIV3SchemaInterface(ctrl *gomock.Controller) *MockOpenAPIV3SchemaInterface {
+	mock := &MockOpenAPIV3SchemaInterface{ctrl: ctrl}
+	mock.recorder = &MockOpenAPIV3SchemaInterfaceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockOpenAPIV3SchemaInterface) EXPECT() *MockOpenAPIV3SchemaInterfaceMockRecorder {
+	return m.recorder
+}
+
+// OpenAPIV3 mocks base method.
+func (m *MockOpenAPIV3SchemaInterface) OpenAPIV3() openapi.Client {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OpenAPIV3")
+	ret0, _ := ret[0].(openapi.Client)
+	return ret0
+}
+
+// OpenAPIV3 indicates an expected call of OpenAPIV3.
+func (mr *MockOpenAPIV3SchemaInterfaceMockRecorder) OpenAPIV3() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenAPIV3", reflect.TypeOf((*MockOpenAPIV3SchemaInterface)(nil).OpenAPIV3))
 }

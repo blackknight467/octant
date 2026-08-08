@@ -4,13 +4,20 @@
  *
  */
 
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { TitleView } from '../../../models/content';
 
 @Component({
   selector: 'app-view-title',
   templateUrl: './title.component.html',
   styleUrls: ['./title.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TitleComponent implements OnInit {
   @Input() views: TitleView[];

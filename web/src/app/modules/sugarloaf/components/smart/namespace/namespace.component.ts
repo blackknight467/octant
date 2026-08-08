@@ -23,6 +23,7 @@ import {
   templateUrl: './namespace.component.html',
   styleUrls: ['./namespace.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NamespaceComponent implements OnInit, OnDestroy {
   readonly defaultNsLimit = 10;

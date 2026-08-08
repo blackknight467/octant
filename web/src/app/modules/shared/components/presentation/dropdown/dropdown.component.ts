@@ -8,6 +8,7 @@ import {
   Input,
   isDevMode,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   DropdownItem,
@@ -23,6 +24,8 @@ import { WebsocketService } from '../../../../../data/services/websocket/websock
   selector: 'app-view-dropdown',
   templateUrl: './dropdown.component.html',
   styleUrls: ['./dropdown.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DropdownComponent extends AbstractViewComponent<DropdownView> {
   readonly defaultItemLimit = 10;

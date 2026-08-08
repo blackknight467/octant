@@ -29,9 +29,9 @@ type SummarizerConfig interface {
 
 // Summarizer summarizes applications for a namespace. Applications are a group of objects
 // labeled with matching application labels. Application labels are:
-//   * app.kubernetes.io/name
-//   * app.kubernetes.io/instance
-//   * app.kubernetes.io/version
+//   - app.kubernetes.io/name
+//   - app.kubernetes.io/instance
+//   - app.kubernetes.io/version
 type Summarizer interface {
 	// Summarize generates a table summary.
 	Summarize(ctx context.Context, namespace string, config SummarizerConfig) (*component.Table, error)

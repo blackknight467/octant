@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { LabelSelectorView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -10,6 +10,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-label-selector',
   templateUrl: './label-selector.component.html',
   styleUrls: ['./label-selector.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class LabelSelectorComponent extends AbstractViewComponent<LabelSelectorView> {
   key: string;

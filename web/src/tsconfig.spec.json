@@ -16,5 +16,8 @@
     "**/*.spec.ts",
     "**/*.stub.ts",
     "**/*.d.ts"
-  ]
+  ],
+  "angularCompilerOptions": {
+    "strictTemplates": false
+  }
 }

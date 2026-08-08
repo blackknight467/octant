@@ -8,14 +8,12 @@ describe('PreferencesComponent', () => {
   let component: PreferencesComponent;
   let fixture: ComponentFixture<PreferencesComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [PreferencesComponent],
-        imports: [BrowserModule, ReactiveFormsModule, FormsModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [PreferencesComponent],
+      imports: [BrowserModule, ReactiveFormsModule, FormsModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PreferencesComponent);

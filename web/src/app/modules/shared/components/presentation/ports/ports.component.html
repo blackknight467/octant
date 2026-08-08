@@ -1,29 +1,32 @@
 <div class="ports">
-  <div class="port" *ngFor="let port of v?.config.ports; trackBy: trackByFn">
+  @for (port of v?.config.ports; track trackByFn($index, port)) {
+  <div class="port">
     <div class="port-text">
       <span>{{ port.config.port }}/{{ port.config.protocol }}</span>
-      <span *ngIf="port.config.targetPort > 0 && !port.config.targetPortName">
-        ⟹ {{ port.config.targetPort }}</span
-      >
-      <span *ngIf="port.config.targetPort > 0 && port.config.targetPortName">
+      @if (port.config.targetPort > 0 && !port.config.targetPortName) {
+      <span> ⟹ {{ port.config.targetPort }}</span>
+      } @if (port.config.targetPort > 0 && port.config.targetPortName) {
+      <span>
         ⟹ {{ port.config.targetPortName }} ({{ port.config.targetPort }})</span
       >
+      }
     </div>
     <div class="port-actions">
-      <ng-container *ngIf="port.config.state?.isForwarded">
-        <a
-          class="open-pf"
-          href="http://localhost:{{ port.config.state.port }}"
-          target="_blank"
-        >
-          <cds-icon shape="link"></cds-icon>
-          http://localhost:{{ port.config.state.port }}
-        </a>
-      </ng-container>
+      @if (port.config.state?.isForwarded) {
+      <a
+        class="open-pf"
+        href="http://localhost:{{ port.config.state.port }}"
+        target="_blank"
+      >
+        <clr-icon shape="link"></clr-icon>
+        http://localhost:{{ port.config.state.port }}
+      </a>
+      }
       <app-button-group
         [view]="port.config.buttonGroup"
         (click)="load($event)"
       ></app-button-group>
     </div>
   </div>
+  }
 </div>

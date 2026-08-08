@@ -1,4 +1,9 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ResizeEvent } from 'angular-resizable-element';
 import {
   animate,
@@ -36,6 +41,8 @@ export enum PanelState {
       ),
     ]),
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class BottomPanelComponent implements OnInit {
   open = false;

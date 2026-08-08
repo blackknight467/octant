@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import {
   Action,
   CardView,
@@ -14,6 +14,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-card',
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class CardComponent extends AbstractViewComponent<CardView> {
   @ViewChild('appForm') appForm: FormComponent;

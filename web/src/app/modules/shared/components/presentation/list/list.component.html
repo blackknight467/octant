@@ -1,6 +1,3 @@
-<ng-container *ngFor="let item of items; trackBy: identifyItem">
-  <app-view-container
-    [view]="item"
-    (viewInit)="initDone()"
-  ></app-view-container>
-</ng-container>
+@for (item of items; track identifyItem($index, item)) {
+<app-view-container [view]="item" (viewInit)="initDone()"></app-view-container>
+}

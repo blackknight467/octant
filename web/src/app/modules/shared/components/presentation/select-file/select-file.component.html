@@ -1,7 +1,16 @@
 <cds-form-group [layout]="layout">
   <cds-file>
-    <label>{{label}}</label>
-    <input #fileInput type="file" [multiple]="multiple" (change)="inputFileChanged($event)"/>
-    <cds-control-message *ngIf="status" [status]="status">{{statusMessage}}</cds-control-message>
+    <label>{{ label }}</label>
+    <input
+      #fileInput
+      type="file"
+      [multiple]="multiple"
+      (change)="inputFileChanged($event)"
+    />
+    @if (status) {
+    <cds-control-message [status]="status">{{
+      statusMessage
+    }}</cds-control-message>
+    }
   </cds-file>
 </cds-form-group>

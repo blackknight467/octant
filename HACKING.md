@@ -2,9 +2,10 @@
 
 ## Requirements
 
-* [Go 1.15 or above](https://golang.org/dl/)
-* [node 10.15.0 or above](https://nodejs.org/en/)
-* [npm 6.4.1 or above](https://www.npmjs.com/get-npm)
+* [Go 1.26 or above](https://golang.org/dl/) — set by the `go` directive in `go.mod`
+* [node](https://nodejs.org/en/) **^22.22.3 || ^24.15.0 || >=26.0.0** — the Angular CLI
+  enforces this and refuses to run on anything else. CI builds on 24.19.0.
+* [npm 8 or above](https://www.npmjs.com/get-npm)
 * [mockgen](https://github.com/golang/mock) - generating go files used for testing
 * [protoc](https://github.com/protocolbuffers/protobuf) - protobuf compiler
 

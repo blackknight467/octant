@@ -12,13 +12,11 @@ describe('ExpressionSelectorComponent', () => {
   let fixture: ComponentFixture<ExpressionSelectorComponent>;
   let view: ExpressionSelectorView;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ExpressionSelectorComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [ExpressionSelectorComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ExpressionSelectorComponent);

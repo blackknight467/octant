@@ -5,9 +5,14 @@ import {
   OnChanges,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import '@cds/core/modal/register.js';
-import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
+import {
+  AbstractControl,
+  UntypedFormBuilder,
+  UntypedFormGroup,
+} from '@angular/forms';
 import {
   Condition,
   Operation,
@@ -58,6 +63,8 @@ const elements = (preferences: Preferences): PreferenceElement[] => {
   selector: 'app-preferences',
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class PreferencesComponent implements OnChanges {
   isOpenValue: boolean;
@@ -87,7 +94,7 @@ export class PreferencesComponent implements OnChanges {
   @Output()
   reset = new EventEmitter<void>();
 
-  form: FormGroup = new FormGroup({});
+  form: UntypedFormGroup = new UntypedFormGroup({});
 
   controls: { [key: string]: AbstractControl } = {};
   conditions: { [key: string]: Condition[] } = {};
@@ -96,7 +103,7 @@ export class PreferencesComponent implements OnChanges {
 
   trackByIdentity = trackByIdentity;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: UntypedFormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.preferences && !changes.preferences.currentValue) {

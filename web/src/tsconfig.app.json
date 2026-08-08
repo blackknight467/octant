@@ -5,7 +5,11 @@
     "typeRoots": [
       "./types"
     ],
-    "lib": ["es5", "es6", "dom"]
+    "lib": [
+      "es5",
+      "es6",
+      "dom"
+    ]
   },
   "files": [
     "main.ts",
@@ -14,6 +18,8 @@
   ],
   "exclude": [
     "**/*.stories.ts"
-  ]
+  ],
+  "angularCompilerOptions": {
+    "strictTemplates": false
+  }
 }
-

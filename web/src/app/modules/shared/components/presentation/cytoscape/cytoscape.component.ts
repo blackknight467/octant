@@ -13,9 +13,10 @@ import {
   Renderer2,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 
-import cytoscape, { NodeCollection, SingularData, Stylesheet } from 'cytoscape';
+import cytoscape, { NodeCollection } from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 import nodeHtmlLabel from 'cytoscape-node-html-label';
 
@@ -26,11 +27,13 @@ nodeHtmlLabel(cytoscape);
   selector: 'app-cytoscape',
   template: '<div #cy class="cy"></div>',
   styleUrls: ['./cytoscape.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class CytoscapeComponent implements OnChanges, OnDestroy {
   @ViewChild('cy', { static: true }) private cy: ElementRef;
   @Input() public elements: any;
-  @Input() public style: Stylesheet[];
+  @Input() public style: cytoscape.StylesheetJson;
   @Input() public layout: any;
   @Input() public zoom: any;
   @Input() public selectedNodeId: string;
@@ -84,7 +87,7 @@ export class CytoscapeComponent implements OnChanges, OnDestroy {
     this.instance.on('tap', 'node', e => {
       const currentTapStamp = e.timeStamp;
       const msFromLastTap = currentTapStamp - this.previousTapStamp;
-      const node: SingularData = e.target;
+      const node: cytoscape.NodeSingular = e.target;
 
       if (msFromLastTap < this.doubleClickDelay) {
         localDoubleClick.emit(node.data());

@@ -11,10 +11,11 @@ import {
   NavigationChild,
 } from '../../../sugarloaf/models/navigation';
 import { ContentService } from '../content/content.service';
-import { NavigationEnd, Router, RouterEvent } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LoadingService } from '../loading/loading.service';
 import { ClarityIcons } from '@cds/core/icon';
+import { scalableSvg } from '../icon/icon.service';
 import { isSvg } from '../../../../util/isSvg';
 
 export type Selection = {
@@ -58,6 +59,7 @@ export class NavigationService {
   ) {
     websocketService.registerHandler('event.octant.dev/navigation', data => {
       const update = data as Navigation;
+      this.stripInternalIconPrefix(update.sections);
       this.current.next(update);
       this.createModules(update.sections);
       if (update.defaultPath) {
@@ -72,8 +74,8 @@ export class NavigationService {
     });
 
     router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe((event: RouterEvent) => {
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
         this.loadingService.requestComplete.next(false);
         this.activeUrl.next(event.url);
         this.updateLastSelection();
@@ -159,6 +161,25 @@ export class NavigationService {
     return url.startsWith('/') ? url.substring(1) : url;
   }
 
+  /**
+   * Removes the "internal:" marker the backend's SetNavigationIcon prepends.
+   *
+   * The prefix distinguishes built-in shapes from plugin-supplied SVGs on the Go
+   * side, but it is not part of the shape name, so "internal:dna" matches nothing
+   * in the registry and renders the unknown placeholder. Affects every per-CRD
+   * navigation entry.
+   */
+  private stripInternalIconPrefix(sections: NavigationChild[]): void {
+    (sections || []).forEach(section => {
+      if (section.iconName?.startsWith('internal:')) {
+        section.iconName = section.iconName.slice('internal:'.length);
+      }
+      if (section.children) {
+        this.stripInternalIconPrefix(section.children);
+      }
+    });
+  }
+
   createModules(sections: any[]) {
     const modules: Module[] = [];
     let pluginsIndex = 3;
@@ -235,7 +256,9 @@ export class NavigationService {
 
   registerCustomSvg(nc: NavigationChild): void {
     if (isSvg(nc.customSvg)) {
-      ClarityIcons.addIcons([nc.iconName, nc.customSvg]);
+      // scalableSvg: plugin SVGs must scale to the nav icon box, not paint at
+      // their intrinsic size and clip (see icon.service.ts).
+      ClarityIcons.addIcons([nc.iconName, scalableSvg(nc.customSvg)]);
     } else {
       console.error(
         `Invalid SVG for module: '${nc.title}'. Using default icon shape...`

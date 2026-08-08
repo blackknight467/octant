@@ -8,12 +8,11 @@
         [value]="selectedContainer"
         (change)="onContainerChange($event.target.value)"
       >
-        <option
-          *ngFor="let container of v?.config.containers"
-          value="{{ container }}"
-        >
+        @for (container of v?.config.containers; track container) {
+        <option value="{{ container }}">
           {{ container === '' ? '[all containers]' : container }}
         </option>
+        }
       </select>
     </clr-select-container>
     <clr-select-container class="container-select">
@@ -24,13 +23,11 @@
         [value]="selectedSince"
         (change)="onSinceChange($event.target.value)"
       >
-        <option
-          *ngFor="let duration of v?.config.durations"
-          label="{{ duration.label }}"
-          value="{{ duration.seconds }}"
-        >
+        @for (duration of v?.config.durations; track duration) {
+        <option label="{{ duration.label }}" value="{{ duration.seconds }}">
           {{ container === '' ? '[all containers]' : container }}
         </option>
+        }
       </select>
     </clr-select-container>
     <div class="clr-filter">
@@ -65,9 +62,11 @@
           >
         </button>
       </div>
-      <div *ngIf="totalSelections > 0" class="clr-filter-summary">
+      @if (totalSelections > 0) {
+      <div class="clr-filter-summary">
         {{ currentSelection + 1 }}/{{ totalSelections }} items
       </div>
+      }
     </div>
 
     <div class="log-options-group">
@@ -92,41 +91,50 @@
     </div>
   </div>
   <div class="container-logs">
-    <div class="container-logs-bg" [class.container-content]="containerLogs?.length >= 1" #scrollTarget>
+    <div
+      class="container-logs-bg"
+      [class.container-content]="containerLogs?.length >= 1"
+      #scrollTarget
+    >
       <div class="log-container">
-        <ng-container *ngIf="containerLogs?.length < 1"> No logs </ng-container>
-        <div
-          class="container-log code language-bash"
-          *ngFor="let log of filterFunction(containerLogs); trackBy: identifyLog"
-        >
+        @if (containerLogs?.length < 1) { No logs }
+        <!--
+          Track by index, not by content: log lines repeat verbatim all the time
+          (same message, same timestamp), and duplicate keys in @for hang change
+          detection. The list is append-only, so position is the stable identity.
+        -->
+        @for (log of filterFunction(containerLogs); track $index) {
+        <div class="container-log code language-bash">
+          @if (shouldDisplayName && log.container != null) {
           <div
             class="container-log-name"
-            *ngIf="shouldDisplayName && log.container != null"
             [innerHTML]="highlightText(log.container) | ansipipe"
           ></div>
+          } @if (shouldDisplayName && log.container == null) {
           <div
             class="container-log-name"
-            *ngIf="shouldDisplayName && log.container == null"
             [innerHTML]="'[container unavailable]'"
           ></div>
+          } @if (shouldDisplayTimestamp && log.timestamp != null) {
           <div
             class="container-log-timestamp"
-            *ngIf="shouldDisplayTimestamp && log.timestamp != null"
             [innerHTML]="
-              '[' + highlightText(log.timestamp | date: timeFormat) + ']'
+              '[' + highlightText(log.timestamp | date : timeFormat) + ']'
                 | ansipipe
             "
           ></div>
+          } @if (shouldDisplayTimestamp && log.timestamp == null) {
           <div
             class="container-log-timestamp"
-            *ngIf="shouldDisplayTimestamp && log.timestamp == null"
             [innerHTML]="'[timestamp unavailable]'"
           ></div>
+          }
           <div
             class="container-log-message"
             [innerHTML]="highlightText(log.message | escapepipe | ansipipe)"
           ></div>
         </div>
+        }
       </div>
     </div>
   </div>

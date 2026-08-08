@@ -1,6 +1,7 @@
 <div class="view-selectors">
+  @if (v?.config.selectors) {
   <app-overflow-selectors
-    *ngIf="v?.config.selectors"
-    [selectors]="v?.config.selectors"
+    [selectors]="$safeNavigationMigration(v?.config.selectors)"
   ></app-overflow-selectors>
+  }
 </div>

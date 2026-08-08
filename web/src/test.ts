@@ -14,8 +14,6 @@ import { ClarityModule } from '@clr/angular';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
-declare const require: any;
-
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   [
@@ -25,9 +23,8 @@ getTestBed().initTestEnvironment(
     ClarityModule,
     HttpClientTestingModule,
   ],
-  platformBrowserDynamicTesting()
+  platformBrowserDynamicTesting(),
+  {
+    teardown: { destroyAfterEach: true },
+  }
 );
-// Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
-// And load the modules.
-context.keys().map(context);

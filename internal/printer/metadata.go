@@ -19,7 +19,7 @@ import (
 	"github.com/vmware-tanzu/octant/pkg/view/flexlayout"
 )
 
-//  MetadataHandler converts object metadata to a flex layout containing object metadata.
+// MetadataHandler converts object metadata to a flex layout containing object metadata.
 func MetadataHandler(object runtime.Object, linkGenerator link.Interface) (*component.FlexLayout, error) {
 	if object == nil {
 		return nil, fmt.Errorf("can't create metadata view for nil object")

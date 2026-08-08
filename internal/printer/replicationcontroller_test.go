@@ -299,14 +299,13 @@ func Test_ReplicationControllerPods(t *testing.T) {
 	got, err := createPodListView(ctx, rc, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "nginx-hv4qs", "/pod",
 			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
-		"Phase":    component.NewText("Pending"),
-		"Status":   component.NewText("ContainerCreating"),
+		"Status":   expectedPodStatus("ContainerCreating", "Pending", "text-metric-warning"),
 		"Restarts": component.NewText("0"),
 		"Node":     nodeLink,
 		"Age":      component.NewTimestamp(now),

@@ -10,14 +10,12 @@ describe('TerminalComponent', () => {
   let component: TerminalComponent;
   let fixture: ComponentFixture<TerminalComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [TerminalComponent],
-        providers: [{ provide: WindowToken, useClass: windowProvider() }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [TerminalComponent],
+      providers: [{ provide: WindowToken, useClass: windowProvider() }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TerminalComponent);

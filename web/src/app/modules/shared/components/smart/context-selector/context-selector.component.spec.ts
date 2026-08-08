@@ -34,20 +34,18 @@ describe('ContextSelectorComponent', () => {
   let component: ContextSelectorComponent;
   let fixture: ComponentFixture<ContextSelectorComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [
-          ContextSelectorComponent,
-          OctantTooltipComponent,
-          TruncatePipe,
-        ],
-        providers: [
-          { provide: KubeContextService, useClass: MockKubeContextService },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [
+        ContextSelectorComponent,
+        OctantTooltipComponent,
+        TruncatePipe,
+      ],
+      providers: [
+        { provide: KubeContextService, useClass: MockKubeContextService },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ContextSelectorComponent);

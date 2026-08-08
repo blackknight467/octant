@@ -1,14 +1,22 @@
-<ng-container *ngIf="status && iconShape">
-  <ng-container *ngIf="!detail; else signpost">
-    <cds-icon shape="{{iconShape}}" status="{{currentStatus}}" size="16" solid></cds-icon>
-  </ng-container>
-  <ng-template #signpost>
-    <clr-signpost>
-      <cds-icon shape="{{iconShape}}" status="{{currentStatus}}" size="16" clrSignpostTrigger solid></cds-icon>
-      <span style="margin-right: 4px;"></span>
-      <clr-signpost-content *clrIfOpen>
-        <app-view-container [view]="detail"></app-view-container>
-      </clr-signpost-content>
-    </clr-signpost>
-  </ng-template>
-</ng-container>
+@if (status && iconShape) { @if (!detail) {
+<clr-icon
+  shape="{{ iconShape }}"
+  status="{{ currentStatus }}"
+  size="16"
+  solid
+></clr-icon>
+} @else {
+<clr-signpost>
+  <clr-icon
+    shape="{{ iconShape }}"
+    status="{{ currentStatus }}"
+    size="16"
+    clrSignpostTrigger
+    solid
+  ></clr-icon>
+  <span style="margin-right: 4px"></span>
+  <clr-signpost-content *clrIfOpen>
+    <app-view-container [view]="detail"></app-view-container>
+  </clr-signpost-content>
+</clr-signpost>
+} }

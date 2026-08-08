@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { LabelsView, View } from 'src/app/modules/shared/models/content';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { ViewService } from '../../../services/view/view.service';
@@ -12,6 +12,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-labels',
   templateUrl: './labels.component.html',
   styleUrls: ['./labels.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class LabelsComponent extends AbstractViewComponent<LabelsView> {
   title: string;

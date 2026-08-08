@@ -20,6 +20,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   styleUrls: ['./graphviz.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class GraphvizComponent extends AbstractViewComponent<GraphvizView> {
   @ViewChild('viewer', { static: true }) private viewer: ElementRef;

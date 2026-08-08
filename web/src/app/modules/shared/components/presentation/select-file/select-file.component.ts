@@ -10,6 +10,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { SelectFileView } from '../../../models/content';
@@ -27,6 +28,8 @@ type File = {
 @Component({
   selector: 'app-view-select-file',
   templateUrl: './select-file.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SelectFileComponent
   extends AbstractViewComponent<SelectFileView>
@@ -79,7 +82,10 @@ export class SelectFileComponent
         };
 
         if (this.electronService.isElectron()) {
-          fileMetadata = { ...fileMetadata, ...{ path: file.path } };
+          fileMetadata = {
+            ...fileMetadata,
+            ...{ path: this.electronService.pathForFile(file) },
+          };
         }
         fileList.push(fileMetadata);
       }

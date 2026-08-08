@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import trackByIndex from 'src/app/util/trackBy/trackByIndex';
 import { AccordionRow, AccordionView } from '../../../models/content';
@@ -12,6 +12,8 @@ import { ViewService } from '../../../services/view/view.service';
   selector: 'app-view-accordion',
   templateUrl: './accordion.component.html',
   styleUrls: ['./accordion.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AccordionComponent
   extends AbstractViewComponent<AccordionView>

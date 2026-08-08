@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { SingleStatView } from '../../../models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -6,6 +6,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-single-stat',
   templateUrl: './single-stat.component.html',
   styleUrls: ['./single-stat.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SingleStatComponent extends AbstractViewComponent<SingleStatView> {
   constructor() {

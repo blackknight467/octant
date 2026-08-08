@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   ExpressionSelectorView,
   LabelSelectorView,
@@ -14,6 +14,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-selectors',
   templateUrl: './selectors.component.html',
   styleUrls: ['./selectors.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SelectorsComponent extends AbstractViewComponent<SelectorsView> {
   constructor() {

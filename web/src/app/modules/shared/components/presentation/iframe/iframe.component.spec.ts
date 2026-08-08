@@ -7,13 +7,11 @@ describe('IFrameComponent', () => {
   let component: IFrameComponent;
   let fixture: ComponentFixture<IFrameComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [IFrameComponent, SafePipe],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [IFrameComponent, SafePipe],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(IFrameComponent);

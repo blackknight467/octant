@@ -18,37 +18,38 @@ import { BehaviorSubject } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { FilterTextPipe } from '../../../pipes/filtertext/filtertext.pipe';
-
-const labelFilterStub: Partial<LabelFilterService> = {
-  filters: new BehaviorSubject<Filter[]>([]),
-};
+import { rebind } from '../../../../../testing/rebind';
 
 describe('InputFilterComponent', () => {
   let component: InputFilterComponent;
   let fixture: ComponentFixture<InputFilterComponent>;
   let labelFilterService: LabelFilterService;
+  let labelFilterStub: Partial<LabelFilterService>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [FormsModule],
-        declarations: [InputFilterComponent, FilterTextPipe],
-        providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    // Built per spec: a module-level BehaviorSubject would carry one spec's
+    // filters into the next, since the subject outlives the fixture.
+    labelFilterStub = { filters: new BehaviorSubject<Filter[]>([]) };
+
+    TestBed.configureTestingModule({
+      imports: [FormsModule],
+      declarations: [InputFilterComponent, FilterTextPipe],
+      providers: [{ provide: LabelFilterService, useValue: labelFilterStub }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(InputFilterComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeDefined();
   });
 
   it('should not show the tag list on init render', () => {
+    fixture.detectChanges();
     const tagListDebugElement: DebugElement = fixture.debugElement.query(
       By.css('.input-filter-tags')
     );
@@ -110,32 +111,38 @@ describe('InputFilterComponent', () => {
   });
 
   it('should change the placeholder text if filters are applied', () => {
+    fixture.detectChanges();
+
     let inputElement: HTMLInputElement = fixture.debugElement.query(
       By.css('.text-input')
     ).nativeElement;
     expect(inputElement.placeholder).toMatch(/\bFilter by labels\b/i);
 
     labelFilterService = TestBed.inject(LabelFilterService);
-    labelFilterService.filters.next([
-      { key: 'test1', value: 'filter1' },
-      { key: 'test2', value: 'filter2' },
-      { key: 'test3', value: 'filter3' },
-    ]);
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      labelFilterService.filters.next([
+        { key: 'test1', value: 'filter1' },
+        { key: 'test2', value: 'filter2' },
+        { key: 'test3', value: 'filter3' },
+      ]);
+    });
     inputElement = fixture.debugElement.query(
       By.css('.text-input')
     ).nativeElement;
     expect(inputElement.placeholder).toMatch(/Filter by labels \(3 applied\)/i);
 
-    labelFilterService.filters.next([{ key: 'test1', value: 'filter1' }]);
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      labelFilterService.filters.next([{ key: 'test1', value: 'filter1' }]);
+    });
     inputElement = fixture.debugElement.query(
       By.css('.text-input')
     ).nativeElement;
     expect(inputElement.placeholder).toMatch(/Filter by labels \(1 applied\)/i);
   });
 
-  it('should be able to enter a tag through the input', () => {
+  it('should be able to enter a tag through the input', async () => {
+    fixture.detectChanges();
+
     const inputDebugElement: DebugElement = fixture.debugElement.query(
       By.css('.text-input')
     );
@@ -155,12 +162,11 @@ describe('InputFilterComponent', () => {
     expect(component.showTagList).toBe(true);
     expect(component.inputValue).toBe('');
 
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-      inputNativeElement = fixture.debugElement.query(
-        By.css('.text-input')
-      ).nativeElement;
-      expect(inputNativeElement.value).toBe('');
-    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    inputNativeElement = fixture.debugElement.query(
+      By.css('.text-input')
+    ).nativeElement;
+    expect(inputNativeElement.value).toBe('');
   });
 });

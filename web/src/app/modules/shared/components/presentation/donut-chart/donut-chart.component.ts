@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { DonutChartView, DonutSegment } from '../../../models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { Point } from '../../../models/point';
@@ -18,6 +18,8 @@ export interface SegmentDescriptor {
   selector: 'app-view-donut-chart',
   templateUrl: './donut-chart.component.html',
   styleUrls: ['./donut-chart.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DonutChartComponent extends AbstractViewComponent<DonutChartView> {
   @Input() circumference = 100;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import {
   Action,
   SummaryItem,
@@ -18,6 +18,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-summary',
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SummaryComponent extends AbstractViewComponent<SummaryView> {
   @ViewChild('appForm') appForm: FormComponent;

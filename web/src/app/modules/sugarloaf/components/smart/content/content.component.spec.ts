@@ -30,40 +30,38 @@ describe('OverviewComponent', () => {
   let routerMock;
   let contentSpy;
 
-  beforeEach(
-    waitForAsync(() => {
-      eventSubject = new ReplaySubject<RouterEvent>(1);
-      routerMock = {
-        events: eventSubject.asObservable(),
-        routerState: {
-          snapshot: {
-            url: '/',
-          },
+  beforeEach(waitForAsync(() => {
+    eventSubject = new ReplaySubject<RouterEvent>(1);
+    routerMock = {
+      events: eventSubject.asObservable(),
+      routerState: {
+        snapshot: {
+          url: '/',
         },
-        parseUrl: (_: string) => {
-          return {
-            root: {
-              children: {
-                primary: {
-                  segments: ['foo', 'bar'],
-                },
+      },
+      parseUrl: (_: string) => {
+        return {
+          root: {
+            children: {
+              primary: {
+                segments: ['foo', 'bar'],
               },
             },
-          };
-        },
-      };
-      TestBed.configureTestingModule({
-        imports: [SugarloafModule],
-        providers: [
-          { provide: ActivatedRoute, useValue: new ActivatedRouteStub({}) },
-          { provide: Router, useValue: routerMock },
-          { provide: ContentService, useClass: ContentServiceMock },
+          },
+        };
+      },
+    };
+    TestBed.configureTestingModule({
+      imports: [SugarloafModule],
+      providers: [
+        { provide: ActivatedRoute, useValue: new ActivatedRouteStub({}) },
+        { provide: Router, useValue: routerMock },
+        { provide: ContentService, useClass: ContentServiceMock },
 
-          IconService,
-        ],
-      }).compileComponents();
-    })
-  );
+        IconService,
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ContentComponent);

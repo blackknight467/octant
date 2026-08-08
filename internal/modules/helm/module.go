@@ -34,8 +34,8 @@ type Options struct {
 // Module is the native Helm integration module.
 type Module struct {
 	Options
-	namespace        string
-	pathMatcher      *describer.PathMatcher
+	namespace         string
+	pathMatcher       *describer.PathMatcher
 	releasesDescriber *releasesDescriber
 }
 

@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import findLast from 'lodash/findLast';
 import { Subscription } from 'rxjs';
 import { Alert } from 'src/app/modules/shared/models/content';
@@ -15,6 +20,8 @@ import {
   selector: 'app-notifier',
   templateUrl: './notifier.component.html',
   styleUrls: ['./notifier.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class NotifierComponent implements OnInit, OnDestroy {
   private signalSubscription: Subscription;

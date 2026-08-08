@@ -8,9 +8,10 @@ package queryer
 import (
 	"context"
 	"fmt"
-	batchv1 "k8s.io/api/batch/v1"
 	"sort"
 	"testing"
+
+	batchv1 "k8s.io/api/batch/v1"
 
 	networkingv1 "k8s.io/api/networking/v1"
 

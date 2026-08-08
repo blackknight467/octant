@@ -22,13 +22,14 @@ import { isEqual } from 'lodash';
 import { Subscription } from 'rxjs';
 import { LoadingService } from 'src/app/modules/shared/services/loading/loading.service';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
-import OverlayScrollbars from 'overlayscrollbars';
+import { PartialOptions } from 'overlayscrollbars';
 
 @Component({
   selector: 'app-overview',
   templateUrl: './content.component.html',
   styleUrls: ['./content.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContentComponent implements OnInit, OnDestroy {
   @ViewChild('contentScrollbar', { read: OverlayScrollbarsComponent })
@@ -48,16 +49,16 @@ export class ContentComponent implements OnInit, OnDestroy {
   private loadingSubscription: Subscription;
   public showSpinner = false;
   currentPath = '';
-  // https://github.com/KingSora/OverlayScrollbars/issues/257
-  options: OverlayScrollbars.Options = {
-    callbacks: {
-      onScroll: () => {
-        this.contentService.setScrollPos(
-          this.contentScrollbar.osInstance().scroll().position.y
-        );
-      },
-    },
-  };
+  // overlayscrollbars v2 moved scroll notification off the options object and
+  // onto the component's (osScroll) output, so the handler lives below.
+  options: PartialOptions = {};
+
+  onScrollbarScroll(): void {
+    const viewport = this.contentScrollbar?.osInstance()?.elements().viewport;
+    if (viewport) {
+      this.contentService.setScrollPos(viewport.scrollTop);
+    }
+  }
 
   constructor(
     private router: Router,

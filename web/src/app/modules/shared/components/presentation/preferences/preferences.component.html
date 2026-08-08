@@ -1,96 +1,95 @@
-<cds-modal size="lg" id="preferences-modal" [closable]="true" hidden (closeChange)="onCancel()">
+<cds-modal
+  size="lg"
+  id="preferences-modal"
+  [closable]="true"
+  hidden
+  (closeChange)="onCancel()"
+>
   <cds-modal-header>
     <h4 cds-text="title" cds-first-focus tabindex="-1">Preferences</h4>
   </cds-modal-header>
   <cds-modal-content>
     <form [formGroup]="form" class="clr-form">
       <clr-tabs clrLayout="vertical">
-        <clr-tab
-          *ngFor="let panel of preferences?.panels; trackBy: trackByIdentity"
-        >
+        @for (panel of preferences?.panels; track trackByIdentity($index,
+        panel)) {
+        <clr-tab>
           <button clrTabLink>{{ panel.name }}</button>
           <ng-template [(clrIfActive)]="activeTabs[panel.name]">
             <clr-tab-content>
-              <section *ngFor="let section of panel.sections">
+              @for (section of panel.sections; track section) {
+              <section>
                 <h4>{{ section.name }}</h4>
-
-                <ng-container
-                  *ngFor="
-                    let element of section.elements;
-                    trackBy: trackByIdentity
-                  "
-                >
-                  <ng-container [ngSwitch]="element.type">
-                    <ng-container *ngSwitchCase="'radio'">
-                      <clr-radio-wrapper
-                        *ngFor="
-                          let r of element.config.values;
-                          trackBy: trackByIdentity
-                        "
-                      >
-                        <input
-                          type="radio"
-                          clrRadio
-                          [value]="r.value"
-                          [formControlName]="element.name"
-                        />
-                        <label>{{ r.label }}</label>
-                      </clr-radio-wrapper>
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'input'">
-                      <div class="clr-form-control">
-                        <label
-                          [for]="'section.' + element.name"
-                          class="clr-control-label"
-                        >{{ element.config.label }}</label
-                        >
-                        <div class="clr-control-container">
-                          <div class="clr-input-wrapper">
-                            <input
-                              [id]="'section.' + element.name"
-                              type="text"
-                              class="clr-input"
-                              [placeholder]="element.config.placeholder"
-                              [value]="element.value"
-                              [formControlName]="element.name"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'dropdown'">
-                      <clr-select-container>
-                        <label>{{ element.label }}</label>
-                        <select clrSelect name="options"
-                                [formControlName]="element.name">
-                          <option
-                            *ngFor="let r of element.config.items;
-                              trackBy: trackByIdentity" [value]="r.name"
-                          >{{ r.label }}</option>
-                        </select>
-                      </clr-select-container>
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'text'">
-                      <span cds-text="body">
-                        <app-view-text [view]="element.textConfig"></app-view-text>
-                      </span>
-                    </ng-container>
-                    <div *ngSwitchDefault>
-                      <p>not sure what to do with {{ element.type }}</p>
+                @for ( element of section.elements; track
+                trackByIdentity($index, element)) { @switch (element.type) {
+                @case ('radio') { @for ( r of element.config.values; track
+                trackByIdentity($index, r)) {
+                <clr-radio-wrapper>
+                  <input
+                    type="radio"
+                    clrRadio
+                    [value]="r.value"
+                    [formControlName]="element.name"
+                  />
+                  <label>{{ r.label }}</label>
+                </clr-radio-wrapper>
+                } } @case ('input') {
+                <div class="clr-form-control">
+                  <label
+                    [for]="'section.' + element.name"
+                    class="clr-control-label"
+                    >{{ element.config.label }}</label
+                  >
+                  <div class="clr-control-container">
+                    <div class="clr-input-wrapper">
+                      <input
+                        [id]="'section.' + element.name"
+                        type="text"
+                        class="clr-input"
+                        [placeholder]="element.config.placeholder"
+                        [value]="element.value"
+                        [formControlName]="element.name"
+                      />
                     </div>
-                  </ng-container>
-                </ng-container>
+                  </div>
+                </div>
+                } @case ('dropdown') {
+                <clr-select-container>
+                  <label>{{ element.label }}</label>
+                  <select
+                    clrSelect
+                    name="options"
+                    [formControlName]="element.name"
+                  >
+                    @for (r of element.config.items; track
+                    trackByIdentity($index, r)) {
+                    <option [value]="r.name">{{ r.label }}</option>
+                    }
+                  </select>
+                </clr-select-container>
+                } @case ('text') {
+                <span cds-text="body">
+                  <app-view-text [view]="element.textConfig"></app-view-text>
+                </span>
+                } @default {
+                <div>
+                  <p>not sure what to do with {{ element.type }}</p>
+                </div>
+                } } }
               </section>
+              }
             </clr-tab-content>
           </ng-template>
         </clr-tab>
+        }
       </clr-tabs>
     </form>
   </cds-modal-content>
   <cds-modal-actions>
     <cds-button action="outline" (click)="onReset()">Reset</cds-button>
-    <cds-button class="btn-cancel" action="outline" (click)="onCancel()">Cancel</cds-button>
+    <cds-button class="btn-cancel" action="outline" (click)="onCancel()"
+      >Cancel</cds-button
+    >
     <cds-button (click)="onSubmit()">Ok</cds-button>
   </cds-modal-actions>
 </cds-modal>
-

@@ -8,7 +8,7 @@
   }
 
   cds-input {
-    &:not(:first-child){
+    &:not(:first-child) {
       margin-left: 1rem;
     }
     overflow: hidden; // Prevent overflow parent

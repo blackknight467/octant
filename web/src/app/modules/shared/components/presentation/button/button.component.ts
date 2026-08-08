@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Output,
   SecurityContext,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   ButtonView,
@@ -22,6 +23,8 @@ import { ModalService } from '../../../services/modal/modal.service';
   selector: 'app-button',
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);

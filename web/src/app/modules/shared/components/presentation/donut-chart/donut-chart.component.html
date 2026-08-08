@@ -1,5 +1,12 @@
 <div class="svg">
-  <svg version="1.1" [attr.width]="scale" [attr.height]="scale" [attr.viewBox]="viewBox()" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    version="1.1"
+    [attr.width]="scale"
+    [attr.height]="scale"
+    [attr.viewBox]="viewBox()"
+    preserveAspectRatio="xMidYMid meet"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <defs>
       <filter id="darker-filter">
         <feColorMatrix
@@ -8,19 +15,34 @@
           values="0.75 0 0 0 0
                   0 0.75 0 0 0
                   0 0 0.75 0 0
-                  0 0 0 1 0 "/>
+                  0 0 0 1 0 "
+        />
       </filter>
     </defs>
     <g pointer-events="fill">
-      <path *ngFor="let segment of segments;let i = index;trackBy: trackByDescriptor" (mouseenter)="mouseEnterEvent($event,i)" (mouseleave)="mouseLeaveEvent()"
-            [attr.id]="segment?.id"
-            [attr.fill]="segment?.fillColor"  [attr.data-order]="i" [attr.d]="segment?.path"
+      @for (segment of segments; track trackByDescriptor(i, segment); let i =
+      $index) {
+      <path
+        (mouseenter)="mouseEnterEvent($event, i)"
+        (mouseleave)="mouseLeaveEvent()"
+        [attr.id]="segment?.id"
+        [attr.fill]="segment?.fillColor"
+        [attr.data-order]="i"
+        [attr.d]="segment?.path"
       ></path>
+      }
     </g>
     <g class="donut-text">
       <text x="50%" y="50%" class="chart-number">{{ this.itemCount() }}</text>
       <text x="50%" y="50%" class="chart-label">{{ this.itemLabel() }}</text>
     </g>
   </svg>
-  <div class="donut-tooltip" *ngIf="selectedSegment >= 0" [ngStyle]="{ 'margin-top': tooltipY, 'margin-left': tooltipX }">{{tooltipText}}</div>
+  @if (selectedSegment >= 0) {
+  <div
+    class="donut-tooltip"
+    [ngStyle]="{ 'margin-top': tooltipY, 'margin-left': tooltipX }"
+  >
+    {{ tooltipText }}
+  </div>
+  }
 </div>

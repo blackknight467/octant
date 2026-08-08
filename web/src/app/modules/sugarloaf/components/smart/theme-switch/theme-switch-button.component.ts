@@ -1,7 +1,13 @@
 // Copyright (c) 2019 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ThemeService } from '../../../../shared/services/theme/theme.service';
 import { Subscription } from 'rxjs';
 
@@ -9,6 +15,8 @@ import { Subscription } from 'rxjs';
   selector: 'app-theme-switch-button',
   templateUrl: './theme-switch-button.component.html',
   styleUrls: ['./theme-switch-button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ThemeSwitchButtonComponent implements OnInit, OnDestroy {
   @Input() public collapsed: boolean;

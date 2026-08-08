@@ -1,4 +1,9 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Renderer2,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ElectronService } from '../../../modules/shared/services/electron/electron.service';
 import { ThemeService } from '../../../modules/shared/services/theme/theme.service';
 
@@ -6,6 +11,8 @@ import { ThemeService } from '../../../modules/shared/services/theme/theme.servi
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.sass'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HomeComponent implements OnInit {
   constructor(

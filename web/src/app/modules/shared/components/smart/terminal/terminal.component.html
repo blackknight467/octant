@@ -7,11 +7,9 @@
       [value]="selectedContainer"
       (change)="onContainerChange($event.target.value)"
     >
-      <option
-        *ngFor="let container of containers; trackBy: trackByIdentity"
-        value="{{ container }}"
-        >{{ container }}</option
-      >
+      @for (container of containers; track trackByIdentity($index, container)) {
+      <option value="{{ container }}">{{ container }}</option>
+      }
     </select>
   </clr-select-container>
   <div class="app-terminal" #terminal></div>

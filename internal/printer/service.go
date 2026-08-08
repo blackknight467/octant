@@ -13,6 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -404,11 +405,14 @@ func createServiceEndpointsView(ctx context.Context, service *corev1.Service, op
 		return nil, errors.New("service is nil")
 	}
 
+	// A service's endpoints live in one or more EndpointSlices labelled with
+	// the service name. v1 Endpoints is deprecated as of k8s 1.33.
+	selector := labels.Set{discoveryv1.LabelServiceName: service.Name}
 	key := store.Key{
 		Namespace:  service.Namespace,
-		APIVersion: "v1",
-		Kind:       "Endpoints",
-		Name:       service.Name,
+		APIVersion: "discovery.k8s.io/v1",
+		Kind:       "EndpointSlice",
+		Selector:   &selector,
 	}
 
 	cols := component.NewTableCols("Target", "IP", "Node Name")
@@ -418,47 +422,84 @@ func createServiceEndpointsView(ctx context.Context, service *corev1.Service, op
 		return table, nil
 	}
 
-	object, err := o.Get(ctx, key)
+	list, _, err := o.List(ctx, key)
 	if err != nil {
-		return nil, errors.Wrapf(err, "get endpoints for service %s", service.Name)
+		return nil, errors.Wrapf(err, "list endpoint slices for service %s", service.Name)
 	}
-	if object == nil {
+	if list == nil {
 		return table, nil
 	}
 
-	endpoints := &corev1.Endpoints{}
-	if err := scheme.Scheme.Convert(object, endpoints, 0); err != nil {
-		return nil, errors.Wrap(err, "convert unstructured object to endpoints")
-	}
+	// A dual-stack Service is backed by one EndpointSlice per address family,
+	// each holding an entry for every backing pod. v1 Endpoints only ever listed
+	// the primary family, so restrict to that rather than showing each pod twice.
+	primaryAddressType := primaryEndpointSliceAddressType(service)
 
-	for _, subset := range endpoints.Subsets {
-		for _, address := range subset.Addresses {
-			row := component.TableRow{}
+	for i := range list.Items {
+		endpointSlice := &discoveryv1.EndpointSlice{}
+		if err := scheme.Scheme.Convert(&list.Items[i], endpointSlice, 0); err != nil {
+			return nil, errors.Wrap(err, "convert unstructured object to endpoint slice")
+		}
 
-			var target component.Component = component.NewText("No target")
-			if targetRef := address.TargetRef; targetRef != nil {
-				// Only references to v1/Pod are possible here
-				target, err = options.Link.ForGVK(service.Namespace, "v1", targetRef.Kind,
-					targetRef.Name, targetRef.Name)
-				if err != nil {
-					return nil, err
+		if primaryAddressType != "" && endpointSlice.AddressType != primaryAddressType {
+			continue
+		}
+
+		for _, endpoint := range endpointSlice.Endpoints {
+			if !kubernetes.EndpointReady(endpoint) {
+				continue
+			}
+
+			for _, address := range endpoint.Addresses {
+				row := component.TableRow{}
+
+				var target component.Component = component.NewText("No target")
+				if targetRef := endpoint.TargetRef; targetRef != nil {
+					// Only references to v1/Pod are possible here
+					target, err = options.Link.ForGVK(service.Namespace, "v1", targetRef.Kind,
+						targetRef.Name, targetRef.Name)
+					if err != nil {
+						return nil, err
+					}
 				}
+
+				row["Target"] = target
+				row["IP"] = component.NewText(address)
+
+				nodeName := ""
+				if endpoint.NodeName != nil {
+					nodeName = *endpoint.NodeName
+				}
+				row["Node Name"] = component.NewText(nodeName)
+
+				table.Add(row)
 			}
-
-			row["Target"] = target
-			row["IP"] = component.NewText(address.IP)
-
-			nodeName := ""
-			if address.NodeName != nil {
-				nodeName = *address.NodeName
-			}
-			row["Node Name"] = component.NewText(nodeName)
-
-			table.Add(row)
 		}
 	}
 
+	// The object store lists from an informer indexer, whose order is undefined.
+	// Without this the table reshuffles on every content refresh once a Service
+	// has more than one EndpointSlice.
+	table.Sort("IP")
+
 	return table, nil
+}
+
+// primaryEndpointSliceAddressType returns the EndpointSlice address type matching
+// the Service's primary IP family, or "" when the Service does not declare one.
+func primaryEndpointSliceAddressType(service *corev1.Service) discoveryv1.AddressType {
+	if len(service.Spec.IPFamilies) == 0 {
+		return ""
+	}
+
+	switch service.Spec.IPFamilies[0] {
+	case corev1.IPv4Protocol:
+		return discoveryv1.AddressTypeIPv4
+	case corev1.IPv6Protocol:
+		return discoveryv1.AddressTypeIPv6
+	default:
+		return ""
+	}
 }
 
 func describePortShort(port corev1.ServicePort) string {

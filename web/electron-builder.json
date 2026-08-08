@@ -19,7 +19,10 @@
     "!_config.yml",
     "!karma.conf.js",
     "!tsconfig.json",
-    "!tslint.json"
+    "!tslint.json",
+    "!coverage/",
+    "!documentation.json",
+    "!.angular/**/*"
   ],
   "nsis": {
     "differentialPackage": false

@@ -11,15 +11,13 @@ describe('EditorComponent', () => {
   let component: EditorComponent;
   let fixture: ComponentFixture<EditorComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-        imports: [MonacoEditorModule],
-        declarations: [EditorComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+      imports: [MonacoEditorModule],
+      declarations: [EditorComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(EditorComponent);

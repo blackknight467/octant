@@ -1,6 +1,8 @@
 <div class="filters">
-  <div class="filter" *ngFor="let filter of filters; trackBy: identifyFilter">
+  @for (filter of filters; track identifyFilter($index, filter)) {
+  <div class="filter">
     {{ filter.key }}:{{ filter.value }}
     <a class="filter-remove" (click)="remove(filter)"></a>
   </div>
+  }
 </div>

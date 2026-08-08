@@ -38,7 +38,7 @@ func (e *DeploymentConfigurationEditor) ActionName() string {
 }
 
 // Handle edits a deployment. Supported edits:
-//   * replicas
+//   - replicas
 func (e *DeploymentConfigurationEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	e.logger.
 		With("payload", payload, "actionName", e.ActionName()).

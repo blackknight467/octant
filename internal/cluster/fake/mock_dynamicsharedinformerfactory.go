@@ -49,6 +49,18 @@ func (mr *MockDynamicSharedInformerFactoryMockRecorder) ForResource(gvr interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForResource", reflect.TypeOf((*MockDynamicSharedInformerFactory)(nil).ForResource), gvr)
 }
 
+// Shutdown mocks base method.
+func (m *MockDynamicSharedInformerFactory) Shutdown() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Shutdown")
+}
+
+// Shutdown indicates an expected call of Shutdown.
+func (mr *MockDynamicSharedInformerFactoryMockRecorder) Shutdown() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockDynamicSharedInformerFactory)(nil).Shutdown))
+}
+
 // Start mocks base method.
 func (m *MockDynamicSharedInformerFactory) Start(stopCh <-chan struct{}) {
 	m.ctrl.T.Helper()

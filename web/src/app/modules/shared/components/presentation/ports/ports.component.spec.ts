@@ -11,13 +11,11 @@ describe('PortsComponent', () => {
   let component: PortsComponent;
   let fixture: ComponentFixture<PortsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [PortsComponent, ButtonGroupComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [PortsComponent, ButtonGroupComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PortsComponent);

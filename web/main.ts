@@ -71,7 +71,7 @@ function createWindow(): BrowserWindow {
       webSecurity: false,
       allowRunningInsecureContent: true,
       contextIsolation: false, // false if you want to run 2e2 test with Spectron
-      enableRemoteModule: true, // true if you want to run 2e2 test  with Spectron or use remote module in renderer context (ie. Angular)
+      // enableRemoteModule was removed in Electron 14 along with the remote module.
     },
   };
 
@@ -123,9 +123,11 @@ function createWindow(): BrowserWindow {
   }
 );
 
-  win.webContents.on('new-window', (event, url: string) => {
-    event.preventDefault();
+  // Electron 22 removed the 'new-window' event in favour of setWindowOpenHandler.
+  // Keep external links going to the system browser rather than a new Electron window.
+  win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
+    return { action: 'deny' };
   });
 
   win.on('close', event => {

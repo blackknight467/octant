@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import '@cds/core/icon/register.js';
-import { ClarityIcons, clusterIcon } from '@cds/core/icon';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   ContextDescription,
   KubeContextService,
@@ -15,6 +18,8 @@ import { Subscription } from 'rxjs';
   selector: 'app-context-selector',
   templateUrl: './context-selector.component.html',
   styleUrls: ['./context-selector.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContextSelectorComponent implements OnInit, OnDestroy {
   contexts: ContextDescription[];
@@ -22,9 +27,7 @@ export class ContextSelectorComponent implements OnInit, OnDestroy {
 
   private kubeContextSubscription: Subscription;
 
-  constructor(private kubeContext: KubeContextService) {
-    ClarityIcons.addIcons(clusterIcon);
-  }
+  constructor(private kubeContext: KubeContextService) {}
 
   ngOnInit() {
     this.kubeContextSubscription = this.kubeContext

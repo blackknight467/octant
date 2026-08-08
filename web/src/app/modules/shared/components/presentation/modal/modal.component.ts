@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import '@cds/core/button/register.js';
 import '@cds/core/modal/register';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
@@ -25,6 +31,8 @@ interface Choice {
   selector: 'app-view-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ModalComponent
   extends AbstractViewComponent<ModalView>

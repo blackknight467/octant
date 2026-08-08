@@ -10,6 +10,8 @@ import { DebugElement, ElementRef } from '@angular/core';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { StringEscapePipe } from '../../../pipes/stringEscape/string.escape.pipe';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 
 /**
  * Adds lines of logs to LogsComponent
@@ -37,14 +39,18 @@ describe('LogsComponent', () => {
   let component: LogsComponent;
   let fixture: ComponentFixture<LogsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
+      providers: [
+        { provide: WindowToken, useFactory: windowProvider },
+        // LogsComponent opens a pod-log stream on init. Without this it uses the
+        // real WebsocketService, which dials karma's own server and reconnects
+        // forever; enough leaked sockets stall the run into a timeout.
+        { provide: WebsocketService, useClass: WebsocketServiceMock },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);
@@ -62,11 +68,10 @@ describe('LogsComponent', () => {
         durations: [],
       },
     } as LogsView;
-
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
@@ -141,7 +146,7 @@ describe('LogsComponent', () => {
     expect(selectHighlights[0].nativeElement.innerText).toEqual('Just');
   });
 
-  it('forward button should wrap search at bottom', () => {
+  it('forward button should wrap search at bottom', async () => {
     component.containerLogs = [
       {
         timestamp: '2019-05-06T18:50:06.554540433Z',
@@ -156,6 +161,10 @@ describe('LogsComponent', () => {
     ];
     component.filterText = 'Test log';
     fixture.detectChanges();
+    // Selecting the first match is deferred to a microtask (see
+    // LogsComponent.ngAfterViewChecked), so let it land before driving the
+    // next/prev buttons — otherwise it resets the selection mid-test.
+    await fixture.whenStable();
 
     const prevButton =
       fixture.debugElement.nativeElement.querySelector('#button-prev');
@@ -168,22 +177,21 @@ describe('LogsComponent', () => {
     expect(badgeElement.innerText).toBe('1/2 items');
     nextButton.click();
 
-    fixture.whenStable().then(() => {
-      const offsetSecondElement = getSelectedHighlightTop();
+    await fixture.whenStable();
+    const offsetSecondElement = getSelectedHighlightTop();
 
-      fixture.detectChanges();
-      expect(badgeElement.innerText).toBe('2/2 items');
+    fixture.detectChanges();
+    expect(badgeElement.innerText).toBe('2/2 items');
 
-      nextButton.click();
-      fixture.detectChanges();
-      expect(getSelectedHighlightTop()).toBeLessThan(offsetSecondElement); // should roll-up to 1st
-      expect(badgeElement.innerText).toBe('1/2 items');
+    nextButton.click();
+    fixture.detectChanges();
+    expect(getSelectedHighlightTop()).toBeLessThan(offsetSecondElement); // should roll-up to 1st
+    expect(badgeElement.innerText).toBe('1/2 items');
 
-      prevButton.click();
-      fixture.detectChanges();
-      expect(getSelectedHighlightTop()).toBe(offsetSecondElement); // should come back to 2nd
-      expect(badgeElement.innerText).toBe('2/2 items');
-    });
+    prevButton.click();
+    fixture.detectChanges();
+    expect(getSelectedHighlightTop()).toBe(offsetSecondElement); // should come back to 2nd
+    expect(badgeElement.innerText).toBe('2/2 items');
   });
 
   function getSelectedHighlightTop() {

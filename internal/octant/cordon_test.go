@@ -95,7 +95,7 @@ func Test_Cordon(t *testing.T) {
 			_, err := fakeClientset.CoreV1().Nodes().Create(context.TODO(), node, metav1.CreateOptions{})
 			require.NoError(t, err)
 
-			cordon := octant.NewCordon(objectStore, clusterClient)
+			cordon := octant.NewCordon(objectStore, func() cluster.ClientInterface { return clusterClient })
 			assert.Equal(t, octant.ActionOverviewCordon, cordon.ActionName())
 
 			payload := action.CreatePayload(octant.ActionOverviewCordon, map[string]interface{}{
@@ -179,7 +179,7 @@ func Test_Uncordon(t *testing.T) {
 			_, err := fakeClientset.CoreV1().Nodes().Create(context.TODO(), node, metav1.CreateOptions{})
 			require.NoError(t, err)
 
-			uncordon := octant.NewUncordon(objectStore, clusterClient)
+			uncordon := octant.NewUncordon(objectStore, func() cluster.ClientInterface { return clusterClient })
 			assert.Equal(t, octant.ActionOverviewUncordon, uncordon.ActionName())
 
 			payload := action.CreatePayload(octant.ActionOverviewUncordon, map[string]interface{}{

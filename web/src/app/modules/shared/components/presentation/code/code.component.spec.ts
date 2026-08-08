@@ -9,13 +9,11 @@ describe('CodeComponent', () => {
   let component: CodeComponent;
   let fixture: ComponentFixture<CodeComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [CodeComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [CodeComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CodeComponent);
@@ -27,17 +25,14 @@ describe('CodeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it(
-    'copy button copies text',
-    waitForAsync(() => {
-      spyOn(component, 'copyToClipboard');
+  it('copy button copies text', waitForAsync(() => {
+    spyOn(component, 'copyToClipboard');
 
-      const button = fixture.debugElement.nativeElement.querySelector('button');
-      button.click();
+    const button = fixture.debugElement.nativeElement.querySelector('button');
+    button.click();
 
-      fixture.whenStable().then(() => {
-        expect(component.copyToClipboard).toHaveBeenCalled();
-      });
-    })
-  );
+    fixture.whenStable().then(() => {
+      expect(component.copyToClipboard).toHaveBeenCalled();
+    });
+  }));
 });

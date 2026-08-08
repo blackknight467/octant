@@ -1,4 +1,9 @@
-import { ChangeDetectorRef, Component, SecurityContext } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  SecurityContext,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { SignpostView, View } from '../../../models/content';
 import { parse } from 'marked';
@@ -8,6 +13,8 @@ import { DomSanitizer } from '@angular/platform-browser';
   selector: 'app-signpost',
   templateUrl: './signpost.component.html',
   styleUrls: ['./signpost.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SignpostComponent extends AbstractViewComponent<SignpostView> {
   message: string;

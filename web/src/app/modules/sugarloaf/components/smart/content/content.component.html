@@ -1,21 +1,22 @@
-<overlay-scrollbars #contentScrollbar [options]="options" class="scrollbar">
+<overlay-scrollbars
+  #contentScrollbar
+  [options]="options"
+  (osScroll)="onScrollbarScroll()"
+  class="scrollbar"
+>
   <div
     clrFocusOnViewInit
     class="content-component"
     [class.loading-content]="!hasReceivedContent"
   >
-    <ng-container *ngIf="hasReceivedContent && !showSpinner; else loading">
-        <app-object-tabs
-          [title]="title"
-          [views]="views"
-          [titleComponents]="titleComponents"
-        ></app-object-tabs>
-    </ng-container>
-
-    <ng-template #loading>
-      <span class="spinner">
-        Loading...
-      </span>
-    </ng-template>
+    @if (hasReceivedContent && !showSpinner) {
+    <app-object-tabs
+      [title]="title"
+      [views]="views"
+      [titleComponents]="titleComponents"
+    ></app-object-tabs>
+    } @else {
+    <span class="spinner"> Loading... </span>
+    }
   </div>
 </overlay-scrollbars>

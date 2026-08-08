@@ -16,18 +16,18 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - 1.17.x
+          - 1.26.x
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     name: Golang tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '24.19.0'
           cache: 'npm'
           cache-dependency-path: 'web/package-lock.json'
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: install_prettier
@@ -43,10 +43,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v5
         with:
-          go-version: 1.17.x
-      - uses: actions/checkout@v2
+          go-version: 1.26.x
+      - uses: actions/checkout@v4
       - name: Get tag
         run: echo "GITHUB_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Verify tag
@@ -61,10 +61,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     name: Karma tests on ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '24.19.0'
           cache: 'npm'
           cache-dependency-path: 'web/package-lock.json'
       - name: run_karma
@@ -76,24 +76,28 @@ jobs:
     strategy:
       matrix:
         go-version:
-          - 1.17.x
+          - 1.26.x
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     name: Build on ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '24.19.0'
           cache: 'npm'
           cache-dependency-path: 'web/package-lock.json'
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Build web assets
         run: |
           go run build.go web-build
-      - uses: actions/upload-artifact@v2
+      # The web bundle is platform-independent, so upload it from one platform
+      # only. upload-artifact v4 rejects a repeat upload under the same name,
+      # where v2 merged them.
+      - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'ubuntu-latest'
         with:
           name: bundle
           path: web/dist
@@ -123,10 +127,12 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           package_root: 'web'
           build_script_name: 'build-electron'
-      - uses: actions/upload-artifact@v2
+      # Each platform produces a different installer. v2 merged same-named
+      # uploads; v4 requires distinct names, recombined on download below.
+      - uses: actions/upload-artifact@v4
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          name: electron-artifacts
+          name: electron-artifacts-${{ matrix.platform }}
           path: web/release/Octant*
 
   goreleaser:
@@ -135,17 +141,17 @@ jobs:
     runs-on: ubuntu-latest
     container: goreleaser/goreleaser:v1.0.0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: bundle
           path: web/dist
       - name: Run GoReleaser
         run: |
           goreleaser --skip-publish
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: binary-artifacts
           path: dist
@@ -155,14 +161,15 @@ jobs:
     needs: [goreleaser, bundle_assets]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           name: binary-artifacts
           path: dist
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
-          name: electron-artifacts
+          pattern: electron-artifacts-*
+          merge-multiple: true
           path: web/release
       - name: Create release
         # actions/upload-release-asset@v1 does not support glob

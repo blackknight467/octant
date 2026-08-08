@@ -4,18 +4,16 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { ThemeService } from './theme.service';
 import { DOCUMENT } from '@angular/common';
-import {
-  OverlayScrollbarsComponent,
-  OverlayscrollbarsModule,
-} from 'overlayscrollbars-ngx';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 describe('ThemeService', () => {
   let service: ThemeService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [OverlayScrollbarsComponent],
-      providers: [ThemeService, OverlayscrollbarsModule, Document],
+      imports: [OverlayscrollbarsModule],
+      declarations: [],
+      providers: [ThemeService, Document],
     });
 
     service = TestBed.inject(ThemeService);
@@ -25,27 +23,25 @@ describe('ThemeService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should load light theme file correctly', inject(
+  it('should apply the light theme via the cds-theme attribute', inject(
     [DOCUMENT],
     (document: Document) => {
-      service.loadCSS('assets/css/clr-ui.min.css');
+      service.applyTheme('light');
 
-      const themeLink = document.getElementById(
-        'client-theme'
-      ) as HTMLLinkElement;
-      expect(themeLink.href).toContain('assets/css/clr-ui.min.css');
+      expect(document.body.getAttribute('cds-theme')).toBe('light');
+      expect(document.body.classList.contains('light')).toBe(true);
+      expect(document.body.classList.contains('dark')).toBe(false);
     }
   ));
 
-  it('should load dark theme file correctly', inject(
+  it('should apply the dark theme via the cds-theme attribute', inject(
     [DOCUMENT],
     (document: Document) => {
-      service.loadCSS('assets/css/clr-ui-dark.min.css');
+      service.applyTheme('dark');
 
-      const themeLink = document.getElementById(
-        'client-theme'
-      ) as HTMLLinkElement;
-      expect(themeLink.href).toContain('assets/css/clr-ui-dark.min.css');
+      expect(document.body.getAttribute('cds-theme')).toBe('dark');
+      expect(document.body.classList.contains('dark')).toBe(true);
+      expect(document.body.classList.contains('light')).toBe(false);
     }
   ));
 });

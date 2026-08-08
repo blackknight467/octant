@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   ButtonGroupView,
   FlexLayoutItem,
@@ -15,6 +15,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-flexlayout',
   templateUrl: './flexlayout.component.html',
   styleUrls: ['./flexlayout.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class FlexlayoutComponent extends AbstractViewComponent<any> {
   buttonGroup: ButtonGroupView;

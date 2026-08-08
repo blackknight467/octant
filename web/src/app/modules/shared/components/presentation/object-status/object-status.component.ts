@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  Input,
+  ViewEncapsulation,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Node } from 'src/app/modules/shared/models/content';
 
 @Component({
@@ -10,6 +15,8 @@ import { Node } from 'src/app/modules/shared/models/content';
   templateUrl: './object-status.component.html',
   styleUrls: ['./object-status.component.scss'],
   encapsulation: ViewEncapsulation.Emulated,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ObjectStatusComponent {
   @Input() node: Node;

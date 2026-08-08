@@ -21,6 +21,7 @@ import (
 	"github.com/vmware-tanzu/octant/internal/testutil"
 	"github.com/vmware-tanzu/octant/pkg/action"
 	actionFake "github.com/vmware-tanzu/octant/pkg/action/fake"
+	"github.com/vmware-tanzu/octant/pkg/cluster"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/store/fake"
 )
@@ -75,7 +76,7 @@ func Test_CronJobTrigger(t *testing.T) {
 	_, err := fakeClientset.BatchV1().Jobs(cronjob.Namespace).Create(context.TODO(), jobToCreate, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	trigger := octant.NewCronJobTrigger(objectStore, clusterClient)
+	trigger := octant.NewCronJobTrigger(objectStore, func() cluster.ClientInterface { return clusterClient })
 	assert.Equal(t, octant.ActionOverviewCronjob, trigger.ActionName())
 
 	payload := action.CreatePayload(octant.ActionOverviewCronjob, map[string]interface{}{
@@ -123,7 +124,7 @@ func Test_CronJobHandler(t *testing.T) {
 			assert.NotNil(t, alert.Expiration)
 		}).AnyTimes()
 
-	suspend := octant.NewCronJobSuspend(objectStore, clusterClient)
+	suspend := octant.NewCronJobSuspend(objectStore)
 	assert.Equal(t, octant.ActionOverviewSuspendCronjob, suspend.ActionName())
 
 	suspendPayload := action.CreatePayload(octant.ActionOverviewSuspendCronjob, map[string]interface{}{
@@ -135,7 +136,7 @@ func Test_CronJobHandler(t *testing.T) {
 
 	require.NoError(t, suspend.Handle(ctx, alerter, suspendPayload))
 
-	resume := octant.NewCronJobResume(objectStore, clusterClient)
+	resume := octant.NewCronJobResume(objectStore)
 	assert.Equal(t, octant.ActionOverviewResumeCronjob, resume.ActionName())
 
 	resumePayload := action.CreatePayload(octant.ActionOverviewSuspendCronjob, map[string]interface{}{

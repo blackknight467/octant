@@ -108,9 +108,12 @@ func (p *Resource) Handler(printFunc interface{}) error {
 // ValidatePrintHandlerFunc validates print handler signature.
 // printFunc is the function that will be called to print an object.
 // printFunc must be of the following type:
-//   func printFunc(ctx context.Context, object ObjectType, options Options) (component.Component, error)
+//
+//	func printFunc(ctx context.Context, object ObjectType, options Options) (component.Component, error)
+//
 // where:
-//   ObjectType is the type of object that will be printed
+//
+//	ObjectType is the type of object that will be printed
 func ValidatePrintHandlerFunc(printFunc reflect.Value) error {
 	if printFunc.Kind() != reflect.Func {
 		return errors.Errorf("invalid print handler. %#v is not a function", printFunc)

@@ -7,24 +7,21 @@ import {
 
 import { CardComponent } from './card.component';
 import { Action, CardView, TextView } from '../../../models/content';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { ViewService } from '../../../services/view/view.service';
 import { viewServiceStub } from 'src/app/testing/view-service.stub';
 import { SharedModule } from '../../../shared.module';
 import { FormComponent } from '../form/form.component';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { EditorComponent } from '../../smart/editor/editor.component';
-import {
-  OverlayScrollbarsComponent,
-  OverlayscrollbarsModule,
-} from 'overlayscrollbars-ngx';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 describe('CardComponent', () => {
   let component: CardComponent;
   let fixture: ComponentFixture<CardComponent>;
   let formComponent: FormComponent;
   let formFixture: ComponentFixture<FormComponent>;
-  const formBuilder: FormBuilder = new FormBuilder();
+  const formBuilder: UntypedFormBuilder = new UntypedFormBuilder();
 
   const action: Action = {
     name: 'actionName',
@@ -34,19 +31,17 @@ describe('CardComponent', () => {
     },
   };
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [EditorComponent, OverlayScrollbarsComponent],
-        imports: [SharedModule, OverlayscrollbarsModule],
-        providers: [
-          { provide: FormBuilder, useValue: formBuilder },
-          { provide: ViewService, useValue: viewServiceStub },
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [EditorComponent],
+      imports: [SharedModule, OverlayscrollbarsModule],
+      providers: [
+        { provide: UntypedFormBuilder, useValue: formBuilder },
+        { provide: ViewService, useValue: viewServiceStub },
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CardComponent);
@@ -97,7 +92,7 @@ describe('CardComponent', () => {
   });
 
   it('should submit action', () => {
-    const formGroup: FormGroup = formBuilder.group({
+    const formGroup: UntypedFormGroup = formBuilder.group({
       formGroupExample: 'justForTest',
     });
 

@@ -19,6 +19,7 @@ import { JSONEditorView } from '../../../models/content';
   styleUrls: ['./json-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class JSONEditorComponent
   extends AbstractViewComponent<JSONEditorView>

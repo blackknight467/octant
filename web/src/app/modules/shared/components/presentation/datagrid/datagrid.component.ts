@@ -42,6 +42,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './datagrid.component.html',
   styleUrls: ['./datagrid.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class DatagridComponent
   extends AbstractViewComponent<TableView>

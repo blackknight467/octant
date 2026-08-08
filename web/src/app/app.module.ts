@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import { CommonModule, Location } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXhr,
+} from '@angular/common/http';
 import { Injectable, NgModule } from '@angular/core';
 import { RouteReuseStrategy, RouterModule } from '@angular/router';
 import { HomeComponent } from './components/smart/home/home.component';
@@ -13,6 +17,7 @@ import { highlightProvider } from './modules/shared/highlight';
 import { MonacoEditorModule } from '@materia-ui/ngx-monaco-editor';
 import { ComponentReuseStrategy } from './modules/shared/component-reuse.strategy';
 import { windowProvider, WindowToken } from './window';
+import { registerOctantIcons } from './modules/shared/icons';
 
 @Injectable()
 export class UnstripTrailingSlashLocation extends Location {
@@ -21,13 +26,15 @@ export class UnstripTrailingSlashLocation extends Location {
   }
 }
 
+registerOctantIcons();
+
 @NgModule({
   declarations: [HomeComponent],
+  bootstrap: [HomeComponent],
   imports: [
     CommonModule,
     BrowserModule,
     BrowserAnimationsModule,
-    HttpClientModule,
     RouterModule,
     MonacoEditorModule,
     // routing loads last
@@ -41,7 +48,7 @@ export class UnstripTrailingSlashLocation extends Location {
     highlightProvider(),
     { provide: RouteReuseStrategy, useClass: ComponentReuseStrategy },
     { provide: WindowToken, useFactory: windowProvider },
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
-  bootstrap: [HomeComponent],
 })
 export class AppModule {}

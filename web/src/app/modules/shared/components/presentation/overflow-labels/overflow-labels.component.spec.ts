@@ -14,18 +14,16 @@ describe('OverflowLabelsComponent', () => {
   let component: OverflowLabelsComponent;
   let fixture: ComponentFixture<OverflowLabelsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [OverflowLabelsComponent, OctantTooltipComponent],
-        providers: [
-          SharedModule,
-          LabelFilterService,
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [OverflowLabelsComponent, OctantTooltipComponent],
+      providers: [
+        SharedModule,
+        LabelFilterService,
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OverflowLabelsComponent);

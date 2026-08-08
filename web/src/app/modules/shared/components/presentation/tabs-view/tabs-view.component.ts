@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { TabsView, View } from '../../../models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -16,6 +21,8 @@ interface Tab {
   selector: 'app-tabs-view',
   templateUrl: './tabs-view.component.html',
   styleUrls: ['./tabs-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TabsViewComponent extends AbstractViewComponent<TabsView> {
   activeTab: string;

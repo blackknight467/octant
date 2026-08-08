@@ -1,4 +1,5 @@
-<div *ngIf="showModal" class="modal">
+@if (showModal) {
+<div class="modal">
   <div class="modal-dialog modal-xl" role="dialog" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
@@ -27,9 +28,9 @@
                 shape="exclamation-circle"
               ></clr-icon>
             </div>
-            <span *ngIf="inputValue === ''" class="clr-subtext"
-              >This can't be empty</span
-            >
+            @if (inputValue === '') {
+            <span class="clr-subtext">This can't be empty</span>
+            }
           </div>
         </form>
       </div>
@@ -46,4 +47,6 @@
     </div>
   </div>
 </div>
-<div *ngIf="showModal" class="modal-backdrop" aria-hidden="true"></div>
+} @if (showModal) {
+<div class="modal-backdrop" aria-hidden="true"></div>
+}

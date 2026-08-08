@@ -11,8 +11,9 @@ import (
 	"github.com/vmware-tanzu/octant/internal/octant"
 )
 
-//go:generate mockgen -destination=./fake/mock_state_manager.go -package=fake github.com/vmware-tanzu/octant/pkg/api StateManager
 // StateManager manages states for WebsocketState.
+//
+//go:generate mockgen -destination=./fake/mock_state_manager.go -package=fake github.com/vmware-tanzu/octant/pkg/api StateManager
 type StateManager interface {
 	Handlers() []octant.ClientRequestHandler
 	Start(ctx context.Context, state octant.State, s OctantClient)

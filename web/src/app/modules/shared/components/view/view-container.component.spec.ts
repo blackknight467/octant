@@ -11,28 +11,28 @@ import { TextComponent } from '../presentation/text/text.component';
 import { PodStatusView, TextView } from '../../models/content';
 import { SharedModule } from '../../shared.module';
 import { PodStatusComponent } from '../presentation/pod-status/pod-status.component';
+import { windowProvider, WindowToken } from '../../../../window';
 
 describe('ViewContainerComponent', () => {
   let component: ViewContainerComponent;
   let fixture: ComponentFixture<ViewContainerComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ViewContainerComponent],
-        imports: [SharedModule],
-        providers: [
-          {
-            provide: DYNAMIC_COMPONENTS_MAPPING,
-            useValue: {
-              text: TextComponent,
-              podStatus: PodStatusComponent,
-            },
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [ViewContainerComponent],
+      imports: [SharedModule],
+      providers: [
+        { provide: WindowToken, useFactory: windowProvider },
+        {
+          provide: DYNAMIC_COMPONENTS_MAPPING,
+          useValue: {
+            text: TextComponent,
+            podStatus: PodStatusComponent,
           },
-        ],
-      }).compileComponents();
-    })
-  );
+        },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ViewContainerComponent);

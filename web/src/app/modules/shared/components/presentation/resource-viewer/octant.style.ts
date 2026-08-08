@@ -1,4 +1,4 @@
-import { Stylesheet } from 'cytoscape';
+import cytoscape from 'cytoscape';
 
 const svgHealthy =
   color => `<svg version="1.1" width="36" height="36" viewBox="0 0 36 36" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
@@ -33,7 +33,7 @@ const renderImage = (ele, color) => {
   return 'data:image/svg+xml;base64,' + btoa(image);
 };
 
-export const ELEMENTS_STYLE: Stylesheet[] = [
+export const ELEMENTS_STYLE: cytoscape.StylesheetJson = [
   {
     selector: 'node',
     css: {
@@ -82,7 +82,7 @@ export const ELEMENTS_STYLE: Stylesheet[] = [
   },
 ];
 
-export const ELEMENTS_STYLE_DARK: Stylesheet[] = [
+export const ELEMENTS_STYLE_DARK: cytoscape.StylesheetJson = [
   {
     selector: 'node',
     css: {

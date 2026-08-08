@@ -13,20 +13,18 @@ describe('NavigationComponent', () => {
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-        imports: [NgSelectModule],
-        declarations: [
-          NavigationComponent,
-          NamespaceComponent,
-          DefaultPipe,
-          ThemeSwitchButtonComponent,
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+      imports: [NgSelectModule],
+      declarations: [
+        NavigationComponent,
+        NamespaceComponent,
+        DefaultPipe,
+        ThemeSwitchButtonComponent,
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(NavigationComponent);

@@ -5,35 +5,34 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ResourceViewerComponent } from './resource-viewer.component';
 import { SharedModule } from '../../../shared.module';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 import { ResourceViewerView } from '../../../models/content';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
+import { waitFor } from 'src/app/testing/wait-for';
 
 describe('ResourceViewerComponent', () => {
   let component: ResourceViewerComponent;
   let fixture: ComponentFixture<ResourceViewerComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [OverlayScrollbarsComponent],
-        imports: [SharedModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [SharedModule, OverlayscrollbarsModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ResourceViewerComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should show node labels', done => {
+  it('should show node labels', async () => {
     component.view = {
       config: {
         nodes: {
@@ -66,13 +65,14 @@ describe('ResourceViewerComponent', () => {
 
     fixture.detectChanges();
 
-    setTimeout(() => {
-      const header: DebugElement[] = fixture.debugElement.queryAll(
-        By.css('.label1')
-      );
-      expect(header.length).toEqual(1);
+    await waitFor(
+      () => fixture.debugElement.queryAll(By.css('.label1')).length > 0,
+      'cytoscape to render node labels'
+    );
 
-      done();
-    }, 100); // wait for cytoscape to update the view
+    const header: DebugElement[] = fixture.debugElement.queryAll(
+      By.css('.label1')
+    );
+    expect(header.length).toEqual(1);
   });
 });

@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { PodStatus } from '../../../models/pod-status';
 import { Point } from '../../../models/point';
@@ -16,8 +23,8 @@ export interface HoverStatus {
 @Component({
   selector: '[app-heptagon-grid-row]',
   template: `
+    @for (status of statuses; track trackByFn(i, status); let i = $index) {
     <svg:g
-      *ngFor="let status of statuses; let i = index; trackBy: trackByFn"
       app-heptagon
       [id]="name(status)"
       class="row"
@@ -27,8 +34,11 @@ export interface HoverStatus {
       [isFlipped]="isFlipped(i)"
       (hovered)="updateHover($event, i)"
     />
+    }
   `,
   styleUrls: ['./heptagon-grid-row.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HeptagonGridRowComponent implements OnInit {
   @Input()

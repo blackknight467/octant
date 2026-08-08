@@ -6,12 +6,14 @@ import {
   iconLookup,
 } from './indicator.component';
 import { CdsModule } from '@cds/angular';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { View } from '../../../models/content';
 
 @Component({
   template:
     '<app-indicator [status]="status" [detail]="detail"></app-indicator>',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 class WrapperComponent {
   status: number;
@@ -24,19 +26,16 @@ describe('IndicatorComponent', () => {
 
   let element: HTMLDivElement;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [WrapperComponent, IndicatorComponent],
-        imports: [CdsModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [WrapperComponent, IndicatorComponent],
+      imports: [CdsModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(WrapperComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   [Status.Ok, Status.Warning, Status.Error].forEach(v => {
@@ -55,8 +54,10 @@ describe('IndicatorComponent', () => {
       });
 
       it(`shows ${name} indicator`, () => {
-        const e = element.querySelector(`app-indicator cds-icon`);
-        expect(e.getAttribute('ng-reflect-shape')).toBe(iconLookup[v]);
+        const e = element.querySelector(`app-indicator clr-icon`);
+        // Angular 22 no longer emits ng-reflect-* debug attributes; Clarity's
+        // ClrIcon reflects the resolved shape onto the host instead.
+        expect(e.getAttribute('shape')).toBe(iconLookup[v]);
       });
     });
   });
@@ -69,7 +70,7 @@ describe('IndicatorComponent', () => {
     });
 
     it('does not show an indicator', () => {
-      expect(element.querySelector('app-indicator cds-icon')).toBeNull();
+      expect(element.querySelector('app-indicator clr-icon')).toBeNull();
     });
   });
 });

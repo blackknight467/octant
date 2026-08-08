@@ -5,32 +5,27 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ObjectStatusComponent } from './object-status.component';
 import { SharedModule } from '../../../shared.module';
-import {
-  OverlayScrollbarsComponent,
-  OverlayscrollbarsModule,
-} from 'overlayscrollbars-ngx';
 import { View } from '../../../models/content';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 describe('ObjectStatusComponent', () => {
   let component: ObjectStatusComponent;
   let fixture: ComponentFixture<ObjectStatusComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [OverlayScrollbarsComponent],
-        imports: [SharedModule, OverlayscrollbarsModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [SharedModule, OverlayscrollbarsModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ObjectStatusComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 

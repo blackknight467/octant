@@ -12,7 +12,11 @@ import { ThemeSwitchButtonComponent } from './components/smart/theme-switch/them
 import { UploaderComponent } from './components/smart/uploader/uploader.component';
 import { ClarityModule } from '@clr/angular';
 import { CdsModule } from '@cds/angular';
-import { HttpClientModule } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXhr,
+} from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -55,12 +59,10 @@ export class UnstripTrailingSlashLocation extends Location {
     CommonModule,
     ClarityModule,
     CdsModule,
-    HttpClientModule,
     FormsModule,
     NgSelectModule,
     OverlayscrollbarsModule,
     SharedModule,
-
     // routing must come last
     RouterModule.forChild(routes),
   ],
@@ -69,6 +71,7 @@ export class UnstripTrailingSlashLocation extends Location {
       provide: Location,
       useClass: UnstripTrailingSlashLocation,
     },
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
 })
 export class SugarloafModule {}

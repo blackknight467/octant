@@ -77,6 +77,41 @@ func (m *MockResourceInterface) EXPECT() *MockResourceInterfaceMockRecorder {
 	return m.recorder
 }
 
+// Apply mocks base method.
+func (m *MockResourceInterface) Apply(ctx context.Context, name string, obj *unstructured.Unstructured, options v1.ApplyOptions, subresources ...string) (*unstructured.Unstructured, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, name, obj, options}
+	for _, a := range subresources {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Apply", varargs...)
+	ret0, _ := ret[0].(*unstructured.Unstructured)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Apply indicates an expected call of Apply.
+func (mr *MockResourceInterfaceMockRecorder) Apply(ctx, name, obj, options interface{}, subresources ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, name, obj, options}, subresources...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockResourceInterface)(nil).Apply), varargs...)
+}
+
+// ApplyStatus mocks base method.
+func (m *MockResourceInterface) ApplyStatus(ctx context.Context, name string, obj *unstructured.Unstructured, options v1.ApplyOptions) (*unstructured.Unstructured, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyStatus", ctx, name, obj, options)
+	ret0, _ := ret[0].(*unstructured.Unstructured)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ApplyStatus indicates an expected call of ApplyStatus.
+func (mr *MockResourceInterfaceMockRecorder) ApplyStatus(ctx, name, obj, options interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyStatus", reflect.TypeOf((*MockResourceInterface)(nil).ApplyStatus), ctx, name, obj, options)
+}
+
 // Create mocks base method.
 func (m *MockResourceInterface) Create(ctx context.Context, obj *unstructured.Unstructured, options v1.CreateOptions, subresources ...string) (*unstructured.Unstructured, error) {
 	m.ctrl.T.Helper()
@@ -256,6 +291,41 @@ func NewMockNamespaceableResourceInterface(ctrl *gomock.Controller) *MockNamespa
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockNamespaceableResourceInterface) EXPECT() *MockNamespaceableResourceInterfaceMockRecorder {
 	return m.recorder
+}
+
+// Apply mocks base method.
+func (m *MockNamespaceableResourceInterface) Apply(ctx context.Context, name string, obj *unstructured.Unstructured, options v1.ApplyOptions, subresources ...string) (*unstructured.Unstructured, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, name, obj, options}
+	for _, a := range subresources {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Apply", varargs...)
+	ret0, _ := ret[0].(*unstructured.Unstructured)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Apply indicates an expected call of Apply.
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) Apply(ctx, name, obj, options interface{}, subresources ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, name, obj, options}, subresources...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).Apply), varargs...)
+}
+
+// ApplyStatus mocks base method.
+func (m *MockNamespaceableResourceInterface) ApplyStatus(ctx context.Context, name string, obj *unstructured.Unstructured, options v1.ApplyOptions) (*unstructured.Unstructured, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyStatus", ctx, name, obj, options)
+	ret0, _ := ret[0].(*unstructured.Unstructured)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ApplyStatus indicates an expected call of ApplyStatus.
+func (mr *MockNamespaceableResourceInterfaceMockRecorder) ApplyStatus(ctx, name, obj, options interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyStatus", reflect.TypeOf((*MockNamespaceableResourceInterface)(nil).ApplyStatus), ctx, name, obj, options)
 }
 
 // Create mocks base method.

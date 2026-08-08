@@ -1,25 +1,18 @@
-<ng-template [ngIf]="isExternal" [ngIfElse]="internal">
-  <a *ngIf="component; else link" target ="_blank" href="{{ ref }}">
-    <app-view-container [view]="component" class="component"></app-view-container>
-  </a>
-</ng-template>
-
-<ng-template #link>
-  <a target ="_blank" href="{{ ref }}">{{ value }}</a>
-</ng-template>
-
-<ng-template #internal>
-  <ng-container *ngIf="hasStatus">
-    <app-indicator
-      [status]="view.config.status"
-      [detail]="view.config.statusDetail"
-    ></app-indicator>
-  </ng-container>
-  <a *ngIf="component; else internalLink" [routerLink]="[ref]">
-    <app-view-container [view]="component" class="component"></app-view-container>
-  </a>
-</ng-template>
-
-<ng-template #internalLink>
-  <a [routerLink]="[ref]">{{ value }}</a>
-</ng-template>
+@if (isExternal) { @if (component) {
+<a target="_blank" href="{{ ref }}">
+  <app-view-container [view]="component" class="component"></app-view-container>
+</a>
+} @else {
+<a target="_blank" href="{{ ref }}">{{ value }}</a>
+} } @else { @if (hasStatus) {
+<app-indicator
+  [status]="view.config.status"
+  [detail]="view.config.statusDetail"
+></app-indicator>
+} @if (component) {
+<a [routerLink]="[ref]">
+  <app-view-container [view]="component" class="component"></app-view-container>
+</a>
+} @else {
+<a [routerLink]="[ref]">{{ value }}</a>
+} }

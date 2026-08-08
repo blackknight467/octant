@@ -6,6 +6,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({
   name: 'default',
   pure: true,
+  standalone: false,
 })
 export class DefaultPipe implements PipeTransform {
   transform(value: any, defaultValue: any): any {

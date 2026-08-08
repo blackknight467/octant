@@ -7,13 +7,11 @@ describe('SingleStatComponent', () => {
   let component: SingleStatComponent;
   let fixture: ComponentFixture<SingleStatComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [SingleStatComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [SingleStatComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SingleStatComponent);

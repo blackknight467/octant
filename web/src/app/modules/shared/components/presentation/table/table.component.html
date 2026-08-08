@@ -1,16 +1,22 @@
 <table class="table table-compact">
   <thead>
     <tr>
-      <td class="left" *ngFor="let column of columns; trackBy: trackByIdentity">
+      @for (column of columns; track trackByIdentity($index, column)) {
+      <td class="left">
         {{ column }}
       </td>
+      }
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let row of rows; trackBy: trackByIndex">
-      <td class="left" *ngFor="let column of columns; trackBy: trackByIdentity">
+    @for (row of rows; track trackByIndex($index)) {
+    <tr>
+      @for (column of columns; track trackByIdentity($index, column)) {
+      <td class="left">
         <app-view-container [view]="row[column]"></app-view-container>
       </td>
+      }
     </tr>
+    }
   </tbody>
 </table>

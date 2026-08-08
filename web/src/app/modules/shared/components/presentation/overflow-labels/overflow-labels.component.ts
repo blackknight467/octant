@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import { LabelFilterService } from '../../../services/label-filter/label-filter.service';
 
@@ -14,6 +14,8 @@ interface Labels {
   selector: 'app-overflow-labels',
   templateUrl: './overflow-labels.component.html',
   styleUrls: ['./overflow-labels.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class OverflowLabelsComponent {
   @Input() numberShownLabels = 2;

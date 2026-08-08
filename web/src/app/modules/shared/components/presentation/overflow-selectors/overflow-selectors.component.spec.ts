@@ -12,15 +12,13 @@ describe('OverflowSelectorsComponent', () => {
   let component: OverflowSelectorsComponent;
   let fixture: ComponentFixture<OverflowSelectorsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [OverflowSelectorsComponent, OctantTooltipComponent],
-        imports: [SharedModule],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [OverflowSelectorsComponent, OctantTooltipComponent],
+      imports: [SharedModule],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OverflowSelectorsComponent);

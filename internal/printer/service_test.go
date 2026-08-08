@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -34,20 +35,25 @@ func Test_ServiceListHandler(t *testing.T) {
 	tpo := newTestPrinterOptions(controller)
 	printOptions := tpo.ToOptions()
 
-	endpoints := &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "v1",
-			"kind":       "Endpoints",
+	// A slice exists for the service but carries no endpoints, which is the
+	// "no endpoint addresses" case rather than "no endpoints".
+	emptySlice := &discoveryv1.EndpointSlice{
+		TypeMeta: metav1.TypeMeta{APIVersion: "discovery.k8s.io/v1", Kind: "EndpointSlice"},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "service-abcde",
+			Labels:    map[string]string{discoveryv1.LabelServiceName: "service"},
 		},
 	}
 
+	endpointSliceSelector := labels.Set{discoveryv1.LabelServiceName: "service"}
 	tpo.objectStore.EXPECT().
-		Get(gomock.Any(), store.Key{
+		List(gomock.Any(), store.Key{
 			Namespace:  "default",
-			APIVersion: "v1",
-			Kind:       "Endpoints",
-			Name:       "service",
-		}).Return(endpoints, nil).AnyTimes()
+			APIVersion: "discovery.k8s.io/v1",
+			Kind:       "EndpointSlice",
+			Selector:   &endpointSliceSelector,
+		}).Return(testutil.ToUnstructuredList(t, emptySlice), false, nil).AnyTimes()
 
 	labels := map[string]string{
 		"foo": "bar",
@@ -428,21 +434,26 @@ func Test_createServiceEndpointsView(t *testing.T) {
 	cols := component.NewTableCols("Target", "IP", "Node Name")
 
 	nodeName := "node"
-	endpoints := &corev1.Endpoints{
-		TypeMeta: metav1.TypeMeta{APIVersion: "v1", Kind: "Endpoints"},
-		Subsets: []corev1.EndpointSubset{
+	ready := true
+	endpointSlice := &discoveryv1.EndpointSlice{
+		TypeMeta: metav1.TypeMeta{APIVersion: "discovery.k8s.io/v1", Kind: "EndpointSlice"},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "service-abcde",
+			Labels:    map[string]string{discoveryv1.LabelServiceName: "service"},
+		},
+		Endpoints: []discoveryv1.Endpoint{
 			{
-				Addresses: []corev1.EndpointAddress{
-					{
-						TargetRef: &corev1.ObjectReference{
-							Kind:      "Pod",
-							Name:      "pod-1",
-							Namespace: "default",
-						},
-						NodeName: &nodeName,
-						IP:       "10.1.1.1",
-					},
+				Addresses: []string{"10.1.1.1"},
+				Conditions: discoveryv1.EndpointConditions{
+					Ready: &ready,
 				},
+				TargetRef: &corev1.ObjectReference{
+					Kind:      "Pod",
+					Name:      "pod-1",
+					Namespace: "default",
+				},
+				NodeName: &nodeName,
 			},
 		},
 	}
@@ -491,10 +502,16 @@ func Test_createServiceEndpointsView(t *testing.T) {
 		printOptions := tpo.ToOptions()
 
 		if tc.service.Spec.ExternalName == "" {
-			key := store.Key{Namespace: "default", APIVersion: "v1", Kind: "Endpoints", Name: "service"}
+			selector := labels.Set{discoveryv1.LabelServiceName: "service"}
+			key := store.Key{
+				Namespace:  "default",
+				APIVersion: "discovery.k8s.io/v1",
+				Kind:       "EndpointSlice",
+				Selector:   &selector,
+			}
 			tpo.objectStore.EXPECT().
-				Get(gomock.Any(), gomock.Eq(key)).
-				Return(toUnstructured(t, endpoints), nil)
+				List(gomock.Any(), gomock.Eq(key)).
+				Return(testutil.ToUnstructuredList(t, endpointSlice), false, nil)
 
 			podLink := component.NewLink("", "pod", "/pod")
 			tpo.link.EXPECT().

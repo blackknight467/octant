@@ -15,28 +15,26 @@ describe('DropdownComponent', () => {
   let fixture: ComponentFixture<DropdownComponent>;
   const mockWebsocketService: WebsocketService = mock(WebsocketService);
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [DropdownComponent],
-        providers: [
-          {
-            provide: WebsocketService,
-            useValue: instance(mockWebsocketService),
-          },
-        ],
-        imports: [SharedModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [DropdownComponent],
+      providers: [
+        {
+          provide: WebsocketService,
+          useValue: instance(mockWebsocketService),
+        },
+      ],
+      imports: [SharedModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DropdownComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
     const el: SVGPathElement = root.querySelector('.dropdown');
 

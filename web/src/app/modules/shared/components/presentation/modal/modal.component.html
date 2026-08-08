@@ -1,4 +1,10 @@
-<cds-modal [size]="size" id="app-modal" [hidden]="!opened" [closable]="true" (closeChange)="toggleModal()">
+<cds-modal
+  [size]="size"
+  id="app-modal"
+  [hidden]="!opened"
+  [closable]="true"
+  (closeChange)="toggleModal()"
+>
   <cds-modal-header>
     <h3 cds-text="title" cds-first-focus tabindex="-1">
       <app-view-title [views]="title"></app-view-title>
@@ -7,22 +13,26 @@
   <cds-modal-content>
     <app-alert [alert]="alert"></app-alert>
     <app-view-container [view]="body"></app-view-container>
-    <app-form *ngIf="form?.fields" #modalAppForm [form]="form"></app-form>
+    @if (form?.fields) {
+    <app-form #modalAppForm [form]="form"></app-form>
+    }
   </cds-modal-content>
   <cds-modal-actions>
-    <ng-container *ngIf="buttons">
-      <ng-container *ngFor="let button of buttons; trackBy: trackByFn; last as isLast">
-        <button type="button" class="btn" [ngClass]="(isLast)?'btn-primary':'btn-outline'" (click)="onClick(button.payload)">
-          {{ button.name }}
-        </button>
-      </ng-container>
-    </ng-container>
-    <ng-container *ngIf="form?.fields">
-      <cds-button action="outline" (click)="opened = false">Cancel</cds-button>
-      <cds-button (click)="onFormSubmit()">Submit</cds-button>
-    </ng-container>
-    <ng-container *ngIf="!buttons && !form?.fields">
-      <cds-button (click)="opened = false">Close</cds-button>
-    </ng-container>
+    @if (buttons) { @for (button of buttons; track trackByFn($index, button);
+    let isLast = $last) {
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="isLast ? 'btn-primary' : 'btn-outline'"
+      (click)="onClick(button.payload)"
+    >
+      {{ button.name }}
+    </button>
+    } } @if (form?.fields) {
+    <cds-button action="outline" (click)="opened = false">Cancel</cds-button>
+    <cds-button (click)="onFormSubmit()">Submit</cds-button>
+    } @if (!buttons && !form?.fields) {
+    <cds-button (click)="opened = false">Close</cds-button>
+    }
   </cds-modal-actions>
 </cds-modal>

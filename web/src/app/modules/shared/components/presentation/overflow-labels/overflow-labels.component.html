@@ -1,37 +1,38 @@
-<div class="labels-wrapper" *ngIf="labels">
+@if (labels) {
+<div class="labels-wrapper">
   <div class="labels-container">
-    <ng-container *ngFor="let label of showLabels; trackBy: trackByIdentity">
-      <ng-container
-        *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
+    @for (label of showLabels; track trackByIdentity($index, label)) { @for
+    (item of label | keyvalue; track trackByIdentity($index, item)) {
+    <app-octant-tooltip
+      tooltipText="{{ item.key }}:{{ item.value }}"
+      class="octant-tooltip"
+    >
+      <span
+        class="label label-light-blue clickable"
+        (click)="filterLabel(item.key, item.value)"
       >
-        <app-octant-tooltip tooltipText="{{ item.key }}:{{ item.value }}" class="octant-tooltip">
-          <span
-            class="label label-light-blue clickable"
-            (click)="filterLabel(item.key, item.value)"
-          >
-            {{ item.key }}:{{ item.value }}
-          </span>
-        </app-octant-tooltip>
-      </ng-container>
-    </ng-container>
+        {{ item.key }}:{{ item.value }}
+      </span>
+    </app-octant-tooltip>
+    } }
   </div>
-
-  <clr-signpost *ngIf="overflowLabels?.length > 0">
+  @if (overflowLabels?.length > 0) {
+  <clr-signpost>
     <span class="badge badge-light-blue" clrSignpostTrigger>
       {{ overflowLabels.length }}+
     </span>
     <clr-signpost-content *clrIfOpen>
-      <ng-container
-        *ngFor="let label of overflowLabels; trackBy: trackByIdentity"
+      @for (label of overflowLabels; track trackByIdentity($index, label)) {
+      @for (item of label | keyvalue; track trackByIdentity($index, item)) {
+      <span
+        class="label label-light-blue clickable"
+        (click)="filterLabel(item.key, item.value)"
       >
-        <span
-          *ngFor="let item of label | keyvalue; trackBy: trackByIdentity"
-          class="label label-light-blue clickable"
-          (click)="filterLabel(item.key, item.value)"
-        >
-          {{ item.key }}:{{ item.value }}
-        </span>
-      </ng-container>
+        {{ item.key }}:{{ item.value }}
+      </span>
+      } }
     </clr-signpost-content>
   </clr-signpost>
+  }
 </div>
+}

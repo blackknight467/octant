@@ -1,28 +1,33 @@
 <div class="breadcrumb-row">
   <app-breadcrumb [path]="title"> </app-breadcrumb>
-  <div *ngIf="titleComponents?.length > 0" class="title-container">
-    <div *ngFor="let component of titleComponents; trackBy: trackByIndex" class="item">
+  @if (titleComponents?.length > 0) {
+  <div class="title-container">
+    @for (component of titleComponents; track trackByIndex($index, component)) {
+    <div class="item">
       <app-view-container [view]="component"></app-view-container>
     </div>
+    }
   </div>
+  }
 </div>
-<clr-tabs *ngIf="tabs.length > 1; else noTabs">
-  <clr-tab *ngFor="let tab of tabs; trackBy: identifyTab">
+@if (tabs.length > 1) {
+<clr-tabs>
+  @for (tab of tabs; track identifyTab($index, tab)) {
+  <clr-tab>
     <button clrTabLink class="tab-button" (click)="clickTab(tab.accessor)">
       {{ tab.name }}
     </button>
-    <clr-icon
-      shape="times"
-      *ngIf="closable"
-      (click)="closeTab(tab.accessor)"
-    ></clr-icon>
+    @if (closable) {
+    <clr-icon shape="times" (click)="closeTab(tab.accessor)"></clr-icon>
+    }
     <ng-template [clrIfActive]="activeTab === tab.accessor">
       <clr-tab-content *clrIfActive>
         <app-view-container [view]="tab.view"></app-view-container>
       </clr-tab-content>
     </ng-template>
   </clr-tab>
+  }
 </clr-tabs>
-<ng-template #noTabs>
-  <app-view-container [view]="view"></app-view-container>
-</ng-template>
+} @else {
+<app-view-container [view]="view"></app-view-container>
+}

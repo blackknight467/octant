@@ -4,22 +4,25 @@
       *ngTemplateOutlet="currentAction ? action : content"
     ></ng-container>
   </div>
-  <ng-container *ngTemplateOutlet="currentAction ? formFooter : actionFooter"></ng-container>
+  <ng-container
+    *ngTemplateOutlet="currentAction ? formFooter : actionFooter"
+  ></ng-container>
 </div>
-
 
 <ng-template #action>
   <h3 class="card-title">{{ currentAction.title }}</h3>
-  <app-form
-    #appForm
-    [form]="currentAction.form"
-  >
-  </app-form>
+  <app-form #appForm [form]="currentAction.form"> </app-form>
 </ng-template>
 
 <ng-template #formFooter>
   <div class="card-footer">
-    <button class="btn btn-primary btn-sm" type="submit" (click)="onActionSubmit()">Submit</button>
+    <button
+      class="btn btn-primary btn-sm"
+      type="submit"
+      (click)="onActionSubmit()"
+    >
+      Submit
+    </button>
     <button class="btn btn-sm" type="button" (click)="onActionCancel()">
       Cancel
     </button>
@@ -27,19 +30,21 @@
 </ng-template>
 
 <ng-template #actionFooter>
-  <div class="card-footer" *ngIf="v?.config.actions?.length > 0">
-    <ng-container *ngFor="let action of v?.config.actions; trackBy: trackByFn">
-      <button class="btn btn-sm btn-link" (click)="setAction(action)">
-        {{ action.name }}
-      </button>
-    </ng-container>
+  @if (v?.config.actions?.length > 0) {
+  <div class="card-footer">
+    @for (action of v?.config.actions; track trackByFn($index, action)) {
+    <button class="btn btn-sm btn-link" (click)="setAction(action)">
+      {{ action.name }}
+    </button>
+    }
   </div>
+  }
 </ng-template>
 
 <ng-template #content>
-  <ng-container *ngIf="v?.config.alert">
-    <app-alert [alert]="v?.config.alert"></app-alert>
-  </ng-container>
+  @if (v?.config.alert) {
+  <app-alert [alert]="$safeNavigationMigration(v?.config.alert)"></app-alert>
+  }
   <h4 class="card-title">
     <app-view-title [views]="title"></app-view-title>
   </h4>

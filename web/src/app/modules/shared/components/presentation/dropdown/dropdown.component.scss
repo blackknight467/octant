@@ -1,4 +1,3 @@
-
 :host-context(body) {
   --link-color: #0079b8;
 }
@@ -12,7 +11,7 @@
 }
 
 .dropdown-link {
-  color: var(--link-color)!important;
+  color: var(--link-color) !important;
 }
 
 .dropdown-list {
@@ -44,12 +43,12 @@
 
 .dropdown-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
-  color: #57c8ea
+  color: #57c8ea;
 }
 
 .dropdown-link-icon {
   margin-left: 0.2rem;
-  padding: 0!important;
+  padding: 0 !important;
   width: 0.5rem;
   height: 0.5rem;
 }

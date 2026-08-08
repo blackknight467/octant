@@ -12,12 +12,13 @@ import {
   Renderer2,
   ViewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   Node,
   ResourceViewerView,
 } from 'src/app/modules/shared/models/content';
-import { ElementsDefinition, Stylesheet } from 'cytoscape';
+import cytoscape, { ElementsDefinition } from 'cytoscape';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { ELEMENTS_STYLE, ELEMENTS_STYLE_DARK } from './octant.style';
 import { Router } from '@angular/router';
@@ -51,6 +52,8 @@ const MAX_DEPTH_LIMIT = 10;
   templateUrl: './resource-viewer.component.html',
   styleUrls: ['./resource-viewer.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ResourceViewerComponent
   extends AbstractViewComponent<ResourceViewerView>
@@ -89,7 +92,7 @@ export class ResourceViewerComponent
 
   zoom = defaultZoom;
 
-  style: Stylesheet[] = ELEMENTS_STYLE;
+  style: cytoscape.StylesheetJson = ELEMENTS_STYLE;
   graphData: ElementsDefinition;
 
   constructor(
@@ -136,8 +139,12 @@ export class ResourceViewerComponent
   // Recompute filtered graph and trigger re-render
   applyFilters(): ElementsDefinition {
     const rawNodes = this.v?.config?.nodes;
-    const rawEdges = this.v?.config?.edges;
-    if (!rawNodes || !rawEdges) {
+    // The backend marshals edges with `omitempty`, so a resource with no
+    // relationships arrives with no edges key at all. That is a graph of
+    // isolated nodes, not an empty graph — treating it as empty blanked the
+    // viewer for any object that has nothing pointing at it.
+    const rawEdges = this.v?.config?.edges ?? {};
+    if (!rawNodes) {
       return { nodes: [], edges: [] };
     }
 
@@ -219,7 +226,9 @@ export class ResourceViewerComponent
     });
 
     const visited = new Set<string>();
-    const queue: Array<{ id: string; depth: number }> = [{ id: rootId, depth: 0 }];
+    const queue: Array<{ id: string; depth: number }> = [
+      { id: rootId, depth: 0 },
+    ];
     visited.add(rootId);
 
     while (queue.length > 0) {
@@ -237,7 +246,9 @@ export class ResourceViewerComponent
 
     // Keep only nodes that are both visible and within depth
     const result = new Set<string>();
-    visited.forEach(id => { if (visibleNodeIds.has(id)) result.add(id); });
+    visited.forEach(id => {
+      if (visibleNodeIds.has(id)) result.add(id);
+    });
     return result;
   }
 

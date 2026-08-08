@@ -10,13 +10,11 @@ describe('AnnotationsComponent', () => {
   let component: AnnotationsComponent;
   let fixture: ComponentFixture<AnnotationsComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [AnnotationsComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [AnnotationsComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AnnotationsComponent);

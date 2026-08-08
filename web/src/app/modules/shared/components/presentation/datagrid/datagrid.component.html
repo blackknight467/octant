@@ -1,89 +1,115 @@
-<div
-  class="clr-row clr-align-items-center clr-justify-content-between"
-  *ngIf="showTitle() || buttonGroup"
->
-  <h4 class="clr-col-10" *ngIf="showTitle()">{{ title }}</h4>
-  <clr-dg-action-bar class="clr-col-2" *ngIf="buttonGroup">
+@if (showTitle() || buttonGroup) {
+<div class="clr-row clr-align-items-center clr-justify-content-between">
+  @if (showTitle()) {
+  <h4 class="clr-col-10">{{ title }}</h4>
+  } @if (buttonGroup) {
+  <clr-dg-action-bar class="clr-col-2">
     <app-button-group [view]="buttonGroup"></app-button-group>
   </clr-dg-action-bar>
+  }
 </div>
+}
 <clr-datagrid [clrDgLoading]="false">
   <clr-dg-placeholder>
-    <ng-container *ngIf="placeholder?.length > 0; else emptyPlaceholder">
-      {{ placeholder }}
-    </ng-container>
-    <ng-template #emptyPlaceholder>
-      <!--      All content has been filtered out.-->
-    </ng-template>
+    @if (placeholder?.length > 0) {
+    {{ placeholder }}
+    } @else {
+    <!--      All content has been filtered out.-->
+    }
   </clr-dg-placeholder>
+  @for (columnName of columns; track identifyColumn($index, columnName)) {
   <clr-dg-column
-    *ngFor="let columnName of columns; trackBy: identifyColumn"
     [clrDgSortBy]="columnName === 'Age' ? timeStampComparator : null"
     [(clrDgSortOrder)]="sortOrder"
   >
     {{ columnName }}
-    <clr-dg-filter *ngIf="filters[columnName]">
+    @if (filters[columnName]) {
+    <clr-dg-filter>
       <app-content-filter
         [column]="columnName"
         [filter]="filters[columnName]"
       ></app-content-filter>
     </clr-dg-filter>
-    <clr-dg-filter *ngIf="!filters[columnName]">
+    } @if (!filters[columnName]) {
+    <clr-dg-filter>
       <app-content-text-filter [column]="columnName"></app-content-text-filter>
     </clr-dg-filter>
+    }
   </clr-dg-column>
+  }
   <clr-dg-row
     *clrDgItems="let row of rowsWithMetadata; trackBy: identifyRow"
     [ngClass]="row | filterDeletedDatagridRow"
   >
-    <clr-dg-action-overflow *ngIf="row.actions.length > 0 && !row.isDeleted">
-      <ng-container *ngFor="let action of row.actions; trackBy: identifyAction">
-        <button class="action-item" (click)="runAction(action)">
-          {{ action.name }}
-        </button>
-      </ng-container>
+    @if (row.actions.length > 0 && !row.isDeleted) {
+    <clr-dg-action-overflow>
+      @for (action of row.actions; track identifyAction($index, action)) {
+      <button class="action-item" (click)="runAction(action)">
+        {{ action.name }}
+      </button>
+      }
     </clr-dg-action-overflow>
-    <clr-dg-cell *ngFor="let column of columns; trackBy: identifyColumn">
+    } @for (column of columns; track identifyColumn($index, column)) {
+    <clr-dg-cell>
       <app-view-container [view]="row.data[column]"></app-view-container>
     </clr-dg-cell>
-    <ng-container ngProjectAs="clr-dg-row-detail" *ngIf="row?.expandedDetails">
-      <clr-dg-row-detail *clrIfExpanded [clrDgReplace]="row?.replace">
-        <ng-template [ngIf]="row.expandedDetails.length > 1" [ngIfElse]="displayOverall">
-          <clr-dg-cell *ngFor="let detail of row.expandedDetails">
-            <app-view-container [view]="detail"></app-view-container>
-          </clr-dg-cell>
-        </ng-template>
-        <ng-template #displayOverall>
-          <app-view-container [view]="row.expandedDetails[0]"></app-view-container>
-        </ng-template>
+    } @if (row?.expandedDetails) {
+    <ng-container ngProjectAs="clr-dg-row-detail">
+      <clr-dg-row-detail
+        *clrIfExpanded
+        [clrDgReplace]="$safeNavigationMigration(row?.replace)"
+      >
+        @if (row.expandedDetails.length > 1) { @for (detail of
+        row.expandedDetails; track detail) {
+        <clr-dg-cell>
+          <app-view-container [view]="detail"></app-view-container>
+        </clr-dg-cell>
+        } } @else {
+        <app-view-container
+          [view]="row.expandedDetails[0]"
+        ></app-view-container>
+        }
       </clr-dg-row-detail>
     </ng-container>
+    }
   </clr-dg-row>
   <clr-dg-footer>
     <clr-dg-pagination #pagination [clrDgPageSize]="defaultPageSize">
       <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 50, 100]">
         Items per page
       </clr-dg-page-size>
-      <ng-container *ngIf="rowsWithMetadata?.length > 0">
-        {{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} of
-        {{ pagination.totalItems }} items
-      </ng-container>
+      @if (rowsWithMetadata?.length > 0) {
+      {{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }} of
+      {{ pagination.totalItems }} items }
     </clr-dg-pagination>
   </clr-dg-footer>
 </clr-datagrid>
 
-<cds-modal [closable]="true" [hidden]="!isModalOpen" (closeChange)="toggleModal()">
+<cds-modal
+  [closable]="true"
+  [hidden]="!isModalOpen"
+  (closeChange)="toggleModal()"
+>
   <cds-modal-header>
-    <h3 cds-text="title" cds-first-focus>{{ actionDialogOptions?.confirmation?.title }}</h3>
+    <h3 cds-text="title" cds-first-focus>
+      {{ actionDialogOptions?.confirmation?.title }}
+    </h3>
   </cds-modal-header>
   <cds-modal-content>
     <div
       ngPreserveWhitespaces
-      [innerHTML]="actionDialogOptions?.confirmation?.body"
+      [innerHTML]="
+        $safeNavigationMigration(actionDialogOptions?.confirmation?.body)
+      "
     ></div>
   </cds-modal-content>
   <cds-modal-actions>
     <cds-button action="outline" (click)="toggleModal()">Cancel</cds-button>
-    <cds-button action="outline" [status]="actionDialogOptions?.type" (click)="acceptModal()">{{ actionDialogOptions?.text }}</cds-button>
+    <cds-button
+      action="outline"
+      [status]="$safeNavigationMigration(actionDialogOptions?.type)"
+      (click)="acceptModal()"
+      >{{ actionDialogOptions?.text }}</cds-button
+    >
   </cds-modal-actions>
 </cds-modal>

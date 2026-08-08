@@ -5,6 +5,7 @@
 package fake
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -36,9 +37,12 @@ func (m *MockSharedIndexInformer) EXPECT() *MockSharedIndexInformerMockRecorder 
 }
 
 // AddEventHandler mocks base method.
-func (m *MockSharedIndexInformer) AddEventHandler(arg0 cache.ResourceEventHandler) {
+func (m *MockSharedIndexInformer) AddEventHandler(arg0 cache.ResourceEventHandler) (cache.ResourceEventHandlerRegistration, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddEventHandler", arg0)
+	ret := m.ctrl.Call(m, "AddEventHandler", arg0)
+	ret0, _ := ret[0].(cache.ResourceEventHandlerRegistration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddEventHandler indicates an expected call of AddEventHandler.
@@ -47,10 +51,28 @@ func (mr *MockSharedIndexInformerMockRecorder) AddEventHandler(arg0 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockSharedIndexInformer)(nil).AddEventHandler), arg0)
 }
 
-// AddEventHandlerWithResyncPeriod mocks base method.
-func (m *MockSharedIndexInformer) AddEventHandlerWithResyncPeriod(arg0 cache.ResourceEventHandler, arg1 time.Duration) {
+// AddEventHandlerWithOptions mocks base method.
+func (m *MockSharedIndexInformer) AddEventHandlerWithOptions(arg0 cache.ResourceEventHandler, arg1 cache.HandlerOptions) (cache.ResourceEventHandlerRegistration, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddEventHandlerWithResyncPeriod", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddEventHandlerWithOptions", arg0, arg1)
+	ret0, _ := ret[0].(cache.ResourceEventHandlerRegistration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddEventHandlerWithOptions indicates an expected call of AddEventHandlerWithOptions.
+func (mr *MockSharedIndexInformerMockRecorder) AddEventHandlerWithOptions(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandlerWithOptions", reflect.TypeOf((*MockSharedIndexInformer)(nil).AddEventHandlerWithOptions), arg0, arg1)
+}
+
+// AddEventHandlerWithResyncPeriod mocks base method.
+func (m *MockSharedIndexInformer) AddEventHandlerWithResyncPeriod(arg0 cache.ResourceEventHandler, arg1 time.Duration) (cache.ResourceEventHandlerRegistration, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddEventHandlerWithResyncPeriod", arg0, arg1)
+	ret0, _ := ret[0].(cache.ResourceEventHandlerRegistration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddEventHandlerWithResyncPeriod indicates an expected call of AddEventHandlerWithResyncPeriod.
@@ -129,6 +151,34 @@ func (mr *MockSharedIndexInformerMockRecorder) HasSynced() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasSynced", reflect.TypeOf((*MockSharedIndexInformer)(nil).HasSynced))
 }
 
+// HasSyncedChecker mocks base method.
+func (m *MockSharedIndexInformer) HasSyncedChecker() cache.DoneChecker {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasSyncedChecker")
+	ret0, _ := ret[0].(cache.DoneChecker)
+	return ret0
+}
+
+// HasSyncedChecker indicates an expected call of HasSyncedChecker.
+func (mr *MockSharedIndexInformerMockRecorder) HasSyncedChecker() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasSyncedChecker", reflect.TypeOf((*MockSharedIndexInformer)(nil).HasSyncedChecker))
+}
+
+// IsStopped mocks base method.
+func (m *MockSharedIndexInformer) IsStopped() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsStopped")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsStopped indicates an expected call of IsStopped.
+func (mr *MockSharedIndexInformerMockRecorder) IsStopped() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsStopped", reflect.TypeOf((*MockSharedIndexInformer)(nil).IsStopped))
+}
+
 // LastSyncResourceVersion mocks base method.
 func (m *MockSharedIndexInformer) LastSyncResourceVersion() string {
 	m.ctrl.T.Helper()
@@ -143,6 +193,20 @@ func (mr *MockSharedIndexInformerMockRecorder) LastSyncResourceVersion() *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LastSyncResourceVersion", reflect.TypeOf((*MockSharedIndexInformer)(nil).LastSyncResourceVersion))
 }
 
+// RemoveEventHandler mocks base method.
+func (m *MockSharedIndexInformer) RemoveEventHandler(arg0 cache.ResourceEventHandlerRegistration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveEventHandler", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveEventHandler indicates an expected call of RemoveEventHandler.
+func (mr *MockSharedIndexInformerMockRecorder) RemoveEventHandler(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEventHandler", reflect.TypeOf((*MockSharedIndexInformer)(nil).RemoveEventHandler), arg0)
+}
+
 // Run mocks base method.
 func (m *MockSharedIndexInformer) Run(arg0 <-chan struct{}) {
 	m.ctrl.T.Helper()
@@ -153,6 +217,32 @@ func (m *MockSharedIndexInformer) Run(arg0 <-chan struct{}) {
 func (mr *MockSharedIndexInformerMockRecorder) Run(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockSharedIndexInformer)(nil).Run), arg0)
+}
+
+// RunWithContext mocks base method.
+func (m *MockSharedIndexInformer) RunWithContext(arg0 context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RunWithContext", arg0)
+}
+
+// RunWithContext indicates an expected call of RunWithContext.
+func (mr *MockSharedIndexInformerMockRecorder) RunWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWithContext", reflect.TypeOf((*MockSharedIndexInformer)(nil).RunWithContext), arg0)
+}
+
+// SetTransform mocks base method.
+func (m *MockSharedIndexInformer) SetTransform(arg0 cache.TransformFunc) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetTransform", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetTransform indicates an expected call of SetTransform.
+func (mr *MockSharedIndexInformerMockRecorder) SetTransform(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTransform", reflect.TypeOf((*MockSharedIndexInformer)(nil).SetTransform), arg0)
 }
 
 // SetWatchErrorHandler mocks base method.
@@ -167,4 +257,18 @@ func (m *MockSharedIndexInformer) SetWatchErrorHandler(arg0 cache.WatchErrorHand
 func (mr *MockSharedIndexInformerMockRecorder) SetWatchErrorHandler(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWatchErrorHandler", reflect.TypeOf((*MockSharedIndexInformer)(nil).SetWatchErrorHandler), arg0)
+}
+
+// SetWatchErrorHandlerWithContext mocks base method.
+func (m *MockSharedIndexInformer) SetWatchErrorHandlerWithContext(arg0 cache.WatchErrorHandlerWithContext) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetWatchErrorHandlerWithContext", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetWatchErrorHandlerWithContext indicates an expected call of SetWatchErrorHandlerWithContext.
+func (mr *MockSharedIndexInformerMockRecorder) SetWatchErrorHandlerWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWatchErrorHandlerWithContext", reflect.TypeOf((*MockSharedIndexInformer)(nil).SetWatchErrorHandlerWithContext), arg0)
 }

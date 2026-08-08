@@ -14,14 +14,12 @@ describe('BottomPanelComponent', () => {
   let component: BottomPanelComponent;
   let fixture: ComponentFixture<BottomPanelComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [BottomPanelComponent],
-        imports: [NoopAnimationsModule, ResizableModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [BottomPanelComponent],
+      imports: [NoopAnimationsModule, ResizableModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(BottomPanelComponent);

@@ -42,7 +42,7 @@ func (e *ContainerEditor) ActionName() string {
 }
 
 // Handle edits a container. Supported edits:
-//   * image
+//   - image
 func (e *ContainerEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	logger := internalLog.From(ctx).With("actionName", e.ActionName())
 	logger.With("payload", payload).Infof("received action payload")

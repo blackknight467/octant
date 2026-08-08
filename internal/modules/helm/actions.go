@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	ActionHelmUninstall   = "helm.octant.dev/uninstall"
-	ActionHelmRollback    = "helm.octant.dev/rollback"
-	ActionHelmUpgrade     = "helm.octant.dev/upgrade"
-	ActionHelmTest        = "helm.octant.dev/test"
-	ActionHelmRemoveRepo  = "helm.octant.dev/remove-repo"
+	ActionHelmUninstall  = "helm.octant.dev/uninstall"
+	ActionHelmRollback   = "helm.octant.dev/rollback"
+	ActionHelmUpgrade    = "helm.octant.dev/upgrade"
+	ActionHelmTest       = "helm.octant.dev/test"
+	ActionHelmRemoveRepo = "helm.octant.dev/remove-repo"
 )
 
 // --- Uninstall ---

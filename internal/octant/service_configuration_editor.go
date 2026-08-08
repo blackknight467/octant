@@ -37,7 +37,7 @@ func (s *ServiceConfigurationEditor) ActionName() string {
 }
 
 // Handle edits a service: Supported edits:
-//   * selector
+//   - selector
 func (s *ServiceConfigurationEditor) Handle(ctx context.Context, alerter action.Alerter, payload action.Payload) error {
 	logger := log.From(ctx).With("actionName", s.ActionName())
 	logger.

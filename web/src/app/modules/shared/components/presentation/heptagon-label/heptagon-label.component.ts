@@ -37,6 +37,7 @@ import { Point } from '../../../models/point';
   `,
   styleUrls: ['./heptagon-label.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class HeptagonLabelComponent implements AfterViewChecked {
   @ViewChild('container', { static: true })

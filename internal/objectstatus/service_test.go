@@ -14,7 +14,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/vmware-tanzu/octant/internal/testutil"
@@ -33,17 +35,18 @@ func Test_service(t *testing.T) {
 		{
 			name: "in general",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				selector := labels.Set{discoveryv1.LabelServiceName: "stateful"}
 				key := store.Key{
 					Namespace:  "default",
-					APIVersion: "v1",
-					Kind:       "Endpoints",
-					Name:       "stateful",
+					APIVersion: "discovery.k8s.io/v1",
+					Kind:       "EndpointSlice",
+					Selector:   &selector,
 				}
 
-				endpoints := testutil.LoadObjectFromFile(t, "endpoints_ok.yaml")
+				endpointSlice := testutil.LoadObjectFromFile(t, "endpointslice_ok.yaml")
 
-				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, endpoints), nil)
+				o.EXPECT().List(gomock.Any(), gomock.Eq(key)).
+					Return(testutil.ToUnstructuredList(t, endpointSlice), false, nil)
 
 				objectFile := "service_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -72,17 +75,18 @@ func Test_service(t *testing.T) {
 		{
 			name: "no endpoint subsets",
 			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				selector := labels.Set{discoveryv1.LabelServiceName: "stateful"}
 				key := store.Key{
 					Namespace:  "default",
-					APIVersion: "v1",
-					Kind:       "Endpoints",
-					Name:       "stateful",
+					APIVersion: "discovery.k8s.io/v1",
+					Kind:       "EndpointSlice",
+					Selector:   &selector,
 				}
 
-				endpoints := testutil.LoadObjectFromFile(t, "endpoints_no_subsets.yaml")
+				endpointSlice := testutil.LoadObjectFromFile(t, "endpointslice_no_endpoints.yaml")
 
-				o.EXPECT().Get(gomock.Any(), gomock.Eq(key)).
-					Return(testutil.ToUnstructured(t, endpoints), nil)
+				o.EXPECT().List(gomock.Any(), gomock.Eq(key)).
+					Return(testutil.ToUnstructuredList(t, endpointSlice), false, nil)
 
 				objectFile := "service_ok.yaml"
 				return testutil.LoadObjectFromFile(t, objectFile)
@@ -91,6 +95,58 @@ func Test_service(t *testing.T) {
 			expected: ObjectStatus{
 				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
+			},
+		},
+		{
+			// With v1 Endpoints, "ready" was structural (Addresses vs
+			// NotReadyAddresses). On EndpointSlice it is a hand-written condition,
+			// so it needs its own coverage.
+			name: "endpoints exist but none are ready",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				selector := labels.Set{discoveryv1.LabelServiceName: "stateful"}
+				key := store.Key{
+					Namespace:  "default",
+					APIVersion: "discovery.k8s.io/v1",
+					Kind:       "EndpointSlice",
+					Selector:   &selector,
+				}
+
+				endpointSlice := testutil.LoadObjectFromFile(t, "endpointslice_not_ready.yaml")
+
+				o.EXPECT().List(gomock.Any(), gomock.Eq(key)).
+					Return(testutil.ToUnstructuredList(t, endpointSlice), false, nil)
+
+				return testutil.LoadObjectFromFile(t, "service_ok.yaml")
+			},
+			expected: ObjectStatus{
+				NodeStatus: component.NodeStatusWarning,
+				Details:    []component.Component{component.NewText("Service has no endpoint addresses")},
+			},
+		},
+		{
+			// A nil ready condition means unknown, which must be read as ready.
+			name: "endpoint with no ready condition counts as ready",
+			init: func(t *testing.T, o *storefake.MockStore) runtime.Object {
+				selector := labels.Set{discoveryv1.LabelServiceName: "stateful"}
+				key := store.Key{
+					Namespace:  "default",
+					APIVersion: "discovery.k8s.io/v1",
+					Kind:       "EndpointSlice",
+					Selector:   &selector,
+				}
+
+				endpointSlice := testutil.LoadObjectFromFile(t, "endpointslice_nil_ready.yaml")
+
+				o.EXPECT().List(gomock.Any(), gomock.Eq(key)).
+					Return(testutil.ToUnstructuredList(t, endpointSlice), false, nil)
+
+				return testutil.LoadObjectFromFile(t, "service_ok.yaml")
+			},
+			expected: ObjectStatus{
+				NodeStatus: component.NodeStatusOK,
+				Details:    []component.Component{component.NewText("Service is OK")},
+				Properties: []component.Property{{Label: "Type", Value: component.NewText("ClusterIP")},
+					{Label: "Session Affinity", Value: component.NewText("None")}},
 			},
 		},
 		{

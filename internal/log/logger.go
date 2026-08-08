@@ -134,7 +134,8 @@ func Init(logLevel int, options ...InitOption) (log.LoggerCloser, error) {
 // Returns a new zap logger, setting level according to the provided
 // verbosity level as an offset of the base level, Info.
 // i.e. verboseLevel==0, level==Info
-//      verboseLevel==1, level==Debug
+//
+//	verboseLevel==1, level==Debug
 func newZapLogger(verboseLevel int, options ...InitOption) (*zap.Logger, error) {
 	level := zapcore.InfoLevel - zapcore.Level(verboseLevel)
 	if level < zapcore.DebugLevel || level > zapcore.FatalLevel {

@@ -31,6 +31,7 @@ const emptyNavigation: Navigation = {
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   collapsed = false;

@@ -120,7 +120,7 @@ export class ContentService {
   }
 
   delayedComplete(value: boolean) {
-    const delayed = new Observable(x => {
+    const delayed = new Observable<void>(x => {
       x.next();
     })
       .pipe(delay(700))

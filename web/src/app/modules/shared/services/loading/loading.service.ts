@@ -28,7 +28,7 @@ export class LoadingService {
     const loadingTimer = timer(after).pipe(takeUntil(watch));
     const holdTimer = timer(after + atLeast);
 
-    return merge<boolean>(
+    return merge(
       loadingTimer.pipe(mapTo(true)),
       combineLatest([watch, holdTimer]).pipe(mapTo(false))
     ).pipe(startWith(false), distinctUntilChanged());

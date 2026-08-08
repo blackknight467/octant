@@ -1,6 +1,11 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { View } from '../../../models/content';
-import '@cds/core/icon/register.js';
 import {
   ClarityIcons,
   checkCircleIcon,
@@ -32,6 +37,8 @@ export const iconLookup = {
 @Component({
   selector: 'app-indicator',
   templateUrl: './indicator.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class IndicatorComponent implements OnChanges {
   @Input()

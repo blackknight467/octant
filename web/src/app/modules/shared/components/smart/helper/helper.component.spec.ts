@@ -13,18 +13,16 @@ describe('HelperComponent', () => {
   let component: HelperComponent;
   let fixture: ComponentFixture<HelperComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [HelperComponent],
-        providers: [
-          { provide: HelperService },
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-        imports: [BrowserAnimationsModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [HelperComponent],
+      providers: [
+        { provide: HelperService },
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
+      imports: [BrowserAnimationsModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HelperComponent);

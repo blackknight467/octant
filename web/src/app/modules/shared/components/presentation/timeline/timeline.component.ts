@@ -11,6 +11,7 @@ import { TimelineStep, TimelineView } from '../../../models/content';
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TimelineComponent
   extends AbstractViewComponent<TimelineView>

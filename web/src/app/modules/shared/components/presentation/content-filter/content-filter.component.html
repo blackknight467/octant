@@ -1,6 +1,5 @@
-<clr-checkbox-wrapper
-  *ngFor="let value of filter.values; trackBy: trackByIdentity"
->
+@for (value of filter.values; track trackByIdentity($index, value)) {
+<clr-checkbox-wrapper>
   <input
     (ngModelChange)="onFilterChange(value, $event)"
     [(ngModel)]="checkboxes[value]"
@@ -9,3 +8,4 @@
   />
   <label>{{ value }}</label>
 </clr-checkbox-wrapper>
+}

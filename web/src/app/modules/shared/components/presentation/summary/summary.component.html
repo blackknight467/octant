@@ -1,40 +1,43 @@
 <div class="card">
-  <div class="progress loop" *ngIf="isLoading">
+  @if (isLoading) {
+  <div class="progress loop">
     <progress></progress>
   </div>
+  }
   <div class="card-block">
     <ng-container *ngTemplateOutlet="currentAction ? action : content">
     </ng-container>
   </div>
-  <ng-container *ngTemplateOutlet="currentAction ? formFooter :  contentFooter"></ng-container>
+  <ng-container
+    *ngTemplateOutlet="currentAction ? formFooter : contentFooter"
+  ></ng-container>
 </div>
 
 <ng-template #action>
-  <app-form
-    #appForm
-    [form]="currentAction.form"
-  >
-  </app-form>
+  <app-form #appForm [form]="currentAction.form"> </app-form>
 </ng-template>
 
 <ng-template #content>
   <overlay-scrollbars>
     <div class="card-block">
       <h3 class="card-title">{{ title }}</h3>
-      <app-alert *ngIf="v?.config.alert" [alert]="v.config.alert"></app-alert>
+      @if (v?.config.alert) {
+      <app-alert [alert]="v.config.alert"></app-alert>
+      }
       <table class="table-noborder">
         <tbody>
-          <tr *ngFor="let item of v?.config.sections; trackBy: identifyItem">
+          @for (item of v?.config.sections; track identifyItem($index, item)) {
+          <tr>
             <td class="left">{{ item.header }}</td>
             <td class="left">
-              <app-view-table *ngIf="item.content?.metadata?.type === 'table'; else dynamic"
-                [view]="item.content"
-              ></app-view-table>
-              <ng-template #dynamic>
-                <app-view-container [view]="item.content"></app-view-container>
-              </ng-template>
+              @if (item.content?.metadata?.type === 'table') {
+              <app-view-table [view]="item.content"></app-view-table>
+              } @else {
+              <app-view-container [view]="item.content"></app-view-container>
+              }
             </td>
           </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -42,20 +45,26 @@
 </ng-template>
 
 <ng-template #contentFooter>
-  <div class="card-footer" *ngIf="shouldShowFooter()">
-    <ng-container
-      *ngFor="let action of v.config.actions; trackBy: identifyItem"
-    >
-      <button class="btn btn-sm btn-link" (click)="setAction(action)">
-        {{ action.name }}
-      </button>
-    </ng-container>
+  @if (shouldShowFooter()) {
+  <div class="card-footer">
+    @for (action of v.config.actions; track identifyItem($index, action)) {
+    <button class="btn btn-sm btn-link" (click)="setAction(action)">
+      {{ action.name }}
+    </button>
+    }
   </div>
+  }
 </ng-template>
 
 <ng-template #formFooter>
   <div class="card-footer">
-    <button class="btn btn-primary btn-sm" type="submit" (click)="onActionSubmit()">Submit</button>
+    <button
+      class="btn btn-primary btn-sm"
+      type="submit"
+      (click)="onActionSubmit()"
+    >
+      Submit
+    </button>
     <button class="btn btn-sm" type="button" (click)="onActionCancel()">
       Cancel
     </button>

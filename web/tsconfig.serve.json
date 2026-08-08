@@ -2,16 +2,23 @@
   "compilerOptions": {
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    // This config does not extend tsconfig.base.json, so it does not inherit its
+    // "strict": false. TypeScript 6 flipped the default to true, which this
+    // (unmodernised) Electron main-process code does not satisfy.
+    "strict": false,
+    // The main process is CommonJS: it uses `import x = require(...)`, and node16
+    // resolution would hand back namespace objects for `open` and `ws`, making
+    // them non-callable. node10 is deprecated in TS 6 but still correct here.
+    "ignoreDeprecations": "6.0",
+    "module": "commonjs",
+    "moduleResolution": "node10",
     "experimentalDecorators": true,
-    "target": "es5",
+    "target": "es2022",
     "types": [
       "node"
     ],
     "lib": [
-      "es2017",
-      "es2016",
-      "es2015",
+      "es2022",
       "dom"
     ]
   },

@@ -7,7 +7,6 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  ComponentFactoryResolver,
   ComponentRef,
   EventEmitter,
   Inject,
@@ -35,6 +34,7 @@ interface Viewer {
   selector: 'app-view-container',
   template: `<ng-container appView></ng-container>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ViewContainerComponent implements OnInit, AfterViewInit {
   @ViewChild(ViewHostDirective, { static: true }) appView: ViewHostDirective;
@@ -55,7 +55,6 @@ export class ViewContainerComponent implements OnInit, AfterViewInit {
   private previous: string;
 
   constructor(
-    private componentFactoryResolver: ComponentFactoryResolver,
     @Inject(DYNAMIC_COMPONENTS_MAPPING)
     private componentMappings: ComponentMapping
   ) {}
@@ -90,13 +89,12 @@ export class ViewContainerComponent implements OnInit, AfterViewInit {
         component = MissingComponentComponent;
       }
 
-      const componentFactory =
-        this.componentFactoryResolver.resolveComponentFactory(component);
       const viewContainerRef = this.appView.viewContainerRef;
       viewContainerRef.clear();
 
-      this.componentRef =
-        viewContainerRef.createComponent<Viewer>(componentFactory);
+      // Angular 22 removed ComponentFactoryResolver; createComponent accepts
+      // the component type directly.
+      this.componentRef = viewContainerRef.createComponent<Viewer>(component);
     }
     this.componentRef.instance.view = view;
     this.componentRef.instance.viewInit.subscribe(_ => this.viewInit.emit());

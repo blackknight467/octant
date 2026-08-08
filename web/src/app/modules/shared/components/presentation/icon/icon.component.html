@@ -1,32 +1,35 @@
-<ng-container *ngIf="!tooltip; else hasTooltip">
-  <cds-icon
+@if (!tooltip) {
+<clr-icon
+  [style]="iconStyle != '' ? iconStyle : null"
+  [shape]="shape"
+  [size]="size"
+  [direction]="direction"
+  [flip]="flip"
+  [solid]="isSolid ? true : null"
+  [status]="status"
+  [inverse]="isInverse ? true : null"
+  [badge]="badge"
+  [attr.aria-label]="label"
+></clr-icon>
+} @else {
+<a
+  href="javascript:void(0)"
+  role="tooltip"
+  aria-haspopup="true"
+  class="{{ tooltipClass }}"
+>
+  <clr-icon
     [style]="iconStyle != '' ? iconStyle : null"
-    [attr.shape]="shape"
-    [attr.size]="size"
-    [attr.direction]="direction"
-    [attr.flip]="flip"
-    [attr.solid]="isSolid ? true: null"
-    [attr.status]="status"
-    [attr.inverse]="isInverse ? true: null"
-    [attr.badge]="badge"
+    [shape]="shape"
+    [size]="size"
+    [direction]="direction"
+    [flip]="flip"
+    [solid]="isSolid ? true : null"
+    [status]="status"
+    [inverse]="isInverse ? true : null"
+    [badge]="badge"
     [attr.aria-label]="label"
-  ></cds-icon>
-</ng-container>
-
-<ng-template #hasTooltip>
-  <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="{{ tooltipClass }}">
-    <cds-icon
-      [style]="iconStyle != '' ? iconStyle : null"
-      [attr.shape]="shape"
-      [attr.size]="size"
-      [attr.direction]="direction"
-      [attr.flip]="flip"
-      [attr.solid]="isSolid ? true: null"
-      [attr.status]="status"
-      [attr.inverse]="isInverse ? true: null"
-      [attr.badge]="badge"
-      [attr.aria-label]="label"
-    ></cds-icon>
-    <span class="tooltip-content">{{ tooltip.message }}</span>
-  </a>
-</ng-template>
+  ></clr-icon>
+  <span class="tooltip-content">{{ tooltip.message }}</span>
+</a>
+}

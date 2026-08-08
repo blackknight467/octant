@@ -4,7 +4,12 @@
  *
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Location } from '@angular/common';
 import { Navigation } from '../../../models/navigation';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
@@ -29,6 +34,8 @@ import {
   selector: 'app-root',
   templateUrl: './container.component.html',
   styleUrls: ['./container.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContainerComponent implements OnInit, OnDestroy {
   navigation: Navigation;

@@ -6,9 +6,9 @@ import {
   Component,
   OnInit,
   SecurityContext,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import '@cds/core/button/register';
-import { ClarityIcons, clipboardIcon } from '@cds/core/icon';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TextView } from 'src/app/modules/shared/models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
@@ -18,6 +18,8 @@ import { parse } from 'marked';
   selector: 'app-view-text',
   templateUrl: './text.component.html',
   styleUrls: ['./text.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TextComponent
   extends AbstractViewComponent<TextView>
@@ -37,7 +39,6 @@ export class TextComponent
     private cdr: ChangeDetectorRef
   ) {
     super();
-    ClarityIcons.addIcons(clipboardIcon);
   }
 
   update() {

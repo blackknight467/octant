@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   ContainerDef,
   ContainersView,
@@ -13,6 +13,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-containers',
   templateUrl: './containers.component.html',
   styleUrls: ['./containers.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContainersComponent extends AbstractViewComponent<ContainersView> {
   containers: ContainerDef[];

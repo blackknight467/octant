@@ -8,8 +8,9 @@ package queryer
 import (
 	"context"
 	"fmt"
-	batchv1 "k8s.io/api/batch/v1"
 	"sync"
+
+	batchv1 "k8s.io/api/batch/v1"
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"

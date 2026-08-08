@@ -10,6 +10,7 @@ import {
   Input,
   OnInit,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 
 import { NamespaceService } from 'src/app/modules/shared/services/namespace/namespace.service';
@@ -24,6 +25,8 @@ import { Router } from '@angular/router';
     <svg:path [attr.d]="path()" [ngClass]="style()" (click)="navigate()" />
   `,
   styleUrls: ['./heptagon.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HeptagonComponent implements OnInit, AfterViewInit {
   @Input()

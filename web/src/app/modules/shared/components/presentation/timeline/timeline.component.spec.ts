@@ -1,12 +1,14 @@
 // Copyright (c) 2021 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TimelineView } from '../../../models/content';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TimelineComponent } from './timeline.component';
 @Component({
   template: '<app-view-timeline [view]="view"></app-view-timeline>',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 class TestWrapperComponent {
   view: TimelineView;
@@ -17,14 +19,12 @@ describe('TimelineComponent', () => {
     let component: TestWrapperComponent;
     let fixture: ComponentFixture<TestWrapperComponent>;
 
-    beforeEach(
-      waitForAsync(() => {
-        TestBed.configureTestingModule({
-          providers: [],
-          declarations: [TestWrapperComponent, TimelineComponent],
-        }).compileComponents();
-      })
-    );
+    beforeEach(waitForAsync(() => {
+      TestBed.configureTestingModule({
+        providers: [],
+        declarations: [TestWrapperComponent, TimelineComponent],
+      }).compileComponents();
+    }));
 
     beforeEach(() => {
       fixture = TestBed.createComponent(TestWrapperComponent);

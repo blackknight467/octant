@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FormViewContainerComponent } from './form-view-container.component';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormGroup,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
@@ -17,10 +17,12 @@ import '@cds/core/radio/register.js';
 @Component({
   template:
     '<app-form-view-container [form]="form" [formGroupContainer]="formGroup"></app-form-view-container>',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 class TestWrapperComponent {
   form: ActionForm;
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
 }
 
 describe('FormViewContainerComponent', () => {
@@ -29,17 +31,15 @@ describe('FormViewContainerComponent', () => {
   let element: HTMLDivElement;
   let formHelper;
 
-  const formBuilder: FormBuilder = new FormBuilder();
+  const formBuilder: UntypedFormBuilder = new UntypedFormBuilder();
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [TestWrapperComponent, FormViewContainerComponent],
-        imports: [CdsModule, ReactiveFormsModule, FormsModule],
-        providers: [{ provide: FormBuilder, useValue: formBuilder }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [TestWrapperComponent, FormViewContainerComponent],
+      imports: [CdsModule, ReactiveFormsModule, FormsModule],
+      providers: [{ provide: UntypedFormBuilder, useValue: formBuilder }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestWrapperComponent);
@@ -118,7 +118,7 @@ describe('FormViewContainerComponent', () => {
       fixture.detectChanges();
 
       const selected = (
-        component.formGroup.get(name) as FormArray
+        component.formGroup.get(name) as UntypedFormArray
       ).getRawValue();
       expect(selected[0]).toEqual('a');
       expect(element.querySelector('cds-select')).not.toBeNull();
@@ -156,7 +156,7 @@ describe('FormViewContainerComponent', () => {
       fixture.detectChanges();
 
       const selected = (
-        component.formGroup.get(name) as FormArray
+        component.formGroup.get(name) as UntypedFormArray
       ).getRawValue();
       expect(selected[0]).toEqual(undefined);
       expect(element.querySelector('cds-select')).not.toBeNull();

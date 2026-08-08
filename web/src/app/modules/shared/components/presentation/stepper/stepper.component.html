@@ -1,28 +1,26 @@
+<!--
+  clr-stepper-panel must stay a *direct* child of the clrStepper form. Clarity
+  queries the panels with @ContentChildren(ClrStepperPanel) and no
+  `descendants`, so anything nested inside a wrapper element is never found:
+  the panels do not register with StepperService, no step is ever opened, and
+  the form renders as a column of collapsed, unusable steps.
+-->
 <form clrStepper (ngSubmit)="onFormSubmit()" [formGroup]="formGroup">
-  <div
-    class="step-item"
-    *ngFor="let step of steps; index as i; trackBy: trackByFn"
-  >
-    <clr-stepper-panel [formGroupName]="step.name">
-      <clr-step-title>{{ step.title }}</clr-step-title>
-      <clr-step-description>{{ step.description }}</clr-step-description>
-      <clr-step-content>
-        <app-form-view-container
-          [formGroupContainer]="formGroupFromName(step)"
-          [form] = "step.form"
-        ></app-form-view-container>
-
-        <button
-          class="submit"
-          *ngIf="v.config.steps.length - 1 === i; else elseBlock"
-          clrStepButton="submit"
-        >
-          submit
-        </button>
-        <ng-template #elseBlock
-          ><button class="next" clrStepButton="next">next</button></ng-template
-        >
-      </clr-step-content>
-    </clr-stepper-panel>
-  </div>
+  @for (step of steps; track trackByFn(i, step); let i = $index) {
+  <clr-stepper-panel [formGroupName]="step.name">
+    <clr-step-title>{{ step.title }}</clr-step-title>
+    <clr-step-description>{{ step.description }}</clr-step-description>
+    <clr-step-content>
+      <app-form-view-container
+        [formGroupContainer]="formGroupFromName(step)"
+        [form]="step.form"
+      ></app-form-view-container>
+      @if (v.config.steps.length - 1 === i) {
+      <button class="submit" clrStepButton="submit">submit</button>
+      } @else {
+      <button class="next" clrStepButton="next">next</button>
+      }
+    </clr-step-content>
+  </clr-stepper-panel>
+  }
 </form>

@@ -16,19 +16,17 @@ describe('HeptagonGridComponent', () => {
   let component: HeptagonGridComponent;
   let fixture: ComponentFixture<HeptagonGridComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [
-          HeptagonGridComponent,
-          HeptagonGridRowComponent,
-          HeptagonLabelComponent,
-          HeptagonComponent,
-        ],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [
+        HeptagonGridComponent,
+        HeptagonGridRowComponent,
+        HeptagonLabelComponent,
+        HeptagonComponent,
+      ],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HeptagonGridComponent);

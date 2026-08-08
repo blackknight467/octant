@@ -7,6 +7,7 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { View } from 'src/app/modules/shared/models/content';
@@ -26,6 +27,8 @@ interface Tab {
   selector: 'app-object-tabs',
   templateUrl: './tabs.component.html',
   styleUrls: ['./tabs.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TabsComponent implements OnChanges, OnInit {
   @Input() title: View[];

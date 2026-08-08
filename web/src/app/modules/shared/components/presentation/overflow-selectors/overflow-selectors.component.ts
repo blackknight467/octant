@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { AfterViewChecked, Component, ElementRef, Input } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  Input,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
 import {
   ExpressionSelectorView,
@@ -13,6 +19,8 @@ import {
   selector: 'app-overflow-selectors',
   templateUrl: './overflow-selectors.component.html',
   styleUrls: ['./overflow-selectors.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class OverflowSelectorsComponent implements AfterViewChecked {
   @Input() set selectors(

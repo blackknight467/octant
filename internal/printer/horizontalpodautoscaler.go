@@ -16,7 +16,6 @@ import (
 	"github.com/pkg/errors"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
-	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta2"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -300,7 +299,9 @@ func (hc *HorizontalPodAutoscalerConfiguration) Create(ctx context.Context, opti
 	sections.AddText("Min Replicas", minReplicas)
 	sections.AddText("Max Replicas", maxReplicas)
 
-	b := autoscalingv2beta2.HorizontalPodAutoscalerBehavior{}
+	// The v1 HPA carries scaling behavior in an alpha annotation whose JSON
+	// shape matches autoscaling/v2; v2beta2 was removed in k8s 1.26.
+	b := autoscalingv2.HorizontalPodAutoscalerBehavior{}
 
 	if behavior, ok := hpa.Annotations["autoscaling.alpha.kubernetes.io/behavior"]; ok {
 		err := json.Unmarshal([]byte(behavior), &b)
@@ -1025,4 +1026,3 @@ func forScaleTargetV2(ctx context.Context, object runtime.Object, scaleTarget *a
 		scaleTarget.Name,
 	)
 }
-

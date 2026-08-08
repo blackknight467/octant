@@ -3,21 +3,20 @@
 //
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 
 import { ContainersComponent } from './containers.component';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 describe('ContainersComponent', () => {
   let component: ContainersComponent;
   let fixture: ComponentFixture<ContainersComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ContainersComponent, OverlayScrollbarsComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [OverlayscrollbarsModule],
+      declarations: [ContainersComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ContainersComponent);

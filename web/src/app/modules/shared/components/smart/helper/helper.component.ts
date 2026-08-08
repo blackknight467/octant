@@ -1,7 +1,12 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  HostListener,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import '@cds/core/button/register.js';
 import '@cds/core/modal/register';
-import { ClarityIcons, helpIcon } from '@cds/core/icon';
 import { Subscription } from 'rxjs';
 import { HelperService } from '../../../services/helper/helper.service';
 import { TextView } from '../../../models/content';
@@ -10,6 +15,8 @@ import { TextView } from '../../../models/content';
   selector: 'app-helper',
   templateUrl: './helper.component.html',
   styleUrls: ['./helper.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HelperComponent implements OnInit, OnDestroy {
   version = '';
@@ -26,9 +33,7 @@ export class HelperComponent implements OnInit, OnDestroy {
   };
   private buildInfoSubscription: Subscription;
 
-  constructor(private helperService: HelperService) {
-    ClarityIcons.addIcons(helpIcon);
-  }
+  constructor(private helperService: HelperService) {}
 
   ngOnInit() {
     this.buildInfoSubscription = this.helperService

@@ -10,13 +10,11 @@ describe('FlexlayoutComponent', () => {
   let component: FlexlayoutComponent;
   let fixture: ComponentFixture<FlexlayoutComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [SharedModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [SharedModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(FlexlayoutComponent);

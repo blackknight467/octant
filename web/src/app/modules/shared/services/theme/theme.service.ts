@@ -9,7 +9,6 @@ export type ThemeType = 'light' | 'dark';
 
 export interface Theme {
   type: ThemeType;
-  assetPath: string;
 }
 
 /**
@@ -17,7 +16,6 @@ export interface Theme {
  */
 export const darkTheme: Theme = {
   type: 'dark',
-  assetPath: 'assets/css/clr-ui-dark.min.css',
 };
 
 /**
@@ -25,7 +23,6 @@ export const darkTheme: Theme = {
  */
 export const lightTheme: Theme = {
   type: 'light',
-  assetPath: 'assets/css/clr-ui.min.css',
 };
 
 export const defaultTheme = window.matchMedia('(prefers-color-scheme:dark)')
@@ -50,37 +47,23 @@ export class ThemeService {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
 
-  loadCSS(route: string) {
-    const head = this.document.getElementsByTagName('head')[0];
-    const themeLink = this.document.getElementById(
-      'client-theme'
-    ) as HTMLLinkElement;
-
-    if (themeLink) {
-      themeLink.href = route;
-    } else {
-      const style = this.document.createElement('link');
-      style.id = 'client-theme';
-      style.rel = 'stylesheet';
-      style.href = `${route}`;
-
-      head.appendChild(style);
-    }
+  loadTheme(): void {
+    this.applyTheme(
+      this.isLightThemeEnabled() ? lightTheme.type : darkTheme.type
+    );
   }
 
-  loadTheme(): void {
-    const currentTheme = this.isLightThemeEnabled() ? lightTheme : darkTheme;
-    this.loadCSS(currentTheme.assetPath);
-
+  /**
+   * Applies a theme. Clarity 17 ships a single stylesheet and selects the
+   * palette from the cds-theme attribute, so there is no stylesheet to swap.
+   * The body class is kept for component styles using :host-context(body.dark).
+   */
+  applyTheme(type: ThemeType): void {
     [darkTheme, lightTheme].forEach(t =>
       this.renderer.removeClass(this.document.body, t.type)
     );
-    this.renderer.addClass(this.document.body, currentTheme.type);
-    this.renderer.setAttribute(
-      this.document.body,
-      'cds-theme',
-      currentTheme.type
-    );
+    this.renderer.addClass(this.document.body, type);
+    this.renderer.setAttribute(this.document.body, 'cds-theme', type);
   }
 
   switchTheme(): void {

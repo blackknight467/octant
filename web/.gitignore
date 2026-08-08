@@ -7,6 +7,8 @@
 /build
 /release
 /extraResources
+# Angular's persistent build cache (Angular 13+). Grows to many GB.
+/.angular
 # Only exists if Bazel was run
 /bazel-out
 
@@ -56,6 +58,7 @@ Thumbs.db
 /main.js
 /main.js.map
 /electron/*.js
+/electron/*.js.map
 /src/coverage/*
 
 #compodoc documentation file

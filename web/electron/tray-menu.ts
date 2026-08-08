@@ -6,8 +6,8 @@
 
 import { app, BrowserWindow, Menu, Tray, nativeImage, shell, MenuItem } from 'electron';
 import { errLogPath, iconPath, greyIconPath } from './paths';
-import * as WebSocket from 'ws';
-import * as open from 'open';
+import WebSocket = require('ws');
+import open = require('open');
 
 export class TrayMenu {
   public readonly tray: Tray;

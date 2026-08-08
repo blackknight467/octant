@@ -13,18 +13,16 @@ describe('ModalComponent', () => {
   let component: ModalComponent;
   let fixture: ComponentFixture<ModalComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [SharedModule],
-        declarations: [ModalComponent, OctantTooltipComponent],
-        providers: [
-          { provide: ModalService },
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [SharedModule],
+      declarations: [ModalComponent, OctantTooltipComponent],
+      providers: [
+        { provide: ModalService },
+        { provide: WindowToken, useFactory: windowProvider },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ModalComponent);

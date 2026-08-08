@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
 import { Subscription } from 'rxjs';
 import { WindowToken } from '../../../../../window';
@@ -11,6 +17,8 @@ import { WindowToken } from '../../../../../window';
   selector: 'app-uploader',
   templateUrl: './uploader.component.html',
   styleUrls: ['./uploader.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class UploaderComponent implements OnInit, OnDestroy {
   inputValue: string;

@@ -1,84 +1,99 @@
-<div class="navigation-top"
+<div
+  class="navigation-top"
   [ngClass]="{
-      'navigation-top-collapsed': collapsed,
-      'navigation-top-collapsed-labels': collapsed&&showLabels
-    }">
-  <clr-vertical-nav
-  [clrVerticalNavCollapsible]="false"
-  [(clrVerticalNavCollapsed)]="collapsed"
-  (clrVerticalNavCollapsedChange)="updateNavCollapsed($event)"
+    'navigation-top-collapsed': collapsed,
+    'navigation-top-collapsed-labels': collapsed && showLabels
+  }"
 >
-  <div class="navigation-main">
-  <div class="module-nav">
-    <clr-tabs clrLayout="vertical"
-      [ngClass]="{
-        'module-tabs': !showLabels,
-        'module-tabs-labels': showLabels
-      }">
-    >
-      <clr-tab *ngFor="let tab of modules; let i = index; trackBy: identifyTab">
-        <div clrTabLink (click)="setModule(i)" class="btn-icon"
+  <clr-vertical-nav
+    [clrVerticalNavCollapsible]="false"
+    [(clrVerticalNavCollapsed)]="collapsed"
+    (clrVerticalNavCollapsedChange)="updateNavCollapsed($event)"
+  >
+    <div class="navigation-main">
+      <div class="module-nav">
+        <clr-tabs
+          clrLayout="vertical"
           [ngClass]="{
-            'button-tool': !showLabels,
-            'button-tool-labels': showLabels
-          }">
-            <div *ngIf="showLabels" class="button-wrapper">
-              <div *ngIf="tab.customSvg; else regularIcon">
-                <cds-icon class="icon-nav" [attr.shape]="tab.icon"></cds-icon>
-              </div>
-              <ng-template #regularIcon>
+            'module-tabs': !showLabels,
+            'module-tabs-labels': showLabels
+          }"
+        >
+          @for (tab of modules; track identifyTab($index); let i = $index) {
+          <clr-tab>
+            <div
+              clrTabLink
+              (click)="setModule(i)"
+              class="btn-icon"
+              [ngClass]="{
+                'button-tool': !showLabels,
+                'button-tool-labels': showLabels
+              }"
+            >
+              @if (showLabels) {
+              <div class="button-wrapper">
+                @if (tab.customSvg) {
                 <div>
-                  <clr-icon class="icon-nav" [attr.shape]="tab.icon"></clr-icon>
+                  <clr-icon class="icon-nav" [shape]="tab.icon"></clr-icon>
                 </div>
-              </ng-template>
+                } @else {
+                <div>
+                  <clr-icon class="icon-nav" [shape]="tab.icon"></clr-icon>
+                </div>
+                }
+                <div class="button-text-wrapper">
+                  <div class="button-text">{{ tab.title }}</div>
+                </div>
+              </div>
+              } @if (!showLabels) {
+              <app-octant-tooltip [tooltipText]="tab.title">
+                <clr-icon class="icon-nav" [shape]="tab.icon"></clr-icon>
+              </app-octant-tooltip>
+              }
+            </div>
+            <ng-template *clrIfActive="i === this.selectedItem.module">
+              <clr-tab-content>
+                <div></div>
+              </clr-tab-content>
+            </ng-template>
+          </clr-tab>
+          }
+        </clr-tabs>
+        <div class="prefs-button">
+          <div
+            (click)="showPrefs()"
+            class="btn-icon btn btn-link nav-link"
+            [ngClass]="{
+              'button-tool': !showLabels,
+              'button-tool-labels': showLabels
+            }"
+          >
+            @if (showLabels) {
+            <div class="button-wrapper">
+              <clr-icon class="icon-nav" shape="cog"></clr-icon>
               <div class="button-text-wrapper">
-                <div class="button-text">{{tab.title}}</div>
+                <div class="button-text">Preferences</div>
               </div>
             </div>
-          <app-octant-tooltip *ngIf="!showLabels" [tooltipText]="tab.title">
-            <clr-icon class="icon-nav" [attr.shape]="tab.icon"></clr-icon>
-          </app-octant-tooltip>
-        </div>
-        <ng-template *clrIfActive="i === this.selectedItem.module">
-          <clr-tab-content>
-            <div></div>
-          </clr-tab-content>
-        </ng-template>
-      </clr-tab>
-      </clr-tabs>
-    <div class="prefs-button">
-      <div (click)="showPrefs()" class="btn-icon btn btn-link nav-link"
-           [ngClass]="{
-            'button-tool': !showLabels,
-            'button-tool-labels': showLabels
-          }">
-        <div *ngIf="showLabels" class="button-wrapper">
-          <clr-icon class="icon-nav" shape="cog"></clr-icon>
-          <div class="button-text-wrapper">
-            <div class="button-text">Preferences</div>
+            } @if (!showLabels) {
+            <app-octant-tooltip class="prefs-tooltip" tooltipText="Preferences">
+              <clr-icon class="icon-nav" shape="cog"></clr-icon>
+            </app-octant-tooltip>
+            }
           </div>
         </div>
-        <app-octant-tooltip class= "prefs-tooltip" *ngIf="!showLabels" tooltipText="Preferences">
-          <clr-icon class="icon-nav" shape="cog"></clr-icon>
-        </app-octant-tooltip>
       </div>
-    </div>
-  </div>
-  <!-- Navigation items -->
-  <div
-    [ngClass]="{
-      'navigation-items-collapsed': collapsed,
-      'navigation-items': !collapsed
-    }">
-    <ng-container
-      *ngFor="
-        let section of currentModule?.children;
-        let i = index;
-        trackBy: identifyNavigationItem
-      "
-    >
-      <!-- Collapsed Navigation -->
-      <ng-container *ngIf="collapsed; else expanded">
+      <!-- Navigation items -->
+      <div
+        [ngClass]="{
+          'navigation-items-collapsed': collapsed,
+          'navigation-items': !collapsed
+        }"
+      >
+        @for ( section of currentModule?.children; track
+        identifyNavigationItem(i, section); let i = $index) {
+        <!-- Collapsed Navigation -->
+        @if (collapsed) {
         <a
           clrVerticalNavLink
           (click)="openPopup(i)"
@@ -89,11 +104,10 @@
           (mouseover)="flyoutIndex = i; selectedItem.index = i"
         >
           <clr-icon
-            [attr.shape]="section.iconName | default: 'play'"
+            [shape]="section.iconName | default : 'play'"
             clrVerticalNavIcon
           ></clr-icon>
         </a>
-
         <div
           class="flyout nav-group-children"
           [ngClass]="{ 'flyout-empty': !section.children?.length }"
@@ -110,116 +124,106 @@
             {{ section.title }}
           </a>
           <clr-vertical-nav-group-children class="flyout-group">
-            <ng-container
-              *ngFor="
-                let category of section.children;
-                trackBy: identifyNavigationItem
-              "
+            @for ( category of section.children; track
+            identifyNavigationItem($index, category)) {
+            <a
+              [routerLink]="formatPath(category.path)"
+              [routerLinkActiveOptions]="{ exact: false }"
+              routerLinkActive="active"
+              class="flyout-item nav-link"
+              (click)="setNavState(false, i)"
             >
-              <a
-                [routerLink]="formatPath(category.path)"
-                [routerLinkActiveOptions]="{ exact: false }"
-                routerLinkActive="active"
-                class="flyout-item nav-link"
-                (click)="setNavState(false, i)"
-              >
-                {{ category.title }}
-              </a>
-            </ng-container>
+              {{ category.title }}
+            </a>
+            }
           </clr-vertical-nav-group-children>
         </div>
-      </ng-container>
-      <!-- Expanded Navigation -->
-      <ng-template #expanded>
-        <ng-container
-          *ngIf="section.children?.length > 0; else noChildExpanded"
+        } @else { @if (section.children?.length > 0) {
+        <clr-vertical-nav-group
+          routerLinkActive="active"
+          [clrVerticalNavGroupExpanded]="shouldExpand(i)"
+          (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
         >
-          <clr-vertical-nav-group
-            routerLinkActive="active"
-            [clrVerticalNavGroupExpanded]="shouldExpand(i)"
-            (clrVerticalNavGroupExpandedChange)="setNavState($event, i)"
-          >
-            <cds-icon *ngIf="section.customSvg; else firstLevelIcon" [attr.shape]="section.iconName" clrVerticalNavIcon></cds-icon>
-            {{ section.title }}
-            <ng-template #firstLevelIcon>
-              <clr-icon [attr.shape]="section.iconName | default: 'exclamation-circle'" clrVerticalNavIcon></clr-icon>
-            </ng-template>
-
-            <clr-vertical-nav-group-children>
-              <a
-                clrVerticalNavLink
-                [routerLink]="formatPath(section.path)"
-                [routerLinkActiveOptions]="{ exact: true }"
-                routerLinkActive="active"
-              >
-                Overview
-              </a>
-              <ng-container
-                *ngFor="
-                  let category of section.children;
-                  trackBy: identifyNavigationItem
-                "
-              >
-                <a
-                  clrVerticalNavLink
-                  [routerLink]="formatPath(category.path)"
-                  [routerLinkActiveOptions]="{ exact: false }"
-                  routerLinkActive="active"
-                >
-                  <cds-icon *ngIf="category.customSvg; else secondLevelIcon" [attr.shape]="category.iconName" clrVerticalNavIcon></cds-icon>
-                  <ng-template #secondLevelIcon>
-                    <clr-icon
-                      *ngIf="itemIcon(category) as categoryIcon"
-                      [attr.shape]="categoryIcon"
-                      clrVerticalNavIcon
-                    ></clr-icon>
-                  </ng-template>
-                  {{ category.title }}
-                </a>
-              </ng-container>
-            </clr-vertical-nav-group-children>
-          </clr-vertical-nav-group>
-        </ng-container>
-        <ng-template #noChildExpanded>
-          <a
-            clrVerticalNavLink
-            (click)="closePopups(i)"
-            [routerLink]="formatPath(section.path)"
-            [routerLinkActiveOptions]="{ exact: i==0 }"
-            routerLinkActive="active"
-          >
-            <clr-icon *ngIf="section.iconName"
-              [attr.shape]="section.iconName"
-              clrVerticalNavIcon
-            ></clr-icon>
-            <div class="nav-item-text"
-                 [ngClass]="{ 'nav-item-padded': !section.iconName }"
+          @if (section.customSvg) {
+          <clr-icon [shape]="section.iconName" clrVerticalNavIcon></clr-icon>
+          } @else {
+          <clr-icon
+            [shape]="section.iconName | default : 'exclamation-circle'"
+            clrVerticalNavIcon
+          ></clr-icon>
+          }
+          {{ section.title }}
+          <clr-vertical-nav-group-children>
+            <a
+              clrVerticalNavLink
+              [routerLink]="formatPath(section.path)"
+              [routerLinkActiveOptions]="{ exact: true }"
+              routerLinkActive="active"
             >
-              {{ section.title }}
-            </div>
-          </a>
-        </ng-template>
-      </ng-template>
-    </ng-container>
-    <div *ngIf="!collapsed" class="nav-description">
-      <div class="nav-description-inner">
-        <div class="clr-row">
-          <div class="clr-col-12">
-            <div class="card">
-              <div class="card-header">
-                {{ currentModule?.title }}
-              </div>
-              <div class="card-block">
-                <div class="card-text">
-                {{ currentModule?.description }}
+              Overview
+            </a>
+            @for ( category of section.children; track
+            identifyNavigationItem($index, category)) {
+            <a
+              clrVerticalNavLink
+              [routerLink]="formatPath(category.path)"
+              [routerLinkActiveOptions]="{ exact: false }"
+              routerLinkActive="active"
+            >
+              @if (category.customSvg) {
+              <clr-icon
+                [shape]="category.iconName"
+                clrVerticalNavIcon
+              ></clr-icon>
+              } @else { @if (itemIcon(category); as categoryIcon) {
+              <clr-icon [shape]="categoryIcon" clrVerticalNavIcon></clr-icon>
+              } }
+              {{ category.title }}
+            </a>
+            }
+          </clr-vertical-nav-group-children>
+        </clr-vertical-nav-group>
+        } @else {
+        <a
+          clrVerticalNavLink
+          (click)="closePopups(i)"
+          [routerLink]="formatPath(section.path)"
+          [routerLinkActiveOptions]="{ exact: i == 0 }"
+          routerLinkActive="active"
+        >
+          @if (section.iconName) {
+          <clr-icon [shape]="section.iconName" clrVerticalNavIcon></clr-icon>
+          }
+          <div
+            class="nav-item-text"
+            [ngClass]="{ 'nav-item-padded': !section.iconName }"
+          >
+            {{ section.title }}
+          </div>
+        </a>
+        } }
+        <!-- Expanded Navigation -->
+        } @if (!collapsed) {
+        <div class="nav-description">
+          <div class="nav-description-inner">
+            <div class="clr-row">
+              <div class="clr-col-12">
+                <div class="card">
+                  <div class="card-header">
+                    {{ currentModule?.title }}
+                  </div>
+                  <div class="card-block">
+                    <div class="card-text">
+                      {{ currentModule?.description }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        }
       </div>
     </div>
-  </div>
-</div>
-</clr-vertical-nav>
+  </clr-vertical-nav>
 </div>

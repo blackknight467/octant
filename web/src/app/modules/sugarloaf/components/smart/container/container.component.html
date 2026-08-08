@@ -13,10 +13,25 @@
           <span class="title">Octant</span>
         </a>
       </div>
-        <!-- Navigation items -->
+      <!-- Navigation items -->
       <div class="header-nav">
-        <clr-icon *ngIf="isElectron" class="header-centered" (click)="back()" shape="caret left" size="24"></clr-icon>
-        <clr-icon *ngIf="isElectron" class="header-centered" (click)="forward()" shape="caret right" size="24"></clr-icon>
+        @if (isElectron) {
+        <clr-icon
+          class="header-centered"
+          (click)="back()"
+          shape="caret"
+          direction="left"
+          size="24"
+        ></clr-icon>
+        } @if (isElectron) {
+        <clr-icon
+          class="header-centered"
+          (click)="forward()"
+          shape="caret"
+          direction="right"
+          size="24"
+        ></clr-icon>
+        }
         <app-view-dropdown [view]="historyDropdownConfig"></app-view-dropdown>
         <div class="input-filter">
           <app-input-filter></app-input-filter>
@@ -40,7 +55,9 @@
       </div>
     </div>
   </div>
-  <app-bottom-panel *ngIf="isBottomPanelEnabled"></app-bottom-panel>
+  @if (isBottomPanelEnabled) {
+  <app-bottom-panel></app-bottom-panel>
+  }
 </div>
 <div class="quick-switcher">
   <app-quick-switcher></app-quick-switcher>
@@ -52,5 +69,5 @@
     (preferencesChanged)="preferencesChanged($event)"
     (isOpenChange)="preferencesOpenChanged($event)"
     (reset)="onReset()"
-></app-preferences>
+  ></app-preferences>
 </div>

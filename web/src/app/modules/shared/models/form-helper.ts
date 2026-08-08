@@ -1,8 +1,8 @@
 import {
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
@@ -29,7 +29,10 @@ const validationNeedParams = {
 
 // Class responsible to create a Form Group and add Validations Functions to form control
 export class FormHelper {
-  createFromGroup(form: ActionForm, formBuilder: FormBuilder): FormGroup {
+  createFromGroup(
+    form: ActionForm,
+    formBuilder: UntypedFormBuilder
+  ): UntypedFormGroup {
     if (!form) {
       return;
     }
@@ -60,10 +63,12 @@ export class FormHelper {
         field.config.type === 'select')
     ) {
       const choices: Choice[] = field.config.configuration.choices;
-      controls[field.config.name] = new FormArray([]);
+      controls[field.config.name] = new UntypedFormArray([]);
       choices.forEach((choice: Choice) => {
         if (choice.checked) {
-          controls[field.config.name].push(new FormControl(choice.value));
+          controls[field.config.name].push(
+            new UntypedFormControl(choice.value)
+          );
         }
       });
     }

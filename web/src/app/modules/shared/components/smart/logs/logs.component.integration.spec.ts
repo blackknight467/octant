@@ -15,10 +15,14 @@ import {
   Since,
 } from 'src/app/modules/shared/models/content';
 import { PodLogsService } from 'src/app/modules/shared/pod-logs/pod-logs.service';
+import { WebsocketService } from '../../../../../data/services/websocket/websocket.service';
+import { WebsocketServiceMock } from '../../../../../data/services/websocket/mock';
 import { LogsComponent } from './logs.component';
 import { AnsiPipe } from '../../../pipes/ansiPipe/ansi.pipe';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { StringEscapePipe } from '../../../pipes/stringEscape/string.escape.pipe';
+import { rebind } from '../../../../../testing/rebind';
+import { waitFor } from '../../../../../testing/wait-for';
 
 function createTestLogsView(
   durations: Since[],
@@ -71,17 +75,17 @@ describe('LogsComponent <-> PodsLogsService', () => {
     },
   ];
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
-        providers: [
-          PodLogsService,
-          { provide: WindowToken, useFactory: windowProvider },
-        ],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [LogsComponent, AnsiPipe, StringEscapePipe],
+      providers: [
+        PodLogsService,
+        { provide: WindowToken, useFactory: windowProvider },
+        // see logs.component.spec.ts: the real WebsocketService dials karma itself
+        { provide: WebsocketService, useClass: WebsocketServiceMock },
+      ],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(LogsComponent);
@@ -94,10 +98,6 @@ describe('LogsComponent <-> PodsLogsService', () => {
       [{ label: '5 minutes', seconds: 300 }],
       ['containerA', 'containerB', 'containerC']
     );
-  });
-
-  afterEach(() => {
-    TestBed.resetTestingModule();
   });
 
   it('should allow user to toggle displaying timestamps', () => {
@@ -119,8 +119,9 @@ describe('LogsComponent <-> PodsLogsService', () => {
       /May \d+, 2019(.+)messageC/
     );
 
-    component.shouldDisplayTimestamp = false;
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      component.shouldDisplayTimestamp = false;
+    });
 
     logEntriesDebugElement = fixture.debugElement.queryAll(
       By.css('.container-log')
@@ -166,9 +167,10 @@ describe('LogsComponent <-> PodsLogsService', () => {
       range(numberOfEntriesRequiredToScroll),
       createRandomLogEntry
     );
-    component.containerLogs.push(...newContainerLogs);
-    logWrapperNativeElement.dispatchEvent(new Event('scroll'));
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      component.containerLogs.push(...newContainerLogs);
+      logWrapperNativeElement.dispatchEvent(new Event('scroll'));
+    });
 
     logWrapperNativeElement = fixture.debugElement.query(
       By.css('.log-container')
@@ -176,7 +178,7 @@ describe('LogsComponent <-> PodsLogsService', () => {
     expect(logWrapperNativeElement.scrollTop).toEqual(0);
   });
 
-  it('should keep scroll position even if new logs are coming in and user is not at bottom', () => {
+  it('should keep scroll position even if new logs are coming in and user is not at bottom', async () => {
     const numberOfEntriesRequiredToScroll = 200;
     component.containerLogs = map(
       range(numberOfEntriesRequiredToScroll),
@@ -189,38 +191,69 @@ describe('LogsComponent <-> PodsLogsService', () => {
     );
     let logWrapperNativeElement: HTMLDivElement =
       logWrapperDebugElement.nativeElement;
-    fixture.whenStable().then(() => {
-      expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
-        logWrapperNativeElement.clientHeight
-      );
-      expect(logWrapperNativeElement.scrollTop).toBeGreaterThan(0);
-    });
+    await fixture.whenStable();
+    // The scroll container is sized by overlayscrollbars, which initialises
+    // asynchronously, so the element still measures 0x0 immediately after
+    // whenStable(). Wait for real geometry rather than assert against a
+    // half-laid-out element.
+    await waitFor(
+      () =>
+        logWrapperNativeElement.scrollHeight >
+        logWrapperNativeElement.clientHeight,
+      'log container to become scrollable'
+    );
+    expect(logWrapperNativeElement.scrollHeight).toBeGreaterThan(
+      logWrapperNativeElement.clientHeight
+    );
+    // The log list is laid out `flex-direction: column-reverse`, so the browser
+    // puts the scroll origin at the visual bottom: resting on the newest entry
+    // is scrollTop === 0, and scrolling *up* into history gives negative
+    // offsets (positive values clamp back to 0). This spec was written against
+    // Chrome's older behaviour, which reported the same positions as positive
+    // offsets. Only the reported sign changed — the on-screen behaviour, and
+    // the CSS producing it, are unchanged.
+    expect(logWrapperNativeElement.scrollTop).toBe(0);
 
-    // scroll halfway
-    const halfwayScrollMark = Math.floor(
+    // scroll halfway up into the history
+    const halfwayScrollMark = -Math.floor(
       logWrapperNativeElement.clientHeight / 2
     );
     logWrapperNativeElement.scrollTop = halfwayScrollMark;
     logWrapperNativeElement.dispatchEvent(new Event('scroll'));
+    const offsetFromTopBefore = offsetFromTop(logWrapperNativeElement);
 
     // add new logs
     const newContainerLogs: LogEntry[] = map(
       range(numberOfEntriesRequiredToScroll),
       createRandomLogEntry
     );
-    component.containerLogs.push(...newContainerLogs);
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      component.containerLogs.push(...newContainerLogs);
+    });
 
     // check scroll is in same place
     logWrapperNativeElement = fixture.debugElement.query(
       By.css('.container-logs-bg')
     ).nativeElement;
-    fixture.whenStable().then(() => {
-      expect(logWrapperNativeElement.scrollTop).toBe(halfwayScrollMark);
-    });
+    await fixture.whenStable();
+    // Because the scroll origin sits at the bottom, appending logs below the
+    // viewport necessarily shifts scrollTop — holding it fixed would mean the
+    // user's view slid forward onto newer lines. What must not change is how
+    // far down the history they are, which is the offset from the top.
+    expect(offsetFromTop(logWrapperNativeElement)).toBe(offsetFromTopBefore);
   });
 
-  it('should filter messages based on search string', () => {
+  // Distance from the start of the log history, independent of whether the
+  // browser reports scroll offsets from the top or from the bottom.
+  function offsetFromTop(el: HTMLElement): number {
+    return el.scrollTop + el.scrollHeight - el.clientHeight;
+  }
+
+  // `.highlight-selected` is applied by scrollToHighlight(), which the component
+  // defers to a microtask so it does not write template-bound state during the
+  // change-detection pass that rendered the highlights. Each assertion therefore
+  // has to let that microtask run first.
+  it('should filter messages based on search string', async () => {
     component.view = createTestLogsView(
       [{ label: '5 minutes', seconds: 300 }],
       ['containerA', 'containerB', 'containerC']
@@ -230,24 +263,31 @@ describe('LogsComponent <-> PodsLogsService', () => {
     component.containerLogs = defaultTestLogs;
     component.filterText = 'message';
     fixture.detectChanges();
+    await fixture.whenStable();
     VerifyElementsExist('.container-log', 3);
     VerifyElementsExist('.highlight', 3);
     VerifyElementsExist('.highlight-selected', 1);
 
-    component.filterText = 'messageA';
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      component.filterText = 'messageA';
+    });
+    await fixture.whenStable();
     VerifyElementsExist('.container-log', 3);
     VerifyElementsExist('.highlight', 1);
     VerifyElementsExist('.highlight-selected', 1);
 
-    component.showOnlyFiltered = true;
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      component.showOnlyFiltered = true;
+    });
+    await fixture.whenStable();
     VerifyElementsExist('.container-log', 1);
     VerifyElementsExist('.highlight', 1);
     VerifyElementsExist('.highlight-selected', 1);
 
-    component.filterText = '';
-    fixture.detectChanges();
+    rebind(fixture, () => {
+      component.filterText = '';
+    });
+    await fixture.whenStable();
     VerifyElementsExist('.container-log', 3);
     VerifyElementsExist('.highlight', 0);
     VerifyElementsExist('.highlight-selected', 0);

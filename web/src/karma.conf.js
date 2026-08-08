@@ -5,6 +5,13 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+// Interactive runs keep the Jasmine HTML output on screen; single/headless runs
+// must not, because retaining every spec's DOM exhausts the browser partway
+// through the suite and Karma reports it as an inactivity disconnect.
+const nonInteractive = process.argv.some(arg =>
+  /^--watch[= ]?false$|Headless/i.test(arg)
+);
+
 module.exports = function (config) {
   config.set({
     basePath: '',
@@ -23,14 +30,19 @@ module.exports = function (config) {
       require('@angular-devkit/build-angular/plugins/karma'),
     ],
     client: {
-      clearContext: false, // leave Jasmine Spec Runner output visible in browser
+      clearContext: !nonInteractive, // leave Jasmine Spec Runner output visible in browser
+      // Deterministic order: with Jasmine's default randomisation a leak or hang
+      // surfaces in a different spec every run, which makes failures unreproducible.
+      jasmine: { random: false },
     },
     coverageIstanbulReporter: {
       dir: require('path').join(__dirname, '../coverage/octant'),
       reports: ['html', 'lcovonly', 'text-summary'],
       fixWebpackSourcePaths: true,
     },
-    reporters: ['spec', 'progress', 'kjhtml'],
+    // kjhtml renders results into the page and is meaningless without a screen
+    reporters: nonInteractive ? ['spec'] : ['spec', 'progress', 'kjhtml'],
+    browserNoActivityTimeout: 120000,
     specReporter: {
       maxLogLines: 5,
       suppressErrorSummary: true,

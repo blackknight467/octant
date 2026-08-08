@@ -9,12 +9,26 @@
 
   <div class="controls">
     <div class="select-wrapper">
-      <app-view-select-file  *ngIf="!metadata" [view]= "selectFileView" (fileChanged)="inputFileChanged($event)"></app-view-select-file>
+      @if (!metadata) {
+      <app-view-select-file
+        [view]="selectFileView"
+        (fileChanged)="inputFileChanged($event)"
+      ></app-view-select-file>
+      }
     </div>
-    <cds-button size="sm" action="outline" (click)="reset()" [disabled]="!isModified" >
+    <cds-button
+      size="sm"
+      action="outline"
+      (click)="reset()"
+      [disabled]="!isModified"
+    >
       Reset
     </cds-button>
-    <cds-button size="sm" action="outline" (click)="submit()" [disabled]="isUpdateEnabled()"
+    <cds-button
+      size="sm"
+      action="outline"
+      (click)="submit()"
+      [disabled]="isUpdateEnabled()"
     >
       {{ submitLabel }}
     </cds-button>

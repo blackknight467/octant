@@ -20,6 +20,7 @@ const alertLookup = {
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AlertComponent implements OnInit {
   @Input() alert: Alert;

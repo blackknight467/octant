@@ -7,29 +7,27 @@ import { SharedModule } from '../../../shared.module';
 import { BreadcrumbComponent } from './breadcrumb.component';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
 import { LinkView, TextView } from '../../../models/content';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 describe('BreadcrumbComponent', () => {
   let component: BreadcrumbComponent;
   let fixture: ComponentFixture<BreadcrumbComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [OverlayScrollbarsComponent],
-        imports: [SharedModule],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [],
+      imports: [SharedModule, OverlayscrollbarsModule],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(BreadcrumbComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 

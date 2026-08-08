@@ -8,8 +8,9 @@ package printer
 import (
 	"context"
 	"fmt"
-	batchv1 "k8s.io/api/batch/v1"
 	"strconv"
+
+	batchv1 "k8s.io/api/batch/v1"
 
 	"github.com/vmware-tanzu/octant/internal/octant"
 

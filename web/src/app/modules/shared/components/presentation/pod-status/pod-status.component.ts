@@ -7,6 +7,7 @@ import {
   ElementRef,
   ViewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { PodStatusView } from '../../../models/content';
 import { PodStatus } from '../../../models/pod-status';
@@ -17,6 +18,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   templateUrl: './pod-status.component.html',
   styleUrls: ['./pod-status.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class PodStatusComponent extends AbstractViewComponent<PodStatusView> {
   @ViewChild('container') private container: ElementRef;

@@ -8,13 +8,11 @@ describe('ApplyYAMLComponent', () => {
   let component: ApplyYAMLComponent;
   let fixture: ComponentFixture<ApplyYAMLComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [ApplyYAMLComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [ApplyYAMLComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ApplyYAMLComponent);

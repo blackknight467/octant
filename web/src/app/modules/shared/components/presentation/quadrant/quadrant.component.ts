@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   QuadrantValue,
   QuadrantView,
@@ -16,6 +16,8 @@ const emptyQuadrantValue = { value: '', label: '' };
   selector: 'app-view-quadrant',
   templateUrl: './quadrant.component.html',
   styleUrls: ['./quadrant.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class QuadrantComponent extends AbstractViewComponent<QuadrantView> {
   title: string;

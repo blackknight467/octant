@@ -10,13 +10,11 @@ describe('HeptagonLabelComponent', () => {
   let component: HeptagonLabelComponent;
   let fixture: ComponentFixture<HeptagonLabelComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [HeptagonLabelComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [HeptagonLabelComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HeptagonLabelComponent);

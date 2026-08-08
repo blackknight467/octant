@@ -1,16 +1,16 @@
-<ng-template [ngIf]="title" [ngIfElse]="noTitle">
-  <div class="label-with-title clr-col-md-12">
-    <h3>{{ title }}</h3>
-    <div class="view-labels">
-      <app-overflow-labels
-        *ngIf="labels"
-        [labels]="labels"
-      ></app-overflow-labels>
-    </div>
-  </div>
-</ng-template>
-<ng-template #noTitle>
+@if (title) {
+<div class="label-with-title clr-col-md-12">
+  <h3>{{ title }}</h3>
   <div class="view-labels">
-    <app-overflow-labels *ngIf="labels" [labels]="labels"></app-overflow-labels>
+    @if (labels) {
+    <app-overflow-labels [labels]="labels"></app-overflow-labels>
+    }
   </div>
-</ng-template>
+</div>
+} @else {
+<div class="view-labels">
+  @if (labels) {
+  <app-overflow-labels [labels]="labels"></app-overflow-labels>
+  }
+</div>
+}

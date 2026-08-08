@@ -42,10 +42,11 @@ func (pf *PathFilter) String() string {
 // Match matches a contentPath against the filter.
 //
 // content paths look like:
-//   /foo/bar
-//   /namespace/default
-//   /namespace/default/foo/bar
-//   /
+//
+//	/foo/bar
+//	/namespace/default
+//	/namespace/default/foo/bar
+//	/
 func (pf *PathFilter) Match(contentPath string) bool {
 	return pf.re.MatchString(contentPath)
 }

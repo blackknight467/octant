@@ -1,9 +1,13 @@
-<h4 class="clr-col-10" *ngIf="title">{{ title }}</h4>
-  <clr-accordion [clrAccordionMultiPanel]="allowMultipleExpanded">
-  <clr-accordion-panel *ngFor="let row of rows; trackBy: trackByIndex">
+@if (title) {
+<h4 class="clr-col-10">{{ title }}</h4>
+}
+<clr-accordion [clrAccordionMultiPanel]="allowMultipleExpanded">
+  @for (row of rows; track trackByIndex($index)) {
+  <clr-accordion-panel>
     <clr-accordion-title>{{ row.title }}</clr-accordion-title>
     <clr-accordion-content *clrIfExpanded>
       <app-view-container [view]="row.content"></app-view-container>
     </clr-accordion-content>
   </clr-accordion-panel>
+  }
 </clr-accordion>

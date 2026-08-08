@@ -1,27 +1,32 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
-    "downlevelIteration": true,
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "module": "es2020",
-    "moduleResolution": "node",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
     "skipLibCheck": true,
-    "target": "es2015",
+    "target": "ES2022",
     "typeRoots": [
       "node_modules/@types",
       "./src/types"
     ],
     "lib": [
-      "es2018"
-    ]
+      "ES2022",
+      "dom"
+    ],
+    "useDefineForClassFields": false,
+    "strict": false,
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ]
+    }
   },
-  "files": [
-  ]
+  "files": []
 }

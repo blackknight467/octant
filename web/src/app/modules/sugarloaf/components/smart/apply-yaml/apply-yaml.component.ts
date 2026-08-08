@@ -3,15 +3,21 @@ Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import '@cds/core/modal/register';
-import { ClarityIcons, uploadIcon } from '@cds/core/icon';
 import { EditorView } from 'src/app/modules/shared/models/content';
 
 @Component({
   selector: 'app-apply-yaml',
   templateUrl: './apply-yaml.component.html',
   styleUrls: ['./apply-yaml.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ApplyYAMLComponent implements OnInit {
   editorView: EditorView = {
@@ -29,9 +35,7 @@ export class ApplyYAMLComponent implements OnInit {
     },
   };
 
-  constructor() {
-    ClarityIcons.addIcons(uploadIcon);
-  }
+  constructor() {}
 
   ngOnInit() {}
 

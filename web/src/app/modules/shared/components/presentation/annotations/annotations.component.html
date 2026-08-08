@@ -1,10 +1,12 @@
 <table class="table table-compact table-noborder table-vertical">
   <tbody>
-    <tr *ngFor="let key of annotationKeys; trackBy: trackByIdentity">
+    @for (key of annotationKeys; track trackByIdentity($index, key)) {
+    <tr>
       <th>{{ key }}</th>
       <td>
         <code>{{ annotations[key] }}</code>
       </td>
     </tr>
+    }
   </tbody>
 </table>

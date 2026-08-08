@@ -5,11 +5,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { GraphvizComponent } from './graphviz.component';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { GraphvizView } from '../../../models/content';
 
 @Component({
   template: '<app-view-graphviz [view]="view"></app-view-graphviz>',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 class TestWrapperComponent {
   view: GraphvizView;
@@ -19,13 +21,11 @@ describe('GraphvizComponent', () => {
   let component: TestWrapperComponent;
   let fixture: ComponentFixture<TestWrapperComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [TestWrapperComponent, GraphvizComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [TestWrapperComponent, GraphvizComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestWrapperComponent);

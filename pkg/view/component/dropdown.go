@@ -8,7 +8,6 @@ package component
 import "github.com/vmware-tanzu/octant/internal/util/json"
 
 // DropdownType defines what the dropdown source is (UI component that's visible when dropdown is closed)
-//
 type DropdownType string
 
 const (

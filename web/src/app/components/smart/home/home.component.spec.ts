@@ -10,20 +10,18 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let themeService: ThemeService;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        providers: [
-          {
-            provide: ThemeService,
-            useValue: themeServiceStub,
-          },
-          SharedModule,
-        ],
-        declarations: [HomeComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ThemeService,
+          useValue: themeServiceStub,
+        },
+        SharedModule,
+      ],
+      declarations: [HomeComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     themeService = TestBed.inject(ThemeService);

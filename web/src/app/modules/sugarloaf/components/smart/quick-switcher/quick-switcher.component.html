@@ -7,7 +7,8 @@
   (keyup.enter)="onEnter()"
   (keyup)="onKeyUp($event)"
   (keydown)="onKeyDown($event)"
-  (closeChange)="toggleQuickSwitcher()">
+  (closeChange)="toggleQuickSwitcher()"
+>
   <cds-modal-content>
     <input
       class="filter-input"
@@ -19,27 +20,27 @@
       size="37.5"
     />
     <table class="table table-noborder destinations">
-      <thead *ngIf="searchingNamespace">
-      <tr>
-        <th>Searching Namespaces</th>
-      </tr>
+      @if (searchingNamespace) {
+      <thead>
+        <tr>
+          <th>Searching Namespaces</th>
+        </tr>
       </thead>
+      }
       <overlay-scrollbars>
         <tbody>
-        <tr
-          *ngFor="
-            let destination of filteredDestinations;
-            trackBy: identifyDestinationItem;
-            index as index
-          "
-          (mouseover)="activeIndex = index"
-          (click)="onEnter($event)"
-          [class.destination-active]="index == activeIndex"
-          [attr.aria-label]="destination.title"
-        >
-          <td>{{ destination.title }}</td>
-          <td>{{ destination.type }}</td>
-        </tr>
+          @for ( destination of filteredDestinations; track
+          identifyDestinationItem(index, destination); let index = $index) {
+          <tr
+            (mouseover)="activeIndex = index"
+            (click)="onEnter($event)"
+            [class.destination-active]="index == activeIndex"
+            [attr.aria-label]="destination.title"
+          >
+            <td>{{ destination.title }}</td>
+            <td>{{ destination.type }}</td>
+          </tr>
+          }
         </tbody>
       </overlay-scrollbars>
     </table>

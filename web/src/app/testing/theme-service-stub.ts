@@ -8,7 +8,7 @@ import {
 import { BehaviorSubject } from 'rxjs';
 
 export const themeServiceStub: Partial<ThemeService> = {
-  loadCSS: () => void 0,
+  applyTheme: () => void 0,
   loadTheme: () => void 0,
   isLightThemeEnabled: () => true,
   switchTheme: () => void 0,

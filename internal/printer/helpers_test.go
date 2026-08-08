@@ -25,6 +25,19 @@ const (
 	rbacAPIVersion = "rbac.authorization.k8s.io/v1"
 )
 
+// expectedPodStatus builds the combined status cell expected in a pod list row.
+// display is the text shown (a container state reason, or the phase as a
+// fallback), filterValue is always the pod phase so filtering stays phase-based,
+// and className is empty for phases that get no status color.
+func expectedPodStatus(display, filterValue, className string) *component.Text {
+	t := component.NewText(display)
+	t.SetFilterValue(filterValue)
+	if className != "" {
+		t.SetClassName(className)
+	}
+	return t
+}
+
 type testPrinterOptions struct {
 	dashConfig *configFake.MockDash
 	link       *linkFake.MockInterface
@@ -45,6 +58,9 @@ func newTestPrinterOptions(controller *gomock.Controller) *testPrinterOptions {
 	dashConfig.EXPECT().ObjectStore().Return(objectStore).AnyTimes()
 	dashConfig.EXPECT().PluginManager().Return(pluginManager).AnyTimes()
 	dashConfig.EXPECT().PortForwarder().Return(portForwarder).AnyTimes()
+	// Pod list printing probes for a cluster client to decide whether metrics
+	// columns are available; nil means metrics-server is unavailable.
+	dashConfig.EXPECT().ClusterClient().Return(nil).AnyTimes()
 
 	tpo := &testPrinterOptions{
 		dashConfig:    dashConfig,

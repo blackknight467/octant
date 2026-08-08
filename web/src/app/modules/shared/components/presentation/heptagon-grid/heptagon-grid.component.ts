@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import chunk from 'lodash/chunk';
 
 import { PodStatus } from '../../../models/pod-status';
@@ -13,23 +18,21 @@ import { HoverStatus } from '../heptagon-grid-row/heptagon-grid-row.component';
   selector: 'app-heptagon-grid',
   template: `
     <svg [attr.viewBox]="viewBox()">
+      @for (row of rows(); track trackByFn(i, row); let i = $index) {
       <svg:g
         app-heptagon-grid-row
-        *ngFor="let row of rows(); let i = index; trackBy: trackByFn"
         class="grid-row"
         [statuses]="row"
         [edgeLength]="edgeLength"
         [row]="i"
         (hoverState)="updateHover($event)"
       />
+      }
       <svg:g class="tooltips">
+        @for ( podStatus of podStatuses; track trackByFn(i, podStatus); let i =
+        $index) {
         <svg:g
           app-heptagon-label
-          *ngFor="
-            let podStatus of podStatuses;
-            let i = index;
-            trackBy: trackByFn
-          "
           class="tooltip"
           [id]="tooltipName(podStatus)"
           [centerPoint]="centerPoint(i)"
@@ -38,10 +41,13 @@ import { HoverStatus } from '../heptagon-grid-row/heptagon-grid-row.component';
           [name]="tooltipName(podStatus)"
           [style.opacity]="isActivated(i)"
         />
+        }
       </svg:g>
     </svg>
   `,
   styleUrls: ['./heptagon-grid.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HeptagonGridComponent implements OnInit {
   @Input() podStatuses: PodStatus[] = [];

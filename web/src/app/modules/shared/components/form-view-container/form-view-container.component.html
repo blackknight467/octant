@@ -1,121 +1,133 @@
 <cds-form-group layout="vertical">
-  <ng-container  *ngFor="let field of form?.fields; trackBy: trackByFn">
-    <ng-container *ngIf="field.config.type ==='layout'; else withoutLayout ">
-      <div class="horizontal-layout">
-        <h6 *ngIf="field.config.label" slot="label">{{ field.config.label }}</h6>
-        <ng-container *ngFor="let f of field.config.configuration.fields; trackBy: trackByFn">
-          <ng-container *ngTemplateOutlet="formInputs; context: { field: f }"></ng-container>
-        </ng-container>
-      </div>
-    </ng-container>
-    <ng-template #withoutLayout>
-      <ng-container *ngTemplateOutlet="formInputs; context: { field: field }"></ng-container>
-    </ng-template>
-  </ng-container>
+  @for (field of form?.fields; track trackByFn($index)) { @if
+  (field.config.type ==='layout') {
+  <div class="horizontal-layout">
+    @if (field.config.label) {
+    <h6 slot="label">{{ field.config.label }}</h6>
+    } @for (f of field.config.configuration.fields; track trackByFn($index, f))
+    {
+    <ng-container
+      *ngTemplateOutlet="formInputs; context: { field: f }"
+    ></ng-container>
+    }
+  </div>
+  } @else {
+  <ng-container
+    *ngTemplateOutlet="formInputs; context: { field: field }"
+  ></ng-container>
+  } }
 </cds-form-group>
 
 <ng-template #formInputs let-field="field">
-  <ng-container *ngIf="formGroupContainer" [formGroup]="formGroupContainer" [ngSwitch]="field?.config?.type">
-
-    <ng-container *ngSwitchCase="'checkbox'">
-      <cds-checkbox-group [style.width.%]="field.config.width">
-        <label [for]="field.config.name">{{ field.config.label }}</label>
-        <cds-checkbox *ngFor="let opt of fieldChoices(field); trackBy: trackByFn">
-          <input
-            type="checkbox"
-            [formArrayName]="field.config.name"
-            [value]="opt.value"
-            [checked]="opt.checked"
-            (change)="onCheck($event, field.config.name)"
-          />
-          <label>{{ opt.label }}</label>
-        </cds-checkbox>
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-checkbox-group>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'radio'">
-      <cds-radio-group>
-        <label [for]="field.config.name">{{ field.config.label }}</label>
-        <cds-radio *ngFor="let opt of fieldChoices(field); trackBy: trackByFn">
-          <input
-            type="radio"
-            [formArrayName]="field.config.name"
-            [value]="opt.value"
-            [checked]="opt.checked"
-            (change)="onCheck($event, field.config.name)"
-          />
-          <label>{{ opt.label }}</label>
-        </cds-radio>
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-radio-group>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'text'">
-      <cds-input [style.width.%]="field.config.width">
-        <label [for]="field.config.name">{{ field.config.label }}</label>
+  @if (formGroupContainer) {
+  <ng-container [formGroup]="formGroupContainer">
+    @switch (field?.config?.type) { @case ('checkbox') {
+    <cds-checkbox-group [style.width.%]="field.config.width">
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      @for (opt of fieldChoices(field); track trackByFn($index, opt)) {
+      <cds-checkbox>
         <input
-          type="text"
-          [formControlName]="field.config.name"
-          [placeholder]="field.config.placeholder ? field.config.placeholder : ''"
-        />
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-input>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'number'">
-      <cds-input [style.width.%]="field.config.width">
-        <label [for]="field.config.name">{{ field.config.label }}</label>
-        <input
-          type="number"
-          [formControlName]="field.config.name"
-        />
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-input>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'password'">
-      <cds-input [style.width.%]="field.config.width">
-        <label [for]="field.config.name">{{ field.config.label }}</label>
-        <input
-          type="password"
-          [formControlName]="field.config.name"
-        />
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-input>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'select'">
-      <cds-select [style.width.%]="field.config.width">
-        <label [for]="field.config.name">{{ field.config.label }}</label>
-        <select
+          type="checkbox"
           [formArrayName]="field.config.name"
-          [attr.multiple]="field.config.configuration.multiple"
-          (change)="onSelect($event, field.config.name)"
-        >
-          <option
-            *ngFor="let opt of fieldChoices(field); trackBy: trackByFn"
-            [value]="opt.value"
-            [selected]="opt.checked"
-          >
-            {{ opt.label }}
-          </option>
-        </select>
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-select>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'textarea'">
-      <cds-textarea [style.width.%]="field.config.width">
-        <label [for]="field.config.name">{{ field.config.label }}</label>
-        <textarea [formControlName]="field.config.name"></textarea>
-        <cds-control-message *ngIf="isInvalid(field.config.name)" status="error">{{ field.config.error }}</cds-control-message>
-      </cds-textarea>
-    </ng-container>
-
-    <ng-container *ngSwitchCase="'hidden'"></ng-container>
-    <ng-container *ngSwitchDefault>
-      Unable to display form field type {{ field.config.type }}
-    </ng-container>
+          [value]="opt.value"
+          [checked]="opt.checked"
+          (change)="onCheck($event, field.config.name)"
+        />
+        <label>{{ opt.label }}</label>
+      </cds-checkbox>
+      } @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-checkbox-group>
+    } @case ('radio') {
+    <cds-radio-group>
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      @for (opt of fieldChoices(field); track trackByFn($index, opt)) {
+      <cds-radio>
+        <input
+          type="radio"
+          [formArrayName]="field.config.name"
+          [value]="opt.value"
+          [checked]="opt.checked"
+          (change)="onCheck($event, field.config.name)"
+        />
+        <label>{{ opt.label }}</label>
+      </cds-radio>
+      } @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-radio-group>
+    } @case ('text') {
+    <cds-input [style.width.%]="field.config.width">
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      <input
+        type="text"
+        [formControlName]="field.config.name"
+        [placeholder]="field.config.placeholder ? field.config.placeholder : ''"
+      />
+      @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-input>
+    } @case ('number') {
+    <cds-input [style.width.%]="field.config.width">
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      <input type="number" [formControlName]="field.config.name" />
+      @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-input>
+    } @case ('password') {
+    <cds-input [style.width.%]="field.config.width">
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      <input type="password" [formControlName]="field.config.name" />
+      @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-input>
+    } @case ('select') {
+    <cds-select [style.width.%]="field.config.width">
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      <select
+        [formArrayName]="field.config.name"
+        [attr.multiple]="field.config.configuration.multiple"
+        (change)="onSelect($event, field.config.name)"
+      >
+        @for (opt of fieldChoices(field); track trackByFn($index, opt)) {
+        <option [value]="opt.value" [selected]="opt.checked">
+          {{ opt.label }}
+        </option>
+        }
+      </select>
+      @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-select>
+    } @case ('textarea') {
+    <cds-textarea [style.width.%]="field.config.width">
+      <label [for]="field.config.name">{{ field.config.label }}</label>
+      <textarea [formControlName]="field.config.name"></textarea>
+      @if (isInvalid(field.config.name)) {
+      <cds-control-message status="error">{{
+        field.config.error
+      }}</cds-control-message>
+      }
+    </cds-textarea>
+    } @case ('hidden') { } @default { Unable to display form field type
+    {{ field.config.type }}
+    } }
   </ng-container>
+  }
 </ng-template>

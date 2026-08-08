@@ -7,14 +7,19 @@ package objectstatus
 
 import (
 	"context"
+	goerrors "errors"
 
 	"github.com/vmware-tanzu/octant/internal/link"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 
+	internalErrors "github.com/vmware-tanzu/octant/internal/errors"
+	"github.com/vmware-tanzu/octant/internal/util/kubernetes"
 	"github.com/vmware-tanzu/octant/pkg/store"
 	"github.com/vmware-tanzu/octant/pkg/view/component"
 )
@@ -31,21 +36,35 @@ func service(ctx context.Context, object runtime.Object, o store.Store, _ link.I
 	}
 
 	if service.Spec.ExternalName == "" {
+		// A service's endpoints live in one or more EndpointSlices labelled
+		// with the service name. v1 Endpoints is deprecated as of k8s 1.33.
+		selector := labels.Set{discoveryv1.LabelServiceName: service.Name}
 		key := store.Key{
 			Namespace:  service.Namespace,
-			APIVersion: "v1",
-			Kind:       "Endpoints",
-			Name:       service.Name,
+			APIVersion: "discovery.k8s.io/v1",
+			Kind:       "EndpointSlice",
+			Selector:   &selector,
 		}
 
-		endpoints := &corev1.Endpoints{}
-
-		found, err := store.GetAs(ctx, o, key, endpoints)
+		list, _, err := o.List(ctx, key)
 		if err != nil {
-			return ObjectStatus{}, errors.Wrapf(err, "get endpoints for service %s", service.Name)
+			// Roles predating EndpointSlice commonly grant core/v1 endpoints but not
+			// discovery.k8s.io/v1 endpointslices. Returning an error here would fail
+			// the whole Services table render, so report the status as unknown and
+			// leave the rest of the list intact.
+			var ae *internalErrors.AccessError
+			if goerrors.As(err, &ae) {
+				return ObjectStatus{
+					NodeStatus: component.NodeStatusWarning,
+					Details: []component.Component{
+						component.NewText("Endpoint status unavailable: no access to endpointslices"),
+					},
+				}, nil
+			}
+			return ObjectStatus{}, errors.Wrapf(err, "list endpoint slices for service %s", service.Name)
 		}
 
-		if !found {
+		if list == nil || len(list.Items) == 0 {
 			return ObjectStatus{
 				NodeStatus: component.NodeStatusWarning,
 				Details:    []component.Component{component.NewText("Service has no endpoints")},
@@ -54,8 +73,17 @@ func service(ctx context.Context, object runtime.Object, o store.Store, _ link.I
 
 		addressCount := 0
 
-		for _, subset := range endpoints.Subsets {
-			addressCount += len(subset.Addresses)
+		for i := range list.Items {
+			endpointSlice := &discoveryv1.EndpointSlice{}
+			if err := scheme.Scheme.Convert(&list.Items[i], endpointSlice, 0); err != nil {
+				return ObjectStatus{}, errors.Wrap(err, "convert unstructured object to endpoint slice")
+			}
+
+			for _, endpoint := range endpointSlice.Endpoints {
+				if kubernetes.EndpointReady(endpoint) {
+					addressCount += len(endpoint.Addresses)
+				}
+			}
 		}
 
 		if addressCount == 0 {

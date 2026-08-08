@@ -1,6 +1,12 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActionField, StepItem, StepperView } from '../../../models/content';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { ActionService } from '../../../services/action/action.service';
 import { FormHelper } from '../../../models/form-helper';
@@ -15,23 +21,25 @@ interface Choice {
   selector: 'app-stepper',
   templateUrl: './stepper.component.html',
   styleUrls: ['./stepper.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class StepperComponent
   extends AbstractViewComponent<StepperView>
   implements OnInit
 {
   @Output()
-  submit: EventEmitter<FormGroup> = new EventEmitter(true);
+  submit: EventEmitter<UntypedFormGroup> = new EventEmitter(true);
 
   @Output()
   cancel: EventEmitter<boolean> = new EventEmitter(true);
 
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
   action: string;
   steps: StepItem[] = [];
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private actionService: ActionService
   ) {
     super();
@@ -43,7 +51,7 @@ export class StepperComponent
 
   // Each Step is a form, so it creates a form group for every form and encapsulate
   // them with another form group.
-  createStepGroups(steps: StepItem[]): FormGroup {
+  createStepGroups(steps: StepItem[]): UntypedFormGroup {
     const stepGroups: { [name: string]: any } = {};
     const formHelper = new FormHelper();
 
@@ -81,7 +89,7 @@ export class StepperComponent
     return field.config.configuration.choices as Choice[];
   }
 
-  formGroupFromName(step: StepItem): FormGroup {
-    return this.formGroup.get(step.name) as FormGroup;
+  formGroupFromName(step: StepItem): UntypedFormGroup {
+    return this.formGroup.get(step.name) as UntypedFormGroup;
   }
 }

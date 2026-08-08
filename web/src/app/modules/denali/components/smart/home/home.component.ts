@@ -1,4 +1,4 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   darkTheme,
   ThemeService,
@@ -8,20 +8,18 @@ import {
   selector: 'app-root',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HomeComponent implements OnInit {
-  constructor(
-    private renderer: Renderer2,
-    private themeService: ThemeService
-  ) {}
+  constructor(private themeService: ThemeService) {}
 
   ngOnInit() {
     this.loadTheme();
   }
 
   loadTheme() {
-    // TODO: enable theme switching or denali
-    this.themeService.loadCSS(darkTheme.assetPath);
-    this.renderer.addClass(document.body, 'dark');
+    // TODO: enable theme switching for denali
+    this.themeService.applyTheme(darkTheme.type);
   }
 }

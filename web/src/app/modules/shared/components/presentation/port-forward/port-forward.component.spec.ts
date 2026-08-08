@@ -10,13 +10,11 @@ describe('PortForwardComponent', () => {
   let component: PortForwardComponent;
   let fixture: ComponentFixture<PortForwardComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [PortForwardComponent],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [PortForwardComponent],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PortForwardComponent);

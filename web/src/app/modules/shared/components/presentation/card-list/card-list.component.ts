@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CardListView, CardView } from '../../../models/content';
 import { ViewService } from '../../../services/view/view.service';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
@@ -7,6 +7,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-view-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class CardListComponent extends AbstractViewComponent<CardListView> {
   constructor(private viewService: ViewService) {

@@ -8,24 +8,19 @@ import { HeptagonComponent } from './heptagon.component';
 import { Point } from '../../../models/point';
 import { windowProvider, WindowToken } from '../../../../../window';
 import { OctantTooltipComponent } from '../../presentation/octant-tooltip/octant-tooltip';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-ngx';
+import { OverlayscrollbarsModule } from 'overlayscrollbars-ngx';
 
 describe('HeptagonComponent', () => {
   let component: HeptagonComponent;
   let fixture: ComponentFixture<HeptagonComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [
-          HeptagonComponent,
-          OctantTooltipComponent,
-          OverlayScrollbarsComponent,
-        ],
-        providers: [{ provide: WindowToken, useFactory: windowProvider }],
-      }).compileComponents();
-    })
-  );
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [OverlayscrollbarsModule],
+      declarations: [HeptagonComponent, OctantTooltipComponent],
+      providers: [{ provide: WindowToken, useFactory: windowProvider }],
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HeptagonComponent);

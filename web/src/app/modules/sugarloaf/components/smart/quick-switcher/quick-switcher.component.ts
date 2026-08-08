@@ -7,6 +7,7 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import '@cds/core/modal/register.js';
 import { Router } from '@angular/router';
@@ -32,6 +33,8 @@ interface Destination {
   selector: 'app-quick-switcher',
   templateUrl: './quick-switcher.component.html',
   styleUrls: ['./quick-switcher.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class QuickSwitcherComponent implements OnInit, OnDestroy {
   behavior = new BehaviorSubject<Navigation>(emptyNavigation);

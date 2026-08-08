@@ -309,6 +309,7 @@ func Test_DeploymentPods(t *testing.T) {
 	got, err := createRollingPodListView(ctx, replicaSets, printOptions)
 	require.NoError(t, err)
 
+	podColsWithOutLabels := component.NewTableCols("Name", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTableWithRows("Pods", "We couldn't find any pods!", podColsWithOutLabels, []component.TableRow{
 		{
 			"Name": component.NewLink("", pod.Name, "/pod",
@@ -316,7 +317,7 @@ func Test_DeploymentPods(t *testing.T) {
 			"Age":      component.NewTimestamp(now),
 			"Ready":    component.NewText("1/1"),
 			"Restarts": component.NewText("0"),
-			"Phase":    component.NewText("Running"),
+			"Status":   podCombinedStatusText(pod),
 			"Node":     component.NewText("<not scheduled>"),
 			component.GridActionKey: gridActionsFactory([]component.GridAction{
 				buildObjectDeleteAction(t, pod),

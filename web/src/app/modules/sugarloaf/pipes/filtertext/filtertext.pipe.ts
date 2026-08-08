@@ -7,6 +7,7 @@ import { Filter } from '../../../shared/services/label-filter/label-filter.servi
 
 @Pipe({
   name: 'filtertext',
+  standalone: false,
 })
 export class FilterTextPipe implements PipeTransform {
   transform(filters: Filter[]): string {

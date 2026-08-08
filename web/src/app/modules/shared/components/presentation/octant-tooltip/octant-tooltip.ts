@@ -8,6 +8,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ContentService } from '../../../services/content/content.service';
@@ -16,6 +17,8 @@ import { ContentService } from '../../../services/content/content.service';
   selector: 'app-octant-tooltip',
   templateUrl: './octant-tooltip.html',
   styleUrls: ['./octant-tooltip.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class OctantTooltipComponent implements OnInit, OnDestroy {
   scrollPosition = 0;

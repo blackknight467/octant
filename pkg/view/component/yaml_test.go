@@ -58,7 +58,7 @@ func Test_YAML_Data(t *testing.T) {
 	require.NoError(t, y.Data(pod))
 
 	got := y.Config.Data
-	expected := "---\nmetadata:\n  creationTimestamp: null\nspec:\n  containers: null\nstatus: {}\n"
+	expected := "---\nmetadata: {}\nspec:\n  containers: null\nstatus: {}\n"
 
 	assert.Equal(t, expected, got)
 }

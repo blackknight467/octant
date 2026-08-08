@@ -3,7 +3,13 @@ Copyright (c) 2020 the Octant contributors. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { EditorView, SelectFileView } from '../../../models/content';
 import { NamespaceService } from '../../../services/namespace/namespace.service';
 import { ActionService } from '../../../services/action/action.service';
@@ -23,6 +29,8 @@ interface Options {
   selector: 'app-view-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class EditorComponent
   extends AbstractViewComponent<EditorView>

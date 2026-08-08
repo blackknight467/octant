@@ -27,6 +27,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   styleUrls: ['./terminal.component.scss'],
   templateUrl: './terminal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TerminalComponent
   extends AbstractViewComponent<TerminalView>

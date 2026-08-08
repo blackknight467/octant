@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ClrDatagridFilter, ClrDatagridFilterInterface } from '@clr/angular';
 import { Subject } from 'rxjs';
 import { TableFilter, TableRow, TextView } from '../../../models/content';
@@ -8,6 +14,8 @@ import trackByIdentity from 'src/app/util/trackBy/trackByIdentity';
   selector: 'app-content-filter',
   templateUrl: './content-filter.component.html',
   styleUrls: ['./content-filter.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContentFilterComponent
   implements ClrDatagridFilterInterface<TableRow>, OnInit

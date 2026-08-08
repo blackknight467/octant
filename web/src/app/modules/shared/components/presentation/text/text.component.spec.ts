@@ -1,15 +1,18 @@
 // Copyright (c) 2019 the Octant contributors. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TextView } from '../../../models/content';
 import { TextComponent } from './text.component';
 import { Status } from '../indicator/indicator.component';
-import { ClarityModule, ClrPopoverToggleService } from '@clr/angular';
+import { ClarityModule } from '@clr/angular';
+import { rebind } from '../../../../../testing/rebind';
 @Component({
   template: '<app-view-text [view]="view"></app-view-text>',
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 class TestWrapperComponent {
   view: TextView;
@@ -20,15 +23,12 @@ describe('TextComponent', () => {
     let component: TestWrapperComponent;
     let fixture: ComponentFixture<TestWrapperComponent>;
 
-    beforeEach(
-      waitForAsync(() => {
-        TestBed.configureTestingModule({
-          providers: [ClrPopoverToggleService],
-          declarations: [TestWrapperComponent, TextComponent],
-          imports: [ClarityModule],
-        }).compileComponents();
-      })
-    );
+    beforeEach(waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [TestWrapperComponent, TextComponent],
+        imports: [ClarityModule],
+      }).compileComponents();
+    }));
 
     beforeEach(() => {
       fixture = TestBed.createComponent(TestWrapperComponent);
@@ -62,10 +62,10 @@ describe('TextComponent', () => {
       describe('with status', () => {
         beforeEach(() => {
           component.view.config.status = Status.Ok;
-          fixture.detectChanges();
         });
 
         it('has an indicator component', () => {
+          fixture.detectChanges();
           expect(
             element.querySelector('app-view-text app-indicator')
           ).not.toBeNull();
@@ -79,6 +79,7 @@ describe('TextComponent', () => {
         });
 
         it('does not have an indicator', () => {
+          fixture.detectChanges();
           expect(
             element.querySelector('app-view-text app-indicator')
           ).toBeNull();
@@ -149,11 +150,12 @@ describe('TextComponent', () => {
         '<p><em>text</em></p>\n'
       );
 
-      component.view = {
-        config: { value: '# header', isMarkdown: true },
-        metadata: { type: 'text', title: [], accessor: 'accessor' },
-      };
-      fixture.detectChanges();
+      rebind(fixture, () => {
+        component.view = {
+          config: { value: '# header', isMarkdown: true },
+          metadata: { type: 'text', title: [], accessor: 'accessor' },
+        };
+      });
 
       element = fixture.nativeElement;
       expect(element.querySelector('app-view-text div').innerHTML).toEqual(

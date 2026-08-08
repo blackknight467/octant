@@ -6,6 +6,7 @@ import {
   ElementRef,
   ViewChild,
   NgZone,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ClrDatagridFilter, ClrDatagridFilterInterface } from '@clr/angular';
@@ -16,6 +17,8 @@ import { RelativePipe } from '../../../pipes/relative/relative.pipe';
   selector: 'app-content-text-filter',
   templateUrl: './content-text-filter.component.html',
   styleUrls: ['./content-text-filter.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContentTextFilterComponent
   implements ClrDatagridFilterInterface<TableRow>, OnInit

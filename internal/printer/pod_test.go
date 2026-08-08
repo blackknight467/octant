@@ -98,7 +98,7 @@ func Test_PodListHandler(t *testing.T) {
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod", "/pod",
@@ -107,8 +107,7 @@ func Test_PodListHandler(t *testing.T) {
 			})),
 		"Labels":   component.NewLabels(labels),
 		"Ready":    component.NewText("1/2"),
-		"Phase":    component.NewText("Pending"),
-		"Status":   component.NewText("ContainerCreating"),
+		"Status":   expectedPodStatus("ContainerCreating", "Pending", "text-metric-warning"),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
@@ -172,14 +171,13 @@ func Test_PodListHandlerNoLabel(t *testing.T) {
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
 			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Ready":    component.NewText("0/1"),
-		"Phase":    component.NewText("Succeeded"),
-		"Status":   component.NewText("Running"),
+		"Status":   expectedPodStatus("Running", "Succeeded", ""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(now),
 		"Node":     nodeLink,
@@ -248,7 +246,7 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 	got, err := PodListHandler(ctx, object, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pi-7xpxr", "/pi-7xpxr",
@@ -258,8 +256,7 @@ func Test_PodListHandlerTerminating(t *testing.T) {
 		),
 		"Labels":     component.NewLabels(labels),
 		"Ready":      component.NewText("0/1"),
-		"Phase":      component.NewText("Running"),
-		"Status":     component.NewText("Terminating"),
+		"Status":     expectedPodStatus("Terminating", "Running", ""),
 		"Restarts":   component.NewText("0"),
 		"Age":        component.NewTimestamp(creationNow),
 		"_isDeleted": component.NewText("deleted"),
@@ -300,15 +297,14 @@ func TestPodListHandler_sorted(t *testing.T) {
 	got, err := PodListHandler(ctx, list, printOptions)
 	require.NoError(t, err)
 
-	cols := component.NewTableCols("Name", "Labels", "Ready", "Phase", "Status", "Restarts", "Node", "Age")
+	cols := component.NewTableCols("Name", "Labels", "Ready", "Status", "Restarts", "Node", "Age")
 	expected := component.NewTable("Pods", "We couldn't find any pods!", cols)
 	expected.Add(component.TableRow{
 		"Name": component.NewLink("", "pod1", "/pod1",
 			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
-		"Phase":    component.NewText(""),
-		"Status":   component.NewText(""),
+		"Status":   expectedPodStatus("", "", ""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),
@@ -321,8 +317,7 @@ func TestPodListHandler_sorted(t *testing.T) {
 			genObjectStatus(component.TextStatusWarning, []string{"Pod may require additional action"})),
 		"Labels":   component.NewLabels(make(map[string]string)),
 		"Ready":    component.NewText("0/0"),
-		"Phase":    component.NewText(""),
-		"Status":   component.NewText(""),
+		"Status":   expectedPodStatus("", "", ""),
 		"Restarts": component.NewText("0"),
 		"Age":      component.NewTimestamp(pod1.CreationTimestamp.Time),
 		"Node":     component.NewText("<not scheduled>"),

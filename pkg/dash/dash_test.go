@@ -24,6 +24,7 @@ import (
 	authv1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
 
 	"github.com/golang/mock/gomock"
@@ -228,13 +229,20 @@ func mockClusterClientReturningNamespace(controller *gomock.Controller, namespac
 	dynamicClient.EXPECT().Resource(gomock.Any()).Return(nri).AnyTimes()
 	ri := clusterFake.NewMockResourceInterface(controller)
 	nri.EXPECT().Namespace(gomock.Any()).Return(ri).AnyTimes()
-	ri.EXPECT().List(gomock.Any(), gomock.Any()).Return(&unstructured.UnstructuredList{}, nil)
+	// Informer startup is asynchronous, so how many times (if at all) it gets
+	// to list and watch before the namespaces event arrives is incidental to
+	// what this test asserts.
+	ri.EXPECT().List(gomock.Any(), gomock.Any()).Return(&unstructured.UnstructuredList{}, nil).AnyTimes()
 
-	ri.EXPECT().Watch(gomock.Any(), gomock.Any()).Return(watch.NewFake(), nil)
+	ri.EXPECT().Watch(gomock.Any(), gomock.Any()).Return(watch.NewFake(), nil).AnyTimes()
 
 	clusterClient := clusterFake.NewMockClientInterface(controller)
 	clusterClient.EXPECT().NamespaceClient().Return(nsClient, nil).MinTimes(1)
 	clusterClient.EXPECT().DynamicClient().Return(dynamicClient, nil)
+	// An empty GVR makes the dynamic cache fall back to guessing the resource
+	// from the kind, which is enough for the informers this test starts.
+	clusterClient.EXPECT().Resource(gomock.Any()).
+		Return(schema.GroupVersionResource{}, false, nil).AnyTimes()
 	clusterClient.EXPECT().RESTClient()
 	clusterClient.EXPECT().RESTConfig()
 	clusterClient.EXPECT().DefaultNamespace().Return(namespace)

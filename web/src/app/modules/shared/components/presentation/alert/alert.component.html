@@ -1,7 +1,10 @@
-<cds-alert-group type="{{type}}" status="{{status}}" *ngIf="showAlert">
+@if (showAlert) {
+<cds-alert-group type="{{ type }}" status="{{ status }}">
   <cds-alert [closable]="closable" (closeChange)="close()">
-    {{message}}
+    {{ message }}
   </cds-alert>
-  <app-button-group [view]="buttonGroup" *ngIf="buttonGroup">
-  </app-button-group>
+  @if (buttonGroup) {
+  <app-button-group [view]="buttonGroup"> </app-button-group>
+  }
 </cds-alert-group>
+}

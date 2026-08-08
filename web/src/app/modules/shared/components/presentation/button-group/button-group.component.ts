@@ -1,4 +1,9 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ButtonGroupView } from '../../../models/content';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -6,6 +11,8 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
   selector: 'app-button-group',
   templateUrl: './button-group.component.html',
   styleUrls: ['./button-group.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ButtonGroupComponent extends AbstractViewComponent<ButtonGroupView> {
   @Output() buttonLoad: EventEmitter<boolean> = new EventEmitter(true);

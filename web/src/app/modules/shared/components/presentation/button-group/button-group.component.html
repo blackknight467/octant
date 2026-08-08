@@ -1,7 +1,7 @@
-<div *ngIf="v?.config.buttons" class="btn-group">
-  <app-button
-    *ngFor="let button of v?.config.buttons; trackBy: trackByFn"
-    [class]="class"
-    [view]="button">
-  </app-button>
+@if (v?.config.buttons) {
+<div class="btn-group">
+  @for (button of v?.config.buttons; track trackByFn($index, button)) {
+  <app-button [class]="class" [view]="button"> </app-button>
+  }
 </div>
+}
