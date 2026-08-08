@@ -32,9 +32,13 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
   modalTitle = '';
   modalBody = '';
   payload = {};
-  style = 'outline';
-  status = '';
-  size = 'sm';
+  // Typed to cds-button's own inputs so an unsupported value from the
+  // backend is a compile error here rather than an attribute the CSS
+  // silently ignores.
+  style: 'outline' | 'solid' | 'flat' | 'flat-inline' = 'outline';
+  status: 'primary' | 'success' | 'warning' | 'danger' | 'neutral' | 'inverse' =
+    'primary';
+  size: 'icon' | 'sm' | 'md' = 'sm';
   disabled = null;
   block = null;
 
@@ -60,20 +64,20 @@ export class ButtonComponent extends AbstractViewComponent<ButtonView> {
         this.status = 'danger';
       } else {
         if (button.style) {
-          this.style = button.style;
+          this.style = button.style as typeof this.style;
         }
         if (button.status) {
           if (button.status === 'disabled') {
             this.disabled = true;
           } else {
-            this.status = button.status;
+            this.status = button.status as typeof this.status;
           }
         }
         if (button.size) {
           if (button.size === 'block') {
             this.block = true;
           } else {
-            this.size = button.size;
+            this.size = button.size as typeof this.size;
           }
         }
       }

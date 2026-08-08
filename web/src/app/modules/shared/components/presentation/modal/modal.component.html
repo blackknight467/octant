@@ -23,9 +23,9 @@
       type="button"
       class="btn"
       [ngClass]="isLast ? 'btn-primary' : 'btn-outline'"
-      (click)="onClick(button.payload)"
+      (click)="onClick(button.config.payload)"
     >
-      {{ button.name }}
+      {{ button.config.name }}
     </button>
     } } @if (form?.fields) {
     <cds-button action="outline" (click)="opened = false">Cancel</cds-button>

@@ -342,6 +342,7 @@ export class PreferencesService implements OnDestroy {
               name: 'general.kubeConfig',
               value: '',
               textConfig: {
+                metadata: { type: 'text' },
                 config: {
                   value: this.kubeConfigPathText || 'unknown',
                   clipboardValue: this.kubeConfigFullPath || 'unknown',

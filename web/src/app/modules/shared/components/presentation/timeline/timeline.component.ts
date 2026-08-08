@@ -3,6 +3,7 @@
 //
 
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ClrTimelineLayout, ClrTimelineStepState } from '@clr/angular';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 import { TimelineStep, TimelineView } from '../../../models/content';
 
@@ -18,6 +19,18 @@ export class TimelineComponent
   implements OnInit
 {
   vertical: boolean;
+
+  // Clarity types these as enums rather than string unions, and the backend
+  // sends the enum's own string values, so map at the boundary.
+  get layout(): ClrTimelineLayout {
+    return this.vertical
+      ? ClrTimelineLayout.VERTICAL
+      : ClrTimelineLayout.HORIZONTAL;
+  }
+
+  stepState(step: TimelineStep): ClrTimelineStepState {
+    return step.state as ClrTimelineStepState;
+  }
   steps: TimelineStep[];
   constructor() {
     super();

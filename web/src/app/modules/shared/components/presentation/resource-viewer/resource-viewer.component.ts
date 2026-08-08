@@ -300,7 +300,7 @@ export class ResourceViewerComponent
     this.selectedNodeId = id;
   }
 
-  selectedNode(): string {
+  selectedNode(): Node {
     return this.v?.config?.nodes[this.selectedNodeId];
   }
 

@@ -37,8 +37,13 @@ export class SelectFileComponent
 {
   label: string;
   multiple: boolean;
-  layout: string;
-  status: string;
+  layout:
+    | 'horizontal'
+    | 'horizontal-inline'
+    | 'vertical'
+    | 'vertical-inline'
+    | 'compact';
+  status: 'neutral' | 'error' | 'success';
   statusMessage: string;
   action: string;
 
@@ -55,9 +60,9 @@ export class SelectFileComponent
   update() {
     const view = this.v;
     this.label = view.config.label;
-    this.layout = view.config.layout;
+    this.layout = view.config.layout as typeof this.layout;
     this.multiple = view.config.multiple;
-    this.status = view.config.status;
+    this.status = view.config.status as typeof this.status;
     this.statusMessage = view.config.statusMessage;
     this.action = view.config.action;
   }

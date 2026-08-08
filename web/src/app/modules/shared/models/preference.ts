@@ -67,6 +67,8 @@ export interface InputElement extends Element {
 export interface TextElement extends Element {
   type: 'text';
   textConfig: {
+    // Passed straight to <app-view-text [view]>, so it has to satisfy View.
+    metadata: { type: string };
     config: {
       value: string;
       clipboardValue: string;

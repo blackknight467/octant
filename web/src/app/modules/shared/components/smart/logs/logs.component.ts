@@ -22,6 +22,7 @@ import {
   PodLogsStreamer,
 } from 'src/app/modules/shared/pod-logs/pod-logs.service';
 import { formatDate } from '@angular/common';
+import { SafeHtml } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { AbstractViewComponent } from '../../abstract-view/abstract-view.component';
 
@@ -201,8 +202,11 @@ export class LogsComponent
     }
   }
 
-  public highlightText(text: string) {
-    if (!this.filterText) {
+  // The ansi pipe hands back SafeHtml for ANSI-coloured lines and a plain
+  // string otherwise. Only the string form can be searched; running a regex
+  // over a SafeValue stringifies it to Angular's warning text.
+  public highlightText(text: string | SafeHtml): string | SafeHtml {
+    if (typeof text !== 'string' || !this.filterText) {
       return text;
     }
 

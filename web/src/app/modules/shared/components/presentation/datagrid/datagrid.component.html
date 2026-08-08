@@ -107,7 +107,7 @@
     <cds-button action="outline" (click)="toggleModal()">Cancel</cds-button>
     <cds-button
       action="outline"
-      [status]="$safeNavigationMigration(actionDialogOptions?.type)"
+      [attr.status]="$safeNavigationMigration(actionDialogOptions?.type)"
       (click)="acceptModal()"
       >{{ actionDialogOptions?.text }}</cds-button
     >

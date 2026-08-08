@@ -20,8 +20,11 @@ export abstract class AbstractViewComponent<T>
     this.update();
   }
 
-  get view() {
-    return this.v as unknown as View;
+  // Setter takes the base View (that is what the content system hands us);
+  // getter returns the concrete T so templates can reach `view.config`.
+  // Divergent accessor types are legal from TypeScript 4.3.
+  get view(): T {
+    return this.v;
   }
 
   @Output() viewInit: EventEmitter<void> = new EventEmitter<void>();

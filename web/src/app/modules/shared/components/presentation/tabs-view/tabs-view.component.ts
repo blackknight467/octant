@@ -13,8 +13,7 @@ import { AbstractViewComponent } from '../../abstract-view/abstract-view.compone
 
 interface Tab {
   name: string;
-  view: View;
-  accessor: string;
+  contents: View;
 }
 
 @Component({
@@ -26,7 +25,7 @@ interface Tab {
 })
 export class TabsViewComponent extends AbstractViewComponent<TabsView> {
   activeTab: string;
-  tabs: View[] = [];
+  tabs: Tab[] = [];
   orientation: string;
 
   constructor() {

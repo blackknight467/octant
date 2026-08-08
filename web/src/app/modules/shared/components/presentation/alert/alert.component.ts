@@ -7,8 +7,10 @@ import {
 
 import '@cds/core/alert/register.js';
 import { Alert } from '../../../models/content';
+import type { AlertGroupTypes, AlertStatusTypes } from '@cds/core/alert';
 
-const alertLookup = {
+// Go's AlertStatus vocabulary mapped onto CDS's -- 'error' is 'danger' there.
+const alertLookup: { [key: string]: AlertStatusTypes } = {
   error: 'danger',
   warning: 'warning',
   info: 'info',
@@ -25,8 +27,8 @@ const alertLookup = {
 export class AlertComponent implements OnInit {
   @Input() alert: Alert;
   message = '';
-  status = '';
-  type = '';
+  status: AlertStatusTypes = 'danger';
+  type: AlertGroupTypes = 'default';
   closable = false;
   buttonGroup = null;
   showAlert = false;
@@ -35,7 +37,7 @@ export class AlertComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.alert) {
-      this.type = this.alert.type;
+      this.type = this.alert.type as typeof this.type;
       this.message = this.alert.message;
       this.status = alertLookup[this.alert.status] || alertLookup.error;
       this.closable = this.alert.closable;

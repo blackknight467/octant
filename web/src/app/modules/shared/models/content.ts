@@ -673,7 +673,8 @@ export interface SelectFileView extends View {
 
 export interface TabsView extends View {
   config: {
-    tabs: View[];
+    // Matches Go's component.Tab: a name and a FlexLayout, not a View.
+    tabs: { name: string; contents: View }[];
     orientation?: string;
   };
 }

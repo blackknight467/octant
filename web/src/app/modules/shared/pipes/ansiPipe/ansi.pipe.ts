@@ -18,9 +18,13 @@ export class AnsiPipe implements PipeTransform {
 
   constructor(private sanitizer: DomSanitizer) {}
 
-  public transform(
-    value: string
-  ): SafeHtml | SafeStyle | SafeScript | SafeUrl | SafeResourceUrl {
+  // Only the ANSI branch produces SafeHtml; the common path returns the input
+  // string unchanged.
+  public transform(value: string | SafeHtml): SafeHtml | string {
+    // May already be SafeHtml if an earlier step in the chain sanitised it.
+    if (typeof value !== 'string') {
+      return value;
+    }
     if (value.includes('\x1B')) {
       // ANSI string
       return this.sanitizer.bypassSecurityTrustHtml(

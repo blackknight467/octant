@@ -5,7 +5,7 @@
       clrSelect
       name="options"
       [value]="selectedContainer"
-      (change)="onContainerChange($event.target.value)"
+      (change)="onContainerChange($any($event.target).value)"
     >
       @for (container of containers; track trackByIdentity($index, container)) {
       <option value="{{ container }}">{{ container }}</option>

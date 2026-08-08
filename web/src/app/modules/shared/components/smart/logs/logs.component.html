@@ -6,7 +6,7 @@
         clrSelect
         name="options"
         [value]="selectedContainer"
-        (change)="onContainerChange($event.target.value)"
+        (change)="onContainerChange($any($event.target).value)"
       >
         @for (container of v?.config.containers; track container) {
         <option value="{{ container }}">
@@ -21,7 +21,7 @@
         clrSelect
         name="options"
         [value]="selectedSince"
-        (change)="onSinceChange($event.target.value)"
+        (change)="onSinceChange($any($event.target).value)"
       >
         @for (duration of v?.config.durations; track duration) {
         <option label="{{ duration.label }}" value="{{ duration.seconds }}">

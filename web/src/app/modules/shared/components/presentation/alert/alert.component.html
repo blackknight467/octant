@@ -1,5 +1,5 @@
 @if (showAlert) {
-<cds-alert-group type="{{ type }}" status="{{ status }}">
+<cds-alert-group [attr.type]="type" [attr.status]="status">
   <cds-alert [closable]="closable" (closeChange)="close()">
     {{ message }}
   </cds-alert>

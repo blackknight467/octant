@@ -47,7 +47,7 @@
 <ng-template #contentFooter>
   @if (shouldShowFooter()) {
   <div class="card-footer">
-    @for (action of v.config.actions; track identifyItem($index, action)) {
+    @for (action of v.config.actions; track $index) {
     <button class="btn btn-sm btn-link" (click)="setAction(action)">
       {{ action.name }}
     </button>

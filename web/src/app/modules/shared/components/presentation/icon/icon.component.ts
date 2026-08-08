@@ -29,7 +29,7 @@ import { isSvg } from '../../../../../util/isSvg';
 export class IconComponent extends AbstractViewComponent<IconView> {
   direction: string;
   shape: string;
-  flip: string;
+  flip: 'horizontal' | 'vertical';
   size: string;
   isInverse: boolean;
   isSolid: boolean;
@@ -71,7 +71,7 @@ export class IconComponent extends AbstractViewComponent<IconView> {
     }
 
     this.shape = view.config.shape;
-    this.flip = view.config.flip;
+    this.flip = <'horizontal' | 'vertical'>view.config.flip;
     this.size = view.config.size;
     this.direction = view.config.direction;
     this.status = view.config.status;

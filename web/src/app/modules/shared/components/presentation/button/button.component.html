@@ -1,9 +1,9 @@
 <cds-button
-  action="{{ style }}"
-  status="{{ status }}"
-  size="{{ size }}"
+  [attr.action]="style"
+  [attr.status]="status"
+  [attr.size]="size"
   [attr.disabled]="disabled"
-  block="{{ block }}"
+  [attr.block]="block"
   (click)="
     onClick(
       $safeNavigationMigration(v?.config?.payload),

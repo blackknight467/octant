@@ -1,7 +1,7 @@
 @if (v?.config.buttons) {
 <div class="btn-group">
   @for (button of v?.config.buttons; track $index) {
-  <app-button [class]="class" [view]="button"> </app-button>
+  <app-button [view]="button"> </app-button>
   }
 </div>
 }

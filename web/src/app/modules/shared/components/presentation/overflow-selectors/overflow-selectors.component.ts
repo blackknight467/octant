@@ -23,6 +23,16 @@ import {
   standalone: false,
 })
 export class OverflowSelectorsComponent implements AfterViewChecked {
+  // metadata.type is a plain string on both members, so @switch cannot narrow
+  // the union. These make the branch's intent explicit at the call site.
+  asLabel(selector: ExpressionSelectorView | LabelSelectorView) {
+    return selector as LabelSelectorView;
+  }
+
+  asExpression(selector: ExpressionSelectorView | LabelSelectorView) {
+    return selector as ExpressionSelectorView;
+  }
+
   @Input() set selectors(
     selectors: Array<LabelSelectorView | ExpressionSelectorView>
   ) {

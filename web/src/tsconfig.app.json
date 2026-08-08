@@ -20,6 +20,6 @@
     "**/*.stories.ts"
   ],
   "angularCompilerOptions": {
-    "strictTemplates": false
+    "strictTemplates": true
   }
 }

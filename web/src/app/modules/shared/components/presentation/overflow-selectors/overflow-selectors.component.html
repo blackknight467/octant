@@ -4,15 +4,17 @@
     @for (selector of showSelectors; track trackByIdentity($index, selector)) {
     @switch (selector.metadata.type) { @case ('labelSelector') {
     <app-octant-tooltip
-      tooltipText="{{ selector.config.key }}:{{ selector.config.value }}"
+      tooltipText="{{ asLabel(selector).config.key }}:{{
+        asLabel(selector).config.value
+      }}"
     >
       <app-view-label-selector [view]="selector"></app-view-label-selector>
     </app-octant-tooltip>
     } @case ('expressionSelector') {
     <app-octant-tooltip
-      tooltipText="{{ selector.config.key }} {{ selector.config.operator }} {{
-        selector.config.values | join : ','
-      }}"
+      tooltipText="{{ asExpression(selector).config.key }} {{
+        asExpression(selector).config.operator
+      }} {{ asExpression(selector).config.values | join : ',' }}"
     >
       <app-view-expression-selector
         [view]="selector"

@@ -8,7 +8,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 export class StringEscapePipe implements PipeTransform {
   constructor(private sanitizer: DomSanitizer) {}
 
-  public transform(value: string): SafeHtml {
+  // sanitize() returns a plain string, so say so -- declaring SafeHtml here
+  // made every downstream consumer look mistyped.
+  public transform(value: string): string {
     return this.sanitizer.sanitize(
       SecurityContext.HTML,
       this.escapePipe(value)
