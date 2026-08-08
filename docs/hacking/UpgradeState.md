@@ -679,14 +679,23 @@ during change detection". Both were the `detectChanges()` no-op. The lesson is t
 `NG0100` in Angular 22 is at least as likely to mean *a render was skipped* as *something
 wrote during render*.
 
-### 5. Carried debt, not upgrade work
+### 5. Optional follow-ups, none of them upgrade work
 
-- `strictTemplates: false` and `strict: false` — enabling either is its own project
-  (73 and 27+ errors respectively).
-- `@materia-ui/ngx-monaco-editor@6` is unmaintained (built against Angular 13) but works.
-  Same risk class as `overlayscrollbars-ngx@0.5.2`, which did bite.
-- Clarity's own components still double-render `<cds-icon>`; the two SVGs overlap exactly
-  so it is invisible, and avoiding it would mean dropping `<cds-button>`.
+Measured figures and the reasoning behind them are in
+[Carried debt, measured](#carried-debt-measured); this is the short list.
+
+| item | size | note |
+|---|---|---|
+| `strictTemplates` — remaining 37 | one modelling project | All one class. `AbstractViewComponent`'s generic does not narrow `view` to the concrete type, so `view.config` is unknown on the base `View`. Fixing that alone should clear roughly a third. |
+| `strict: true` | 243 errors | With `strictPropertyInitialization` off, which is the usual Angular posture. 494 with it on. |
+| `d3-graphviz`, `dagre-d3`, `d3-zoom` | 3 dependencies | Unreachable — `NewGraphviz` is constructed nowhere in-tree. Removable if anyone is trimming. |
+| Electron package size | ~323 MB `app.asar` | Mostly `node_modules` already compiled into `dist/`. The main process needs only `electron-store`, `get-port`, `open`, `ws`; moving the frontend packages to `devDependencies` would cut most of it. Pre-existing, and it changes install semantics. |
+| 3 failing specs | not fixable here | Clarity's `ClrIcon` and the `@cds` custom element both claim `<cds-icon>` and one shadow root — see section 4. |
+
+Explicitly **not** on this list any more: Monaco, which was the most-flagged item and is
+verified working under Angular 22 with a one-template surface; and the old
+Angular-12/13-compiled packages, all four of which now render correctly against a live
+cluster.
 
 ## What the ladder actually cost
 
@@ -706,9 +715,11 @@ wrote during render*.
 ### Deliberately deferred (compatibility shims, not modernizations)
 
 - `strictTemplates: false` — Angular 22 defaults it true; opting out avoids a wall of
-  new errors on a codebase with no `strict` mode.
+  new errors on a codebase with no `strict` mode. The defects it reports have since been
+  fixed and the remainder measured: see [Carried debt, measured](#carried-debt-measured).
 - `strict: false` in `tsconfig.base.json` — **TypeScript 6.0 flipped `strict` to
-  default true**. Enabling it means fixing 27+ null-check errors.
+  default true**. Measured cost is 494 errors, or 243 with
+  `strictPropertyInitialization` off.
 - Optional migrations skipped: `provideAppInitializer`, `router-current-navigation`.
 
 ### Lessons that generalise
@@ -769,10 +780,11 @@ were caught by the build or either test suite:
 | the new ready-condition filter had no test at all | two fixtures + two cases, verified by mutation |
 | ready-condition logic duplicated across two packages | extracted to `internal/util/kubernetes.EndpointReady` |
 
-Two findings were deliberately not fixed: `strictTemplates: false` (already recorded as a
-deferred shim — enabling it surfaces 73 pre-existing errors and is its own piece of work),
-and the `ClusterClient()` nil stub that leaves the pod-metrics columns untested (needs a
-metrics-server fake, and belongs with that feature rather than this upgrade).
+Two findings were not fixed at the time: `strictTemplates: false`, and the
+`ClusterClient()` nil stub that leaves the pod-metrics columns untested (needs a
+metrics-server fake, and belongs with that feature rather than this upgrade). The first has
+since been revisited — the real defects behind those errors are fixed, and what is left is
+measured in [Carried debt, measured](#carried-debt-measured).
 
 The lesson that generalises: **a green build and a green suite say nothing about CI
 workflow semantics, RBAC-degraded paths, or input that is invalid only momentarily.** All
